@@ -1,0 +1,59 @@
+2020-08-30T17:06:06,292  WARN PrepareForSimImpl:222 'usePersonIdForMissingVehicleId' is deprecated. It will be removed soon.
+2020-08-30T17:06:06,391  WARN RandomizingTimeDistanceTravelDisutilityFactory:112 There will be no routing randomness. The randomization of the travel disutility requires the monetary distance rate to be different than zero. Continuing anyway.
+2020-08-30T17:06:06,393  WARN RandomizingTimeDistanceTravelDisutilityFactory:117 There will be no routing randomness. The randomization of the travel disutility requires the travel time cost rate to be different than zero. Continuing anyway.
+2020-08-30T17:06:06,461  WARN Dijkstra:304 No route was found from node 86 to node 66. Some possible reasons:
+2020-08-30T17:06:06,472  WARN Dijkstra:305   * Network is not connected.  Run NetworkCleaner().
+2020-08-30T17:06:06,472  WARN Dijkstra:306   * Network for considered mode does not even exist.  Modes need to be entered for each link in network.xml.
+2020-08-30T17:06:06,472  WARN Dijkstra:307   * Network for considered mode is not connected to starting or ending point of route.  Setting insertingAccessEgressWalk to true may help.
+2020-08-30T17:06:06,473  WARN Dijkstra:308 This will now return null, but it may fail later with a null pointer exception.
+2020-08-30T17:06:06,519  WARN Dijkstra:304 No route was found from node 92 to node 83. Some possible reasons:
+2020-08-30T17:06:06,520  WARN Dijkstra:305   * Network is not connected.  Run NetworkCleaner().
+2020-08-30T17:06:06,521  WARN Dijkstra:306   * Network for considered mode does not even exist.  Modes need to be entered for each link in network.xml.
+2020-08-30T17:06:06,521  WARN Dijkstra:307   * Network for considered mode is not connected to starting or ending point of route.  Setting insertingAccessEgressWalk to true may help.
+2020-08-30T17:06:06,521  WARN Dijkstra:308 This will now return null, but it may fail later with a null pointer exception.
+2020-08-30T17:06:06,521 ERROR ParallelPersonAlgorithmUtils$ExceptionHandler:164 Thread PersonPrepareForSim.0 died with exception while handling events.
+java.lang.RuntimeException: No route found from node 92 to node 83 by mode car.
+	at org.matsim.core.router.NetworkRoutingModule.calcRoute(NetworkRoutingModule.java:97) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.router.TripRouter.calcRoute(TripRouter.java:174) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.router.PlanRouter.run(PlanRouter.java:94) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.population.algorithms.PersonPrepareForSim.run(PersonPrepareForSim.java:221) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils$PersonAlgoThread.run(ParallelPersonAlgorithmUtils.java:145) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at java.lang.Thread.run(Thread.java:834) [?:?]
+2020-08-30T17:06:06,474 ERROR ParallelPersonAlgorithmUtils$ExceptionHandler:164 Thread PersonPrepareForSim.1 died with exception while handling events.
+java.lang.RuntimeException: No route found from node 86 to node 66 by mode car.
+	at org.matsim.core.router.NetworkRoutingModule.calcRoute(NetworkRoutingModule.java:97) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.router.TripRouter.calcRoute(TripRouter.java:174) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.router.PlanRouter.run(PlanRouter.java:94) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.population.algorithms.PersonPrepareForSim.run(PersonPrepareForSim.java:221) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils$PersonAlgoThread.run(ParallelPersonAlgorithmUtils.java:145) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at java.lang.Thread.run(Thread.java:834) [?:?]
+2020-08-30T17:06:06,548 ERROR MatsimRuntimeModifications:75 Getting uncaught Exception in Thread main
+java.lang.RuntimeException: Exception while processing persons. Cannot guarantee that all persons have been fully processed.
+	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils.run(ParallelPersonAlgorithmUtils.java:120) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.PrepareForSimImpl.run(PrepareForSimImpl.java:172) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.NewControler.prepareForSim(NewControler.java:113) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:80) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:69) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:52) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:89) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.NewControler.run(NewControler.java:82) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.Controler.run(Controler.java:249) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.run.Controler.run(Controler.java:54) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.run.Controler.main(Controler.java:58) [matsim-13.0-SNAPSHOT.jar:?]
+2020-08-30T17:06:06,549 ERROR MatsimRuntimeModifications:81 ERROR --- This is an unexpected shutdown!
+2020-08-30T17:06:06,550 ERROR MatsimRuntimeModifications:84 Shutdown possibly caused by the following Exception:
+java.lang.RuntimeException: Exception while processing persons. Cannot guarantee that all persons have been fully processed.
+	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils.run(ParallelPersonAlgorithmUtils.java:120) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.PrepareForSimImpl.run(PrepareForSimImpl.java:172) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.NewControler.prepareForSim(NewControler.java:113) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:80) ~[matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:69) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:52) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:89) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.NewControler.run(NewControler.java:82) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.core.controler.Controler.run(Controler.java:249) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.run.Controler.run(Controler.java:54) [matsim-13.0-SNAPSHOT.jar:?]
+	at org.matsim.run.Controler.main(Controler.java:58) [matsim-13.0-SNAPSHOT.jar:?]
+2020-08-30T17:06:06,598 ERROR MatsimRuntimeModifications:99 ERROR --- MATSim unexpectedly terminated. Please check the output or the logfile with warnings and errors for hints.
+2020-08-30T17:06:06,598 ERROR MatsimRuntimeModifications:100 ERROR --- results should not be used for further analysis.
+2020-08-30T17:06:06,599 ERROR MatsimRuntimeModifications:104 ERROR --- This was an unexpected shutdown! See the log file for a possible reason.
