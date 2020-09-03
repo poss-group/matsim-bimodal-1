@@ -15,5 +15,5 @@
 1. **grid_model_pt**
     - This scenario represents a public transport simulation on a 2d grid with 100 agents.
 ---
-1. **grid_model_drt**
+2. **grid_model_drt**
     - This scenario represents a simulation of demand responsive on a 2d grid with 100 agents and 10 transport vehicles.
