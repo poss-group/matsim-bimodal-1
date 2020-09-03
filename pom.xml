@@ -35,6 +35,10 @@
 			<id>ojo-snapshots</id>
 			<url>http://oss.jfrog.org/libs-snapshot</url>
 		</repository>
+<!--		<repository>-->
+<!--			<id>SBB</id>-->
+<!--			<url>https://schweizerischebundesbahnen.bintray.com/simba.mvn</url>-->
+<!--		</repository>-->
 	</repositories>
 
 	<dependencies>
@@ -65,21 +69,26 @@
 			<version>4.12</version>
 		</dependency>
 
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>otfvis</artifactId>
 			<version>${matsim.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>taxi</artifactId>
-			<version>${matsim.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>av</artifactId>
-			<version>${matsim.version}</version>
-		</dependency> -->
+<!--		<dependency>-->
+<!--			<groupId>ch.sbb</groupId>-->
+<!--			<artifactId>matsim-sbb-extensions</artifactId>-->
+<!--			<version>12.11</version> &lt;!&ndash; replace this with latest available version &ndash;&gt;-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.matsim.contrib</groupId>-->
+<!--			<artifactId>taxi</artifactId>-->
+<!--			<version>${matsim.version}</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.matsim.contrib</groupId>-->
+<!--			<artifactId>av</artifactId>-->
+<!--			<version>${matsim.version}</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>drt</artifactId>

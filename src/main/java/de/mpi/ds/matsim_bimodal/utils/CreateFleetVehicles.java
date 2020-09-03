@@ -54,7 +54,7 @@ public class CreateFleetVehicles {
 	private static final Random random = MatsimRandom.getRandom();
 
 	private static final Path networkFile = Paths.get("scenarios/grid_model/network.xml");
-	private static final Path outputFile = Paths.get("scenarios/grid_model/fleetVehicles.xml");
+	private static final Path outputFile = Paths.get("scenarios/grid_model/drtvehicles.xml");
 
 	public static void main(String[] args) {
 

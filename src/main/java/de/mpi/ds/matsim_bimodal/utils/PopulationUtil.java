@@ -1,24 +1,19 @@
 package de.mpi.ds.matsim_bimodal.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
-import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationWriter;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.scenario.ScenarioUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * "P" has to do with "Potsdam" and "Z" with "Zurich", but P and Z are mostly
@@ -27,6 +22,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 public class PopulationUtil {
 
 	private PopulationUtil() {
+	}
+
+	public static void main(String... args) {
+		createPopulation("./output/population.xml", "./output/network.xml");
 	}
 
 	public static void createPopulation(String populationPath, String networkPath) {
@@ -45,8 +44,7 @@ public class PopulationUtil {
 		Network net = NetworkUtils.readNetwork(networkPath);
 		int i = 0;
 		for (Node node : net.getNodes().values()) {
-			zoneGeometries.put("home".concat(String.valueOf(i)), node.getCoord());
-			zoneGeometries.put("work".concat(String.valueOf(i)), node.getCoord());
+			zoneGeometries.put(String.valueOf(i), node.getCoord());
 			i++;
 		}
 	}
@@ -55,39 +53,37 @@ public class PopulationUtil {
 		Network net = NetworkUtils.readNetwork("./output/network.xml");
 		Random rand = new Random();
 		int trips = 100;
-		int h_id;
-		int w_id;
+		int orig_id;
+		int dest_id;
 		for (int j = 0; j < trips; j++) {
 			do {
-				h_id = rand.nextInt(net.getNodes().size());
-				w_id = rand.nextInt(net.getNodes().size());
-			} while (h_id == w_id);
-			generateHomeWorkHomeTrips("home".concat(String.valueOf(h_id)), "work".concat(String.valueOf(w_id)), 1, j,
-				zoneGeometries, population);
+				orig_id = rand.nextInt(net.getNodes().size());
+				dest_id = rand.nextInt(net.getNodes().size());
+			} while (orig_id == dest_id);
+			generateTrips(String.valueOf(orig_id), String.valueOf(dest_id), 1, j,
+					zoneGeometries, population);
 		}
 	}
 
-	private static void generateHomeWorkHomeTrips(String from, String to, int quantity, int passenger_id,
-					Map<String, Coord> zoneGeometries, Population population) {
+	private static void generateTrips(String from, String to, int quantity, int passenger_id,
+									  Map<String, Coord> zoneGeometries, Population population) {
 		for (int i=0; i<quantity; ++i) {
 			Coord source = zoneGeometries.get(from);
 			Coord sink = zoneGeometries.get(to);
-			Person person = population.getFactory().createPerson(createId(from, to, passenger_id+i, TransportMode.car));
+			Person person = population.getFactory().createPerson(createId(from, to, passenger_id+i, TransportMode.pt));
 			Plan plan = population.getFactory().createPlan();
-			Coord homeLocation = shoot(source);
-			Coord workLocation = shoot(sink);
-			plan.addActivity(createHome(homeLocation, population));
+			Coord sourceLocation = shoot(source);
+			Coord sinkLocation = shoot(sink);
+			plan.addActivity(createFirst(sourceLocation, population));
 			plan.addLeg(createDriveLeg(population));
-			plan.addActivity(createWork(workLocation, population));
-//			plan.addLeg(createDriveLeg());
-//			plan.addActivity(createHome(homeLocation));
+			plan.addActivity(createSecond(sinkLocation, population));
 			person.addPlan(plan);
 			population.addPerson(person);
 		}
 	}
 
 	private static Leg createDriveLeg(Population population) {
-		Leg leg = population.getFactory().createLeg(TransportMode.car);
+		Leg leg = population.getFactory().createLeg(TransportMode.pt);
 		return leg;
 	}
 
@@ -97,15 +93,15 @@ public class PopulationUtil {
 		return source;
 	}
 
-	private static Activity createWork(Coord workLocation, Population population) {
-		Activity activity = population.getFactory().createActivityFromCoord("work", workLocation);
+	private static Activity createSecond(Coord workLocation, Population population) {
+		Activity activity = population.getFactory().createActivityFromCoord("dummy", workLocation);
 		activity.setEndTime(24 * 60 * 60); // [s]
 		return activity;
 	}
 
-	private static Activity createHome(Coord homeLocation, Population population) {
+	private static Activity createFirst(Coord homeLocation, Population population) {
 		Random rand = new Random();
-		Activity activity = population.getFactory().createActivityFromCoord("home", homeLocation);
+		Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
 		activity.setEndTime(rand.nextInt(24 * 60 * 60)); // [s]
 		return activity;
 	}
