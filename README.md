@@ -13,7 +13,10 @@
 
 ## Scenarios
 1. **grid_model_pt**
-    - This scenario represents a public transport simulation on a 2d grid with 100 agents.
+    - This scenario represents a public transport simulation on a 2d grid with 100 agents train lines.
 ---
 2. **grid_model_drt**
-    - This scenario represents a simulation of demand responsive on a 2d grid with 100 agents and 10 transport vehicles.
+    - This scenario represents a simulation of demand responsive transport on a 2d grid with 100 agents and 10 transport vehicles.
+---
+3. **grid_model_bimodal**
+    - This scenario represents a simulation of demand responsive transport combined wit public transport on a 2d grid with 100 agents, 10 transport vehicles and train lines.

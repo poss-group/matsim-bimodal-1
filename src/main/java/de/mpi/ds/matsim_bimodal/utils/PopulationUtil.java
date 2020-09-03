@@ -71,6 +71,8 @@ public class PopulationUtil {
 			Coord source = zoneGeometries.get(from);
 			Coord sink = zoneGeometries.get(to);
 			Person person = population.getFactory().createPerson(createId(from, to, passenger_id+i, TransportMode.pt));
+			person.getCustomAttributes().put("hasLicense", "false");
+			person.getAttributes().putAttribute("hasLicense", "false" ) ;
 			Plan plan = population.getFactory().createPlan();
 			Coord sourceLocation = shoot(source);
 			Coord sinkLocation = shoot(sink);
