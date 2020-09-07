@@ -15,10 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-/**
- * "P" has to do with "Potsdam" and "Z" with "Zurich", but P and Z are mostly
- * used to show which classes belong together.
- */
 public class PopulationUtil {
 
 	private PopulationUtil() {
@@ -52,40 +48,60 @@ public class PopulationUtil {
 	private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population) {
 		Network net = NetworkUtils.readNetwork("./output/network.xml");
 		Random rand = new Random();
+		rand.setSeed(231494);
 		int trips = 100;
 		int orig_id;
 		int dest_id;
+		// Coord orig_coord;
+		// Coord dest_coord;
 		for (int j = 0; j < trips; j++) {
 			do {
 				orig_id = rand.nextInt(net.getNodes().size());
 				dest_id = rand.nextInt(net.getNodes().size());
 			} while (orig_id == dest_id);
-			generateTrips(String.valueOf(orig_id), String.valueOf(dest_id), 1, j,
-					zoneGeometries, population);
+			// // modulo cases only if agents should be placed on non pt nodes & next 2
+			// lines
+			// orig_coord = zoneGeometries.get(String.valueOf(orig_id));
+			// dest_coord = zoneGeometries.get(String.valueOf(dest_id));
+			// } while (orig_id == dest_id || orig_coord.getX() / 1000 % 2 == 1 ||
+			// orig_coord.getY() / 1000 % 2 == 1
+			// || dest_coord.getX() / 1000 % 2 == 1 || dest_coord.getY() / 1000 % 2 == 1);
+			generateTrips(String.valueOf(orig_id), String.valueOf(dest_id), 1, j, zoneGeometries, population);
 		}
 	}
 
 	private static void generateTrips(String from, String to, int quantity, int passenger_id,
-									  Map<String, Coord> zoneGeometries, Population population) {
-		for (int i=0; i<quantity; ++i) {
+			Map<String, Coord> zoneGeometries, Population population) {
+		for (int i = 0; i < quantity; ++i) {
 			Coord source = zoneGeometries.get(from);
 			Coord sink = zoneGeometries.get(to);
-			Person person = population.getFactory().createPerson(createId(from, to, passenger_id+i, TransportMode.pt));
-			person.getCustomAttributes().put("hasLicense", "false");
-			person.getAttributes().putAttribute("hasLicense", "false" ) ;
+			Person person = population.getFactory()
+					.createPerson(createId(from, to, passenger_id + i, TransportMode.pt));
+			// person.getCustomAttributes().put("hasLicense", "false");
+			person.getAttributes().putAttribute("hasLicense", "false");
 			Plan plan = population.getFactory().createPlan();
 			Coord sourceLocation = shoot(source);
 			Coord sinkLocation = shoot(sink);
+			Coord sourceTransferLocation = searchTransferLoc(sourceLocation, sinkLocation);
+			Coord sinkTransferLocation = searchTransferLoc(sinkLocation, sourceLocation);
 			plan.addActivity(createFirst(sourceLocation, population));
-			plan.addLeg(createDriveLeg(population));
+			if (!sourceLocation.equals(sourceTransferLocation)) {
+				plan.addLeg(createDriveLeg(population, TransportMode.drt));
+				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
+			}
+			plan.addLeg(createDriveLeg(population, TransportMode.pt));
+			if (!sinkLocation.equals(sinkTransferLocation)) {
+				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
+				plan.addLeg(createDriveLeg(population, TransportMode.drt));
+			}
 			plan.addActivity(createSecond(sinkLocation, population));
 			person.addPlan(plan);
 			population.addPerson(person);
 		}
 	}
 
-	private static Leg createDriveLeg(Population population) {
-		Leg leg = population.getFactory().createLeg(TransportMode.pt);
+	private static Leg createDriveLeg(Population population, String mode) {
+		Leg leg = population.getFactory().createLeg(mode);
 		return leg;
 	}
 
@@ -105,6 +121,31 @@ public class PopulationUtil {
 		Random rand = new Random();
 		Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
 		activity.setEndTime(rand.nextInt(24 * 60 * 60)); // [s]
+		return activity;
+	}
+
+	private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
+		double source_x = startLoc.getX();
+		double source_y = startLoc.getY();
+		double sink_x = targetLoc.getX();
+		double sink_y = targetLoc.getY();
+		double new_x = source_x;
+		double new_y = source_y;
+		// Random rand = new Random(); // TODO Gets new seed every time?
+		if (source_x / 1000 % 2 == 0 && source_y / 1000 % 2 == 0) {
+			// if (rand.nextInt(2) == 1) {
+			if (sink_x - source_y < sink_y - source_y) {
+				new_x = source_x + Math.signum(sink_x - source_x) * 1000;
+			} else {
+				new_y = source_y + Math.signum(sink_y - source_y) * 1000;
+			}
+		}
+		return new Coord(new_x, new_y);
+	}
+
+	private static Activity createDrtActivity(Coord location, Population population) {
+		Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
+		activity.setMaximumDuration(0);
 		return activity;
 	}
 

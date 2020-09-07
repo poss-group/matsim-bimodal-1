@@ -91,7 +91,7 @@ public class TransitScheduleUtil { // TODO: Make more generic
         Id<TransitRoute> r_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
         NetworkRoute networkRoute = createNetworkRoute(id_link_list, populationFactory);
         TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(r_id, networkRoute, transitRouteStopList, "train");
-        createDepartures(transitRoute, transitScheduleFactory, route_counter, 6 * 60 * 60, 20 * 60 * 60, 15 * 60);
+        createDepartures(transitRoute, transitScheduleFactory, route_counter, 0, 24*60*60, 15 * 60);
         return transitRoute;
     }
 

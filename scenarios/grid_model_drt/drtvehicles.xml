@@ -11,5 +11,4 @@
 	<vehicle id="drt_7" start_link="108_109" t_0="0.0" t_1="86400.0" capacity="4"/>
 	<vehicle id="drt_8" start_link="115_116" t_0="0.0" t_1="86400.0" capacity="4"/>
 	<vehicle id="drt_9" start_link="106_107" t_0="0.0" t_1="86400.0" capacity="4"/>
-	<vehicle id="drt_10" start_link="102_103" t_0="0.0" t_1="86400.0" capacity="4"/>
 </vehicles>
