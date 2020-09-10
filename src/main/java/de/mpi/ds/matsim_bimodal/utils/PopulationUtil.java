@@ -131,10 +131,8 @@ public class PopulationUtil {
 		double sink_y = targetLoc.getY();
 		double new_x = source_x;
 		double new_y = source_y;
-		// Random rand = new Random(); // TODO Gets new seed every time?
 		if (source_x / 1000 % 2 == 0 && source_y / 1000 % 2 == 0) {
-			// if (rand.nextInt(2) == 1) {
-			if (sink_x - source_y < sink_y - source_y) {
+			if (sink_x - source_x < sink_y - source_y && sink_x - source_x != 0) {
 				new_x = source_x + Math.signum(sink_x - source_x) * 1000;
 			} else {
 				new_y = source_y + Math.signum(sink_y - source_y) * 1000;

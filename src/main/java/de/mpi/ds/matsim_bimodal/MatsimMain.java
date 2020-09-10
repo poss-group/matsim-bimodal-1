@@ -1,15 +1,16 @@
 package de.mpi.ds.matsim_bimodal;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.matsim_bimodal.drt_plan_modification.DrtPlanModifier;
+import de.mpi.ds.matsim_bimodal.drt_plan_modification.DrtPlanModifierConfigGroup;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 public class MatsimMain {
@@ -18,7 +19,8 @@ public class MatsimMain {
 
 	public static void main(String[] args) {
         LOG.info("Starting matsim simulation...");
-        Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());
+        Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup(), new DrtPlanModifierConfigGroup());
+//        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, false);
@@ -28,8 +30,9 @@ public class MatsimMain {
 //		Scenario scenario = ScenarioUtils.loadScenario(config);
 //		Controler controler = new Controler(scenario);
 
-		// This is the important line:
-		controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
+//        controler.addControlerListener(new MyListener());
 
 		controler.run();
 		LOG.info("Simulation finished...");

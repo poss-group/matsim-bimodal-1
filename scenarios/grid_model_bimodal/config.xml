@@ -2,7 +2,9 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 
 <config>
-	<!-- TODO: configure so that drt only goes to next station -->
+    <module name="drtPlanModifier">
+		<param name="modifyPlans" value="true"/>
+	</module>
 
 	<module name="global">
 		<param name="randomSeed" value="4392" />
@@ -15,7 +17,7 @@
 	</module>
 
 	<module name="plans">
-		<param name="inputPlansFile" value="population_man_bimodal.xml" />
+		<param name="inputPlansFile" value="population.xml" />
 	</module>
 
 	<module name="controler">
