@@ -10,7 +10,7 @@
 
 	<properties>
 		<matsim.version>13.0-SNAPSHOT</matsim.version>
-		<mainClass>de.mpi.ds.matsim_bimodal.Main</mainClass>
+		<mainClass>de.mpi.ds.matsim_bimodal.RunGUI</mainClass>
 	</properties>
 
 

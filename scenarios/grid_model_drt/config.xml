@@ -5,6 +5,7 @@
 	<module name="global">
 		<param name="randomSeed" value="4711" />
 		<param name="coordinateSystem" value="Atlantis" />
+		<param name="numberOfThreads" value="4" />
 	</module>
 
 	<module name="network">
@@ -24,7 +25,7 @@
 
 	<module name="planCalcScore" >
 		<parameterset type="scoringParameters" >
-			<param name="waitingPt" value="-6.0" />
+			<param name="waitingPt" value="-1" />
 			<parameterset type="activityParams" >
 				<param name="activityType" value="dummy" />
 				<param name="scoringThisActivityAtAll" value="true" />
@@ -71,12 +72,13 @@
 
 	<module name="qsim">
 		<param name="simStarttimeInterpretation" value="onlyUseStarttime" />
+		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />
 		<param name="startTime" value="00:00:00"/>
 		<param name="endTime" value="24:00:00"/>
 	</module>
 
 	<module name="strategy">
-		<param name="maxAgentPlanMemorySize" value="5"/>
+		<param name="maxAgentPlanMemorySize" value="3"/>
 
 		<parameterset type="strategysettings">
 			<param name="strategyName" value="ChangeTripMode"/>
@@ -118,13 +120,13 @@
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
 			<param name="writeDetailedCustomerStats" value="true"/>
 
-			<parameterset type="minCostFlowRebalancing">
-				<param name="targetAlpha" value="0.5"/>
-				<param name="targetBeta" value="0.5"/>
-				<param name="cellSize" value="2000"/>
-				<param name="interval" value="1800"/>
+<!--			<parameterset type="minCostFlowRebalancing">-->
+<!--				<param name="targetAlpha" value="0.5"/>-->
+<!--				<param name="targetBeta" value="0.5"/>-->
+<!--				<param name="cellSize" value="2000"/>-->
+<!--				<param name="interval" value="1800"/>-->
 
-			</parameterset>
+<!--			</parameterset>-->
 		</parameterset>
 	</module>
 

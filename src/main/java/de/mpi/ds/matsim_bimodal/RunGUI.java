@@ -6,9 +6,9 @@ import org.matsim.run.gui.Gui;
 import de.mpi.ds.matsim_bimodal.utils.NetworkUtil;
 import de.mpi.ds.matsim_bimodal.utils.PopulationUtil;
 
-public class Main {
+public class RunGUI {
 
-    private static final Logger LOG = Logger.getLogger(Main.class.getName());
+    private static final Logger LOG = Logger.getLogger(RunGUI.class.getName());
 
     public static void main(String... args) {
         if (args.length == 2) {
