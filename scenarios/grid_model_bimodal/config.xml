@@ -89,7 +89,7 @@
 	</module>
 
 	<module name="transit">
-		<param name="transitScheduleFile" value="transitScheduleNew.xml"/>
+		<param name="transitScheduleFile" value="transitSchedule.xml"/>
 		<param name="vehiclesFile" value="transitVehicles.xml"/>
 
 		<!--otherwise pt legs would be teleported-->
