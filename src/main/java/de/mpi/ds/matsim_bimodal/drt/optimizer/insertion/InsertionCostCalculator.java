@@ -19,6 +19,7 @@
 
 package de.mpi.ds.matsim_bimodal.drt.optimizer.insertion;
 
+import com.google.inject.Inject;
 import de.mpi.ds.matsim_bimodal.drt.optimizer.VehicleData;
 import de.mpi.ds.matsim_bimodal.drt.optimizer.VehicleData.Stop;
 import de.mpi.ds.matsim_bimodal.drt.passenger.DrtRequest;
@@ -27,13 +28,15 @@ import de.mpi.ds.matsim_bimodal.drt.routing.DefaultDrtRouteUpdater;
 import de.mpi.ds.matsim_bimodal.drt.routing.DrtRouteCreator;
 import de.mpi.ds.matsim_bimodal.drt.run.DrtConfigGroup;
 import de.mpi.ds.matsim_bimodal.drt.schedule.DrtStayTask;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.util.distance.DistanceUtils;
+import org.matsim.core.config.Config;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 
 import java.util.function.DoubleSupplier;
@@ -45,8 +48,6 @@ import static de.mpi.ds.matsim_bimodal.drt.schedule.DrtTaskBaseType.STOP;
  * @author michalm
  */
 public class InsertionCostCalculator<D> {
-    private final static Logger LOG = Logger.getLogger(de.mpi.ds.matsim_bimodal.drt.optimizer.insertion.InsertionCostCalculator.class.getName());
-    private final double DETOUR_DELTA = 3.0;
 
     public interface PenaltyCalculator {
         double calcPenalty(double maxWaitTimeViolation, double maxTravelTimeViolation);
@@ -71,6 +72,17 @@ public class InsertionCostCalculator<D> {
                     + MAX_TRAVEL_TIME_VIOLATION_PENALTY * maxTravelTimeViolation;
         }
     }
+
+    private final static Logger LOG = Logger.getLogger(de.mpi.ds.matsim_bimodal.drt.optimizer.insertion.InsertionCostCalculator.class.getName());
+    private final static double DETOUR_DELTA = 1.5;
+//    @Inject
+//    DvrpOnlineTravelTimeEstimator dvrpOnlineTravelTimeEstimator;
+//    @Inject
+//    TripRouter tripRouter;
+//    @Inject
+//    GenericRouteCreator genericRouteCreator;
+//    @Inject
+//    Scenario scenario;
 
     public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE / 2;
 
@@ -113,22 +125,23 @@ public class InsertionCostCalculator<D> {
     public double calculate(DrtRequest drtRequest, InsertionWithDetourData<D> insertion) {
         //TODO precompute time slacks for each stop to filter out even more infeasible insertions ???????????
 
-        double pickupDetourTimeLoss = calculatePickupDetourTimeLoss(drtRequest, insertion);
-        double dropoffDetourTimeLoss = calculateDropoffDetourTimeLoss(drtRequest, insertion);
+        double[] toFromPickupToFromDropoff = {0,0,0,0};
+        double pickupDetourTimeLoss = calculatePickupDetourTimeLoss(drtRequest, insertion, toFromPickupToFromDropoff);
+        double dropoffDetourTimeLoss = calculateDropoffDetourTimeLoss(drtRequest, insertion, toFromPickupToFromDropoff);
         // the pickupTimeLoss is needed for stops that suffer only that one, while the sum of both will be suffered by
         // the stops after the dropoff stop. kai, nov'18
         // The computation is complicated; presumably, it takes care of this.  kai, nov'18
 
         // this is what we want to minimise
         double totalTimeLoss = pickupDetourTimeLoss + dropoffDetourTimeLoss;
-        if (isHardConstraintsViolated(insertion, pickupDetourTimeLoss, totalTimeLoss, drtRequest)) {
+        if (isHardConstraintsViolated(insertion, pickupDetourTimeLoss, totalTimeLoss, drtRequest, toFromPickupToFromDropoff)) {
             return INFEASIBLE_SOLUTION_COST;
         }
 
         return totalTimeLoss + calcSoftConstraintPenalty(drtRequest, insertion, pickupDetourTimeLoss);
     }
 
-    double calculatePickupDetourTimeLoss(DrtRequest drtRequest, InsertionWithDetourData<D> insertion) {
+    double calculatePickupDetourTimeLoss(DrtRequest drtRequest, InsertionWithDetourData<D> insertion, double[] toFromPickupToFromDropoff) {
         VehicleData.Entry vEntry = insertion.getVehicleEntry();
         final int pickupIdx = insertion.getPickup().index;
         final int dropoffIdx = insertion.getDropoff().index;
@@ -155,6 +168,7 @@ public class InsertionCostCalculator<D> {
             // PICKUP->DROPOFF
             // no extra drive to pickup and stop (==> toPickupTT == 0 and stopDuration == 0)
             double fromPickupTT = detourTime.applyAsDouble(insertion.getDetourFromPickup());
+            toFromPickupToFromDropoff[1] = fromPickupTT;
             double replacedDriveTT = calculateReplacedDriveDuration(vEntry, pickupIdx);
             return fromPickupTT - replacedDriveTT;
         }
@@ -162,13 +176,15 @@ public class InsertionCostCalculator<D> {
 //		double pickupEllipseTT = calculatePickupDropoffEllipseCondition(insertion);
         double toPickupTT = detourTime.applyAsDouble(insertion.getDetourToPickup());
         double fromPickupTT = detourTime.applyAsDouble(insertion.getDetourFromPickup());
+        toFromPickupToFromDropoff[0] = toPickupTT;
+        toFromPickupToFromDropoff[1] = fromPickupTT;
         double replacedDriveTT = pickupIdx == dropoffIdx // PICKUP->DROPOFF ?
                 ? 0 // no drive following the pickup is replaced (only the one following the dropoff)
                 : calculateReplacedDriveDuration(vEntry, pickupIdx);
         return toPickupTT + stopDuration + fromPickupTT - replacedDriveTT;
     }
 
-    double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, InsertionWithDetourData<D> insertion) {
+    double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, InsertionWithDetourData<D> insertion, double[] toFromPickupToFromDropoff) {
         VehicleData.Entry vEntry = insertion.getVehicleEntry();
         final int pickupIdx = insertion.getPickup().index;
         final int dropoffIdx = insertion.getDropoff().index;
@@ -192,6 +208,8 @@ public class InsertionCostCalculator<D> {
         double fromDropoffTT = dropoffIdx == vEntry.stops.size() // DROPOFF->STAY ?
                 ? 0 //
                 : detourTime.applyAsDouble(insertion.getDetourFromDropoff());
+        toFromPickupToFromDropoff[2] = toDropoffTT;
+        toFromPickupToFromDropoff[3] = fromDropoffTT;
         double replacedDriveTT = dropoffIdx == pickupIdx // PICKUP->DROPOFF ?
                 ? 0 // replacedDriveTT already taken into account in pickupDetourTimeLoss
                 : calculateReplacedDriveDuration(vEntry, dropoffIdx);
@@ -209,15 +227,21 @@ public class InsertionCostCalculator<D> {
     }
 
     private boolean isHardConstraintsViolated(InsertionWithDetourData<?> insertion, double pickupDetourTimeLoss,
-                                              double totalTimeLoss, DrtRequest drtRequest) {
+                                              double totalTimeLoss, DrtRequest drtRequest, double[] toFromPickupToFromDropoff) {
         VehicleData.Entry vEntry = insertion.getVehicleEntry();
         final int pickupIdx = insertion.getPickup().index;
         final int dropoffIdx = insertion.getDropoff().index;
 
+//        RouteFactories routeFactories = scenario.getPopulation().getFactory().getRouteFactories();
+//        Config config = scenario.getConfig();
+//        Route directRoute = genericRouteCreator.createRoute(drtRequest.getSubmissionTime(), drtRequest.getFromLink(), drtRequest.getToLink(), routeFactories);
+//        double directTravelTime = directRoute.getTravelTime().seconds();
+//        LOG.warn("DirectTravelTime: "+ directTravelTime);
         // this is what we cannot violate
         for (int s = pickupIdx; s < dropoffIdx; s++) {
             Stop stop = vEntry.stops.get(s);
             // all stops after pickup but still before dropoff are delayed by pickupDetourTimeLoss
+//            totalTravelTime += stop.getDepartureTime();
             if (stop.task.getBeginTime() + pickupDetourTimeLoss > stop.latestArrivalTime //
                     // (stop.latestArrivalTime is the latest arrival time according to alpha*t_direct + beta
                     // So we are checking if we are now larger than that.)
@@ -229,6 +253,9 @@ public class InsertionCostCalculator<D> {
                 return true;
             }
         }
+//        if (totalTravelTime > drtRequest.directTime) {
+//            ...
+//        }
 
         // ... now the same for everything after the considered dropoff:
 

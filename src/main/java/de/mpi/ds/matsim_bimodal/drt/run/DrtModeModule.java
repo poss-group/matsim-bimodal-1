@@ -23,6 +23,7 @@ package de.mpi.ds.matsim_bimodal.drt.run;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -64,6 +65,7 @@ import java.util.List;
 public final class DrtModeModule extends AbstractDvrpModeModule {
 
 	private final DrtConfigGroup drtCfg;
+	private final static Logger LOG = Logger.getLogger(DrtModeModule.class.getName());
 
 	public DrtModeModule(DrtConfigGroup drtCfg) {
 		super(drtCfg.getMode());
@@ -89,8 +91,10 @@ public final class DrtModeModule extends AbstractDvrpModeModule {
 				throw new RuntimeException(
 						"Unsupported rebalancingStrategyParams: " + rebalancingParams.getRebalancingStrategyParams());
 			}
+			LOG.info("Rebalancing strategy installed");
 		} else {
 			bindModal(RebalancingStrategy.class).to(NoRebalancingStrategy.class).asEagerSingleton();
+			LOG.info("No rebalancing strategy installed");
 		}
 
 		//this is a customised version of DvrpModeRoutingModule.install()

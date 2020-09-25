@@ -43,7 +43,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         controler.addOverridingModule(new SwissRailRaptorModule());
-//        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
+        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
         controler.run();
     }
