@@ -1,8 +1,6 @@
 package de.mpi.ds.matsim_bimodal.drt_plan_modification;
 
-import com.google.inject.Inject;
 import org.apache.log4j.Logger;
-import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -11,22 +9,64 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
-import org.matsim.core.controler.events.IterationStartsEvent;
+import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.StartupEvent;
-import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.controler.listener.StartupListener;
 
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
 
+    private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
+        double source_x = startLoc.getX();
+        double source_y = startLoc.getY();
+        double sink_x = targetLoc.getX();
+        double sink_y = targetLoc.getY();
+        double new_x = source_x;
+        double new_y = source_y;
+        Random rnd = new Random();
+        rnd.setSeed(12342);
+        //Could also ask if sink_x/y - source_x/y == 1
+        if (sink_y - source_y == 0) {
+            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
+        } else if (sink_x - source_x == 0) {
+            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
+        } else if (rnd.nextBoolean()) {
+            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
+        } else {
+            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
+        }
+        return new Coord(new_x, new_y);
+    }
+
+    private static Node searchTransferNode(Node fromNode, Node toNode) {
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(fromNode);
+        while (!queue.isEmpty()) {
+            Node current = queue.remove();
+            Collection<? extends Link> outLinks = current.getOutLinks().values();
+            if (outLinks.stream().anyMatch(l -> l.getAllowedModes().contains("train"))) {
+                return current;
+            }
+            // Add closest connected nodes to queue (sorted by their distance to the toNode)
+            queue.addAll(outLinks.stream().map(Link::getToNode)
+                    .sorted(Comparator.comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
+                    .collect(Collectors.toList()));
+        }
+        return null;
+    }
+
+    private static Activity createDummyActivity(Coord location, Population population) {
+        Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
+        activity.setMaximumDuration(0);
+        return activity;
+    }
+
     @Override
     public void notifyStartup(StartupEvent event) {
         LOG.info("Modifying plans...");
-        LOG.warn("This module only supports grid networks with x/y coordinates spacing 1000 and pt available on x or y=n*1000 with n odd");
         Scenario sc = event.getServices().getScenario();
         Network network = sc.getNetwork();
         Map<Coord, Id<Node>> coordToNode = network.getNodes().entrySet().stream().collect(
@@ -45,24 +85,25 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         lastAct = (Activity) el;
                     }
                 }
-                Coord dummy_first_coord = null;
-                Coord dummy_last_coord = null;
+                Coord dummyFirstCoord = null;
+                Coord dummyLastCoord = null;
                 assert firstAct != null;
                 assert lastAct != null;
-//                LOG.warn(network.getLinks().get(coordToLink.get(firstAct.getCoord())).getAllowedModes());
-//                if (!network.getNodes().get(coordToNode.get(firstAct.getCoord())).getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("pt"))) {
-//                    dummy_first_coord = searchTransferLoc(firstAct.getCoord(), lastAct.getCoord());
-//                }
-//                if (!network.getNodes().get(coordToNode.get(lastAct.getCoord())).getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("pt"))) {
-//                    dummy_last_coord = searchTransferLoc(lastAct.getCoord(), firstAct.getCoord());
-//                }
-                if (firstAct.getCoord().getX() / 1000 % 2 == 0 && firstAct.getCoord().getY() / 1000 % 2 == 0) {
-                    dummy_first_coord = searchTransferLoc(firstAct.getCoord(), lastAct.getCoord());
+                Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
+                Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
+                if (!firstNode.getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("train"))) {
+//                    dummyFirstCoord = searchTransferLoc(firstAct.getCoord(), lastAct.getCoord());
+                    Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
+                    assert dummyFirstNode != null;
+                    dummyFirstCoord = dummyFirstNode.getCoord();
                 }
-                if (lastAct.getCoord().getX() / 1000 % 2 == 0 && lastAct.getCoord().getY() / 1000 % 2 == 0) {
-                    dummy_last_coord = searchTransferLoc(lastAct.getCoord(), firstAct.getCoord());
+                if (!lastNode.getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("train"))) {
+//                    dummyLastCoord = searchTransferLoc(lastAct.getCoord(), firstAct.getCoord());
+                    Node dummyLastNode = searchTransferNode(lastNode, firstNode);
+                    assert dummyLastNode != null;
+                    dummyLastCoord = dummyLastNode.getCoord();
                 }
-                insertTransferStops(plan, sc.getPopulation(), dummy_first_coord, dummy_last_coord);
+                insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord);
             }
         }
         // To get resulting plans in output directory
@@ -87,34 +128,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 counter++;
             }
         }
-    }
-
-    private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
-        double source_x = startLoc.getX();
-        double source_y = startLoc.getY();
-        double sink_x = targetLoc.getX();
-        double sink_y = targetLoc.getY();
-        double new_x = source_x;
-        double new_y = source_y;
-        Random rnd = new Random();
-        rnd.setSeed(12342);
-        //Could also ask if sink_x/y - source_x/y == 1
-        if (sink_y - source_y == 0) {
-            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
-        } else if (sink_x - source_x == 0) {
-            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
-        } else if (rnd.nextBoolean()) {
-            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
-        } else {
-            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
-        }
-        return new Coord(new_x, new_y);
-    }
-
-    private static Activity createDummyActivity(Coord location, Population population) {
-        Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
-        activity.setMaximumDuration(0);
-        return activity;
     }
 
 //    @Override
