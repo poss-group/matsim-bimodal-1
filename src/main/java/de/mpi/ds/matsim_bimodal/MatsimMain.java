@@ -3,12 +3,11 @@ package de.mpi.ds.matsim_bimodal;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.matsim_bimodal.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.matsim_bimodal.drt_plan_modification.DrtPlanModifierConfigGroup;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 //import org.matsim.contrib.drt.run.DrtControlerCreator;
 //import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import de.mpi.ds.matsim_bimodal.drt.run.DrtControlerCreator;
-import de.mpi.ds.matsim_bimodal.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.contrib.my_drt.run.DrtControlerCreator;
+import org.matsim.contrib.my_drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -24,7 +23,7 @@ public class MatsimMain {
 	    LOG.info("Reading config");
         Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup(), new DrtPlanModifierConfigGroup());
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-//        config.global().setNumberOfThreads(1);
+        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
         run(config, false);
