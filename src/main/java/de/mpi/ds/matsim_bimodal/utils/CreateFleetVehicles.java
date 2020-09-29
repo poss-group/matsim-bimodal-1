@@ -47,14 +47,14 @@ public class CreateFleetVehicles {
 	 * Adjust these variables and paths to your need.
 	 */
 
-	private static final int numberOfVehicles = 100;
+	private static final int numberOfVehicles = 25;
 	private static final int seatsPerVehicle = 4; //this is important for DRT, value is not used by taxi
 	private static final double operationStartTime = 0;
 	private static final double operationEndTime = 24 * 60 * 60; //24h
 	private static final Random random = MatsimRandom.getRandom();
 
-	private static final Path networkFile = Paths.get("scenarios/grid_model/network.xml");
-	private static final Path outputFile = Paths.get("scenarios/grid_model/drtvehicles.xml");
+	private static final Path networkFile = Paths.get("output/network.xml");
+	private static final Path outputFile = Paths.get("output/drtvehicles.xml");
 
 	public static void main(String[] args) {
 

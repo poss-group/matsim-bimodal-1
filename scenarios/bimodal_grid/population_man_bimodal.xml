@@ -1,0 +1,1918 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE population SYSTEM "http://www.matsim.org/files/dtd/population_v6.dtd">
+
+<population>
+
+
+
+<!-- ====================================================================== -->
+
+	<person id="pt_0_82_52">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="0.0" end_time="17:26:33" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="0.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_102_105_8">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="5000.0" end_time="15:09:20" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_103_17_95">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="6000.0" end_time="02:03:24" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_103_61_27">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="6000.0" end_time="09:17:16" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_106_31_94">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="9000.0" end_time="22:00:29" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_108_93_3">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="0.0" end_time="04:34:25" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="0.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_109_101_5">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="1000.0" end_time="10:14:02" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_10_33_58">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="8000.0" end_time="23:13:38" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="0.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_112_4_19">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="00:49:54" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_112_96_54">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="07:55:45" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_113_112_32">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="4000.0" end_time="19:58:28" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_114_21_82">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="5000.0" end_time="10:19:22" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_118_12_39">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="8000.0" y="9000.0" end_time="21:50:23" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_11_54_47">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="9000.0" end_time="16:04:43" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_13_35_50">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="0.0" end_time="16:30:15" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_13_96_24">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="0.0" end_time="16:31:47" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_14_117_38">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="0.0" end_time="06:36:56" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="1000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_16_71_85">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="2000.0" end_time="04:29:23" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="9000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_16_99_80">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="2000.0" end_time="21:44:09" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="0.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_17_24_56">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="3000.0" end_time="22:01:29" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_18_16_49">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="4000.0" end_time="13:48:18" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_1_103_42">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="1000.0" end_time="02:43:30" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_20_15_29">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="6000.0" end_time="11:45:26" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="5000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_20_35_60">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="6000.0" end_time="08:24:43" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="6000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_22_5_61">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="8000.0" end_time="02:21:17" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_23_52_75">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="9000.0" end_time="08:32:09" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_23_86_33">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="10000.0" y="9000.0" end_time="14:49:13" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_24_13_87">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="1000.0" end_time="07:06:53" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_26_114_28">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="2000.0" end_time="05:55:44" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="5000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_27_112_78">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="3000.0" end_time="22:17:36" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_28_111_67">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="4000.0" end_time="21:01:35" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_29_68_25">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="5000.0" end_time="04:51:07" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_29_79_26">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="5000.0" end_time="04:17:15" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_2_11_79">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="10000.0" end_time="10:32:08" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="9000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_31_72_48">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="7000.0" end_time="04:04:08" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_32_64_72">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="8000.0" end_time="02:31:49" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="4000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_32_6_66">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="8000.0" end_time="18:02:04" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_33_47_74">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="2000.0" end_time="02:03:25" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="10000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="2000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_33_61_22">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="2000.0" end_time="17:06:14" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="1000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_34_30_96">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="9000.0" end_time="21:40:02" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_35_12_93">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="10000.0" end_time="20:34:51" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_35_24_98">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="1000.0" y="10000.0" end_time="00:56:52" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_37_2_23">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="1000.0" end_time="15:45:21" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="0.0" y="9000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_39_37_30">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="3000.0" end_time="23:07:57" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="2000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_39_64_13">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="3000.0" end_time="13:04:06" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="4000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_41_28_34">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="5000.0" end_time="15:58:29" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_43_105_4">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="7000.0" end_time="01:32:32" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_43_72_36">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="2000.0" y="7000.0" end_time="20:06:41" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_48_54_31">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="0.0" end_time="03:14:03" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_48_78_57">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="0.0" end_time="22:20:26" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="5000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_49_119_59">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="1000.0" end_time="18:48:17" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="9000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_49_50_71">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="1000.0" end_time="23:23:10" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_4_73_46">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="2000.0" end_time="16:18:04" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_4_87_62">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="2000.0" end_time="04:04:59" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_57_119_81">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="8000.0" end_time="07:46:20" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="10000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_57_20_64">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="8000.0" end_time="11:57:03" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="6000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_58_81_15">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="9000.0" end_time="10:23:28" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_59_24_69">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="10000.0" end_time="23:34:04" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_59_96_73">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="3000.0" y="10000.0" end_time="20:59:13" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_5_107_76">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="3000.0" end_time="09:32:21" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="10000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_5_20_84">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="3000.0" end_time="13:43:42" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="5000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_5_28_97">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="3000.0" end_time="06:48:39" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_5_46_10">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="3000.0" end_time="06:10:15" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="2000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_60_58_63">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="0.0" end_time="02:29:11" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="0.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_61_14_11">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="1000.0" end_time="03:54:48" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="1000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_61_85_44">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="1000.0" end_time="09:44:52" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_64_112_17">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="4000.0" end_time="15:12:33" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_64_11_6">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="4000.0" end_time="13:21:26" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="5000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_65_68_45">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="5000.0" end_time="12:56:42" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_68_92_83">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="7000.0" end_time="03:45:06" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_69_16_70">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="8000.0" end_time="11:13:49" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_71_100_40">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="4000.0" y="10000.0" end_time="07:17:51" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="9000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_72_116_99">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="0.0" end_time="19:51:16" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_73_54_7">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="1000.0" end_time="02:04:27" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_73_85_92">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="1000.0" end_time="01:03:12" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_74_54_91">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="2000.0" end_time="17:57:01" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_74_77_89">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="2000.0" end_time="01:02:40" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="0.0" y="5000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="6000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_75_0_16">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="3000.0" end_time="02:41:08" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="0.0" y="1000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_78_102_77">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="5000.0" end_time="22:29:51" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="5000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_79_101_14">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="6000.0" end_time="12:21:40" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_7_45_68">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="5000.0" end_time="00:01:01" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="2000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="2000.0" y="8000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_7_92_55">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="5000.0" end_time="10:52:29" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_80_109_37">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="7000.0" end_time="07:16:45" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_81_53_18">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="8000.0" end_time="02:34:38" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="5000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_81_86_43">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="8000.0" end_time="14:32:32" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_82_17_12">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="9000.0" end_time="01:20:35" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_82_86_53">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="9000.0" end_time="03:42:09" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="2000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_83_96_90">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="5000.0" y="10000.0" end_time="22:59:04" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_84_52_65">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="6000.0" y="0.0" end_time="15:22:42" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="0.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_8_116_20">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="6000.0" end_time="16:37:59" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="7000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_91_26_1">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="6000.0" y="6000.0" end_time="09:55:08" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="6000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="1000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_93_112_21">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="6000.0" y="8000.0" end_time="00:37:32" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="6000.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_96_111_2">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="0.0" end_time="10:34:45" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="1000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_96_3_88">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="0.0" end_time="10:53:02" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="1000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_96_82_9">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="7000.0" y="0.0" end_time="23:26:07" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="5000.0" y="9000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_99_18_0">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="8000.0" end_time="11:05:44" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="4000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="10000.0" y="4000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_99_60_41">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="8000.0" end_time="06:32:54" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="3000.0" y="0.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="4000.0" y="0.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_99_7_86">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="8000.0" end_time="15:55:40" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="9000.0" y="5000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_99_98_51">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="0.0" y="8000.0" end_time="17:48:07" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="0.0" y="7000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="7000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+	<person id="pt_9_111_35">
+		<attributes>
+			<attribute name="hasLicense" class="java.lang.String">false</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="dummy" x="9000.0" y="7000.0" end_time="14:30:56" >
+			</activity>
+			<leg mode="pt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="3000.0" max_dur="00:00:00" >
+			</activity>
+			<leg mode="drt">
+			</leg>
+			<activity type="dummy" x="8000.0" y="2000.0" end_time="24:00:00" >
+			</activity>
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+</population>

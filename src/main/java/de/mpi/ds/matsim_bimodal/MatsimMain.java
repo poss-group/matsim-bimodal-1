@@ -23,7 +23,7 @@ public class MatsimMain {
 	    LOG.info("Reading config");
         Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup(), new DrtPlanModifierConfigGroup());
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-        config.global().setNumberOfThreads(1);
+//        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
         run(config, false);

@@ -49,7 +49,7 @@ public class PopulationUtil {
 		Network net = NetworkUtils.readNetwork("./output/network.xml");
 		Random rand = new Random();
 		rand.setSeed(231494);
-		int trips = 100;
+		int trips = 1000;
 		int orig_id;
 		int dest_id;
 		// Coord orig_coord;
@@ -82,18 +82,18 @@ public class PopulationUtil {
 			Plan plan = population.getFactory().createPlan();
 			Coord sourceLocation = shoot(source);
 			Coord sinkLocation = shoot(sink);
-			Coord sourceTransferLocation = searchTransferLoc(sourceLocation, sinkLocation);
-			Coord sinkTransferLocation = searchTransferLoc(sinkLocation, sourceLocation);
+//			Coord sourceTransferLocation = searchTransferLoc(sourceLocation, sinkLocation);
+//			Coord sinkTransferLocation = searchTransferLoc(sinkLocation, sourceLocation);
 			plan.addActivity(createFirst(sourceLocation, population));
-			if (!sourceLocation.equals(sourceTransferLocation)) {
-				plan.addLeg(createDriveLeg(population, TransportMode.drt));
-				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
-			}
+//			if (!sourceLocation.equals(sourceTransferLocation)) {
+//				plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
+//			}
 			plan.addLeg(createDriveLeg(population, TransportMode.pt));
-			if (!sinkLocation.equals(sinkTransferLocation)) {
-				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
-				plan.addLeg(createDriveLeg(population, TransportMode.drt));
-			}
+//			if (!sinkLocation.equals(sinkTransferLocation)) {
+//				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
+//				plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//			}
 			plan.addActivity(createSecond(sinkLocation, population));
 			person.addPlan(plan);
 			population.addPerson(person);
@@ -148,6 +148,6 @@ public class PopulationUtil {
 	}
 
 	private static Id<Person> createId(String source, String sink, int i, String transportMode) {
-		return Id.create(transportMode + "_" + source + "_" + sink + "_" + i, Person.class);
+		return Id.create(source + "_" + sink + "_" + i, Person.class);
 	}
 }

@@ -59,13 +59,13 @@ public class TransitScheduleUtil { // TODO: Make more generic
     private static void createLines(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule, PopulationFactory populationFactory, boolean vertical, int[] counter) {
         int route_counter = counter[0];
         int stop_counter = counter[1];
-        for (int i = 1; i < 10; i += 2) {
+        for (int i = 1; i < 100; i += 10) { //TODO make generic
             TransitLine transitLine = transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
             List<TransitRouteStop> transitRouteStopList = new ArrayList<>();
             List<Id<Link>> id_link_list = new ArrayList<>();
-            for (int k = 0; k < 20; k++) {
-                int j = -Math.abs(k - 10) + 10; // counting 0..10..1
-                boolean forward = k < 10; // forward true for counting 0..9; forward false for 10..1
+            for (int k = 0; k < 200; k++) { //TODO generic
+                int j = -Math.abs(k - 100) + 100; // counting 0..10..1 TODO generic
+                boolean forward = k < 100; // forward true for counting 0..9; forward false for 10..1
                 TransitStopFacility transitStopFacility = null;
                 transitStopFacility = createTransitStop(stop_counter, id_link_list, transitScheduleFactory, i, j, forward, vertical);
 
@@ -104,20 +104,20 @@ public class TransitScheduleUtil { // TODO: Make more generic
 
         if (vertical) {
             if (forward) {
-                target = i * 11 + j + 1;
+                target = i * 101 + j + 1;
             } else {
-                target = i * 11 + j - 1;
+                target = i * 101 + j - 1;
             }
-            link_id = String.valueOf(i * 11 + j).concat("_").concat(String.valueOf(target));
-            transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id, new Coord(i * 1000, j * 1000), false);
+            link_id = String.valueOf(i * 101 + j).concat("_").concat(String.valueOf(target));
+            transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id, new Coord(i * 100, j * 100), false);
         } else {
             if (forward) {
-                target = (j + 1) * 11 + i;
+                target = (j + 1) * 101 + i;
             } else {
-                target = (j - 1) * 11 + i;
+                target = (j - 1) * 101 + i;
             }
-            link_id = String.valueOf(j * 11 + i).concat("_").concat(String.valueOf(target));
-            transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id, new Coord(j * 1000, i * 1000), false);
+            link_id = String.valueOf(j * 101 + i).concat("_").concat(String.valueOf(target));
+            transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id, new Coord(j * 100, i * 100), false);
         }
 
         transitStopFacility.setLinkId(Id.createLinkId(link_id));

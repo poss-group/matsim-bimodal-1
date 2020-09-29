@@ -74,6 +74,7 @@ public class InsertionCostCalculator<D> {
 
     private final static Logger LOG = Logger.getLogger(InsertionCostCalculator.class.getName());
     private final static double DETOUR_DELTA = 1.5;
+    private final static double RELATIVE_DELIVERY_DELTA = 3;
 
     public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE / 2;
 
@@ -275,7 +276,7 @@ public class InsertionCostCalculator<D> {
 
         // Comparing direct and indirect traveltime for current request
 //        LOG.warn("detourTravelTime: " + detourTravelTime +"\ndirectTravelTime: " + directTravelTime); // TODO: direct times shorter than indirect ones??
-        if (detourTravelTime > 3*directTravelTime) {
+        if (detourTravelTime > RELATIVE_DELIVERY_DELTA*directTravelTime) {
 //            LOG.warn("relative_delivery_delay_constraint violated");
             return true;
         }

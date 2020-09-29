@@ -42,7 +42,7 @@ public class NetworkUtil {
     // capacity at all links
     private static final long CAP_MAIN = 10; // [veh/h]
     // link length for all links
-    private static final long LINK_LENGTH = 1000; // [m]
+    private static final long LINK_LENGTH = 100; // [m]
     // link freespeed for all links
     private static final double FREE_SPEED = 7.5;
 
@@ -58,8 +58,8 @@ public class NetworkUtil {
         Network net = NetworkUtils.createNetwork();
         NetworkFactory fac = net.getFactory();
 
-        int n_x = 11;
-        int n_y = 11;
+        int n_x = 101;
+        int n_y = 101;
 
         // create nodes
         Node[][] nodes = new Node[n_y][n_x];
@@ -82,7 +82,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if (j % 2 != 0) {
+                    if (j % 10 != 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {
@@ -106,7 +106,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if (i % 2 != 0) {
+                    if (i % 10 != 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {
