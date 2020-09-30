@@ -1,72 +1,183 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<vehicleDefinitions xmlns="http://www.matsim.org/files/dtd"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.matsim.org/files/dtd
-					http://www.matsim.org/files/dtd/vehicleDefinitions_v1.0.xsd">
-    <vehicleType id="1">
-        <description>
-            Small Train
-        </description>
-        <capacity>
-            <seats persons="50"/>
-            <standingRoom persons="30"/>
-        </capacity>
-        <length meter="50.0"/>
-        <width meter="1.0"/>
-<!--        <accessTime secondsPerPerson="1.0"/>-->
-<!--        <egressTime secondsPerPerson="1.0"/>-->
-<!--        <doorOperation mode="serial"/>-->
-<!--        <passengerCarEquivalents pce="1.0"/>-->
-    </vehicleType>
-    <vehicle id="tr_0" type="1"/>
-    <vehicle id="tr_1" type="1"/>
-    <vehicle id="tr_2" type="1"/>
-    <vehicle id="tr_3" type="1"/>
-    <vehicle id="tr_4" type="1"/>
-    <vehicle id="tr_5" type="1"/>
-    <vehicle id="tr_6" type="1"/>
-    <vehicle id="tr_7" type="1"/>
-    <vehicle id="tr_8" type="1"/>
-    <vehicle id="tr_9" type="1"/>
-    <vehicle id="tr_10" type="1"/>
-    <vehicle id="tr_11" type="1"/>
-    <vehicle id="tr_12" type="1"/>
-    <vehicle id="tr_13" type="1"/>
-    <vehicle id="tr_14" type="1"/>
-    <vehicle id="tr_15" type="1"/>
-    <vehicle id="tr_16" type="1"/>
-    <vehicle id="tr_17" type="1"/>
-    <vehicle id="tr_18" type="1"/>
-    <vehicle id="tr_19" type="1"/>
-    <vehicle id="tr_20" type="1"/>
-    <vehicle id="tr_21" type="1"/>
-    <vehicle id="tr_22" type="1"/>
-    <vehicle id="tr_23" type="1"/>
-    <vehicle id="tr_24" type="1"/>
-    <vehicle id="tr_25" type="1"/>
-    <vehicle id="tr_26" type="1"/>
-    <vehicle id="tr_27" type="1"/>
-    <vehicle id="tr_28" type="1"/>
-    <vehicle id="tr_29" type="1"/>
-    <vehicle id="tr_30" type="1"/>
-    <vehicle id="tr_31" type="1"/>
-    <vehicle id="tr_32" type="1"/>
-    <vehicle id="tr_33" type="1"/>
-    <vehicle id="tr_34" type="1"/>
-    <vehicle id="tr_35" type="1"/>
-    <vehicle id="tr_36" type="1"/>
-    <vehicle id="tr_37" type="1"/>
-    <vehicle id="tr_38" type="1"/>
-    <vehicle id="tr_39" type="1"/>
-    <vehicle id="tr_40" type="1"/>
-    <vehicle id="tr_41" type="1"/>
-    <vehicle id="tr_42" type="1"/>
-    <vehicle id="tr_43" type="1"/>
-    <vehicle id="tr_44" type="1"/>
-    <vehicle id="tr_45" type="1"/>
-    <vehicle id="tr_46" type="1"/>
-    <vehicle id="tr_47" type="1"/>
-    <vehicle id="tr_48" type="1"/>
-    <vehicle id="tr_49" type="1"/>
+<vehicleDefinitions xmlns="http://www.matsim.org/files/dtd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.matsim.org/files/dtd http://www.matsim.org/files/dtd/vehicleDefinitions_v2.0.xsd">
+
+	<vehicleType id="1">
+
+		<description>Train</description>
+		<capacity seats="10" standingRoomInPersons="10">
+
+		</capacity>
+		<length meter="50.0"/>
+		<width meter="1.0"/>
+		<costInformation>
+
+		</costInformation>
+		<passengerCarEquivalents pce="1.0"/>
+		<networkMode networkMode="car"/>
+		<flowEfficiencyFactor factor="1.0"/>
+	</vehicleType>
+
+	<vehicle id="tr_0_0" type="1"/>
+	<vehicle id="tr_0_1" type="1"/>
+	<vehicle id="tr_0_2" type="1"/>
+	<vehicle id="tr_0_3" type="1"/>
+	<vehicle id="tr_10_0" type="1"/>
+	<vehicle id="tr_10_1" type="1"/>
+	<vehicle id="tr_10_2" type="1"/>
+	<vehicle id="tr_10_3" type="1"/>
+	<vehicle id="tr_11_0" type="1"/>
+	<vehicle id="tr_11_1" type="1"/>
+	<vehicle id="tr_11_2" type="1"/>
+	<vehicle id="tr_11_3" type="1"/>
+	<vehicle id="tr_12_0" type="1"/>
+	<vehicle id="tr_12_1" type="1"/>
+	<vehicle id="tr_12_2" type="1"/>
+	<vehicle id="tr_12_3" type="1"/>
+	<vehicle id="tr_13_0" type="1"/>
+	<vehicle id="tr_13_1" type="1"/>
+	<vehicle id="tr_13_2" type="1"/>
+	<vehicle id="tr_13_3" type="1"/>
+	<vehicle id="tr_14_0" type="1"/>
+	<vehicle id="tr_14_1" type="1"/>
+	<vehicle id="tr_14_2" type="1"/>
+	<vehicle id="tr_14_3" type="1"/>
+	<vehicle id="tr_15_0" type="1"/>
+	<vehicle id="tr_15_1" type="1"/>
+	<vehicle id="tr_15_2" type="1"/>
+	<vehicle id="tr_15_3" type="1"/>
+	<vehicle id="tr_16_0" type="1"/>
+	<vehicle id="tr_16_1" type="1"/>
+	<vehicle id="tr_16_2" type="1"/>
+	<vehicle id="tr_16_3" type="1"/>
+	<vehicle id="tr_17_0" type="1"/>
+	<vehicle id="tr_17_1" type="1"/>
+	<vehicle id="tr_17_2" type="1"/>
+	<vehicle id="tr_17_3" type="1"/>
+	<vehicle id="tr_18_0" type="1"/>
+	<vehicle id="tr_18_1" type="1"/>
+	<vehicle id="tr_18_2" type="1"/>
+	<vehicle id="tr_18_3" type="1"/>
+	<vehicle id="tr_19_0" type="1"/>
+	<vehicle id="tr_19_1" type="1"/>
+	<vehicle id="tr_19_2" type="1"/>
+	<vehicle id="tr_19_3" type="1"/>
+	<vehicle id="tr_1_0" type="1"/>
+	<vehicle id="tr_1_1" type="1"/>
+	<vehicle id="tr_1_2" type="1"/>
+	<vehicle id="tr_1_3" type="1"/>
+	<vehicle id="tr_20_0" type="1"/>
+	<vehicle id="tr_20_1" type="1"/>
+	<vehicle id="tr_20_2" type="1"/>
+	<vehicle id="tr_20_3" type="1"/>
+	<vehicle id="tr_21_0" type="1"/>
+	<vehicle id="tr_21_1" type="1"/>
+	<vehicle id="tr_21_2" type="1"/>
+	<vehicle id="tr_21_3" type="1"/>
+	<vehicle id="tr_22_0" type="1"/>
+	<vehicle id="tr_22_1" type="1"/>
+	<vehicle id="tr_22_2" type="1"/>
+	<vehicle id="tr_22_3" type="1"/>
+	<vehicle id="tr_23_0" type="1"/>
+	<vehicle id="tr_23_1" type="1"/>
+	<vehicle id="tr_23_2" type="1"/>
+	<vehicle id="tr_23_3" type="1"/>
+	<vehicle id="tr_24_0" type="1"/>
+	<vehicle id="tr_24_1" type="1"/>
+	<vehicle id="tr_24_2" type="1"/>
+	<vehicle id="tr_24_3" type="1"/>
+	<vehicle id="tr_25_0" type="1"/>
+	<vehicle id="tr_25_1" type="1"/>
+	<vehicle id="tr_25_2" type="1"/>
+	<vehicle id="tr_25_3" type="1"/>
+	<vehicle id="tr_26_0" type="1"/>
+	<vehicle id="tr_26_1" type="1"/>
+	<vehicle id="tr_26_2" type="1"/>
+	<vehicle id="tr_26_3" type="1"/>
+	<vehicle id="tr_27_0" type="1"/>
+	<vehicle id="tr_27_1" type="1"/>
+	<vehicle id="tr_27_2" type="1"/>
+	<vehicle id="tr_27_3" type="1"/>
+	<vehicle id="tr_28_0" type="1"/>
+	<vehicle id="tr_28_1" type="1"/>
+	<vehicle id="tr_28_2" type="1"/>
+	<vehicle id="tr_28_3" type="1"/>
+	<vehicle id="tr_29_0" type="1"/>
+	<vehicle id="tr_29_1" type="1"/>
+	<vehicle id="tr_29_2" type="1"/>
+	<vehicle id="tr_29_3" type="1"/>
+	<vehicle id="tr_2_0" type="1"/>
+	<vehicle id="tr_2_1" type="1"/>
+	<vehicle id="tr_2_2" type="1"/>
+	<vehicle id="tr_2_3" type="1"/>
+	<vehicle id="tr_30_0" type="1"/>
+	<vehicle id="tr_30_1" type="1"/>
+	<vehicle id="tr_30_2" type="1"/>
+	<vehicle id="tr_30_3" type="1"/>
+	<vehicle id="tr_31_0" type="1"/>
+	<vehicle id="tr_31_1" type="1"/>
+	<vehicle id="tr_31_2" type="1"/>
+	<vehicle id="tr_31_3" type="1"/>
+	<vehicle id="tr_32_0" type="1"/>
+	<vehicle id="tr_32_1" type="1"/>
+	<vehicle id="tr_32_2" type="1"/>
+	<vehicle id="tr_32_3" type="1"/>
+	<vehicle id="tr_33_0" type="1"/>
+	<vehicle id="tr_33_1" type="1"/>
+	<vehicle id="tr_33_2" type="1"/>
+	<vehicle id="tr_33_3" type="1"/>
+	<vehicle id="tr_34_0" type="1"/>
+	<vehicle id="tr_34_1" type="1"/>
+	<vehicle id="tr_34_2" type="1"/>
+	<vehicle id="tr_34_3" type="1"/>
+	<vehicle id="tr_35_0" type="1"/>
+	<vehicle id="tr_35_1" type="1"/>
+	<vehicle id="tr_35_2" type="1"/>
+	<vehicle id="tr_35_3" type="1"/>
+	<vehicle id="tr_36_0" type="1"/>
+	<vehicle id="tr_36_1" type="1"/>
+	<vehicle id="tr_36_2" type="1"/>
+	<vehicle id="tr_36_3" type="1"/>
+	<vehicle id="tr_37_0" type="1"/>
+	<vehicle id="tr_37_1" type="1"/>
+	<vehicle id="tr_37_2" type="1"/>
+	<vehicle id="tr_37_3" type="1"/>
+	<vehicle id="tr_38_0" type="1"/>
+	<vehicle id="tr_38_1" type="1"/>
+	<vehicle id="tr_38_2" type="1"/>
+	<vehicle id="tr_38_3" type="1"/>
+	<vehicle id="tr_39_0" type="1"/>
+	<vehicle id="tr_39_1" type="1"/>
+	<vehicle id="tr_39_2" type="1"/>
+	<vehicle id="tr_39_3" type="1"/>
+	<vehicle id="tr_3_0" type="1"/>
+	<vehicle id="tr_3_1" type="1"/>
+	<vehicle id="tr_3_2" type="1"/>
+	<vehicle id="tr_3_3" type="1"/>
+	<vehicle id="tr_4_0" type="1"/>
+	<vehicle id="tr_4_1" type="1"/>
+	<vehicle id="tr_4_2" type="1"/>
+	<vehicle id="tr_4_3" type="1"/>
+	<vehicle id="tr_5_0" type="1"/>
+	<vehicle id="tr_5_1" type="1"/>
+	<vehicle id="tr_5_2" type="1"/>
+	<vehicle id="tr_5_3" type="1"/>
+	<vehicle id="tr_6_0" type="1"/>
+	<vehicle id="tr_6_1" type="1"/>
+	<vehicle id="tr_6_2" type="1"/>
+	<vehicle id="tr_6_3" type="1"/>
+	<vehicle id="tr_7_0" type="1"/>
+	<vehicle id="tr_7_1" type="1"/>
+	<vehicle id="tr_7_2" type="1"/>
+	<vehicle id="tr_7_3" type="1"/>
+	<vehicle id="tr_8_0" type="1"/>
+	<vehicle id="tr_8_1" type="1"/>
+	<vehicle id="tr_8_2" type="1"/>
+	<vehicle id="tr_8_3" type="1"/>
+	<vehicle id="tr_9_0" type="1"/>
+	<vehicle id="tr_9_1" type="1"/>
+	<vehicle id="tr_9_2" type="1"/>
+	<vehicle id="tr_9_3" type="1"/>
+		
+
 </vehicleDefinitions>

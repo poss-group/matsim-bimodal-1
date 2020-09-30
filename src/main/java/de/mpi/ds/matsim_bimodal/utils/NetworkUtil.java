@@ -59,14 +59,17 @@ public class NetworkUtil {
         NetworkFactory fac = net.getFactory();
 
         int n_x = 101;
+        double delta_x = 100;
         int n_y = 101;
+        double delta_y = 100;
+        int train_interval = 10;
 
         // create nodes
         Node[][] nodes = new Node[n_y][n_x];
         Link l = null;
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
-                Node n = fac.createNode(Id.createNodeId(i * n_y + j), new Coord(i * 1000, j * 1000));
+                Node n = fac.createNode(Id.createNodeId(i * n_y + j), new Coord(i * delta_x, j * delta_y));
                 nodes[i][j] = n;
                 net.addNode(n);
                 if (i > 0) {
@@ -82,7 +85,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if (j % 10 != 0) {
+                    if ((j+train_interval/2) % train_interval == 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {
@@ -106,7 +109,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if (i % 10 != 0) {
+                    if ((i+train_interval/2) % train_interval == 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {
