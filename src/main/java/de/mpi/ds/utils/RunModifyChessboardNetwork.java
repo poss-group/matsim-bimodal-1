@@ -19,7 +19,7 @@
  *  *                                                                         *
  *  * ***********************************************************************
  */
-package de.mpi.ds.matsim_bimodal.utils;
+package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -59,7 +59,7 @@ public class RunModifyChessboardNetwork {
 		for (Link l : net.getLinks().values()) {
 		    System.out.println(l.getId());
 			if ((i >= 10 && i <= 45) || (i >= 100 && i <= 135)) {
-				setLinkAttributes(l, "car,pt");
+				setLinkAttributes(l, "car,train");
 			} else {
 				setLinkAttributes(l, "car");
 			}

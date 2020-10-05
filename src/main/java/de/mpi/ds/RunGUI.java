@@ -1,10 +1,10 @@
-package de.mpi.ds.matsim_bimodal;
+package de.mpi.ds;
 
 import org.apache.log4j.Logger;
 import org.matsim.run.gui.Gui;
 
-import de.mpi.ds.matsim_bimodal.utils.NetworkUtil;
-import de.mpi.ds.matsim_bimodal.utils.PopulationUtil;
+import de.mpi.ds.utils.NetworkUtil;
+import de.mpi.ds.utils.PopulationUtil;
 
 public class RunGUI {
 

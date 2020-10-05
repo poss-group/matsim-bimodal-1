@@ -19,7 +19,7 @@
  *  *                                                                         *
  *  * ***********************************************************************
  */
-package de.mpi.ds.matsim_bimodal.utils;
+package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -62,7 +62,7 @@ public class NetworkUtil {
         double delta_x = 100;
         int n_y = 101;
         double delta_y = 100;
-        int train_interval = 10;
+        int pt_interval = 10;
 
         // create nodes
         Node[][] nodes = new Node[n_y][n_x];
@@ -85,7 +85,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if ((j+train_interval/2) % train_interval == 0) {
+                    if ((j+pt_interval/2) % pt_interval == 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {
@@ -109,7 +109,7 @@ public class NetworkUtil {
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED);
                     net.addLink(l);
                     net.addLink(l2);
-                    if ((i+train_interval/2) % train_interval == 0) {
+                    if ((i+pt_interval/2) % pt_interval == 0) {
                         setLinkModes(l, "car, train");
                         setLinkModes(l2, "car, train");
                     } else {

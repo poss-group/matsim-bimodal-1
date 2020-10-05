@@ -1,5 +1,7 @@
-package de.mpi.ds.matsim_bimodal.drt_plan_modification;
+package de.mpi.ds.drt_plan_modification;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -12,12 +14,20 @@ import org.matsim.api.core.v01.population.*;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
+import org.matsim.core.router.TripRouter;
+import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
+import org.matsim.facilities.ActivityFacility;
+//import org.matsim.core.population.LegImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
+    @Inject
+    Provider<TripRouter> tripRouterProvider;
+//    @Inject
+//    Controler controler;
 
     private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
         double source_x = startLoc.getX();
@@ -60,13 +70,24 @@ class DrtPlanModifierStartupListener implements StartupListener {
 
     private static Activity createDummyActivity(Coord location, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
-        activity.setMaximumDuration(0);
+        activity.setMaximumDuration(3600./4);
         return activity;
     }
 
     @Override
     public void notifyStartup(StartupEvent event) {
         LOG.info("Modifying plans...");
+//        LOG.warn(controler.getTripRouterProvider().get());
+//        TripRouter tripRouter = tripRouterProvider.get();
+//        Person testPerson = event.getServices().getScenario().getPopulation().getFactory().createPerson(Id.createPersonId("-1"));
+//        ActivityFacilitiesFactoryImpl activityFacilitiesFactory =  new ActivityFacilitiesFactoryImpl();
+//        ActivityFacility fstAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility.class),Id.createLinkId("6029_6130"));
+//        ActivityFacility scndAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility.class),Id.createLinkId("5524_5625"));
+//        List<? extends PlanElement> routeList = tripRouter.calcRoute("car", fstAct,scndAct, 0, testPerson);
+//        LOG.warn(routeList.get(0));
+//        ((LegImpl) routeList.get(0)).travTime;
+        //TODO replace drtrouter in InsertionCostCalculator with this
+
         Scenario sc = event.getServices().getScenario();
         Network network = sc.getNetwork();
         Map<Coord, Id<Node>> coordToNode = network.getNodes().entrySet().stream().collect(
@@ -91,13 +112,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 assert lastAct != null;
                 Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
                 Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
-                if (!firstNode.getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("train"))) {
+                if (firstNode.getOutLinks().values().stream().noneMatch(e -> e.getAllowedModes().contains("train"))) {
 //                    dummyFirstCoord = searchTransferLoc(firstAct.getCoord(), lastAct.getCoord());
                     Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
                     assert dummyFirstNode != null;
                     dummyFirstCoord = dummyFirstNode.getCoord();
                 }
-                if (!lastNode.getOutLinks().values().stream().anyMatch(e -> e.getAllowedModes().contains("train"))) {
+                if (lastNode.getOutLinks().values().stream().noneMatch(e -> e.getAllowedModes().contains("train"))) {
 //                    dummyLastCoord = searchTransferLoc(lastAct.getCoord(), firstAct.getCoord());
                     Node dummyLastNode = searchTransferNode(lastNode, firstNode);
                     assert dummyLastNode != null;
@@ -112,21 +133,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
     }
 
     private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord, Coord dummy_last_coord) {
-        int size = plan.getPlanElements().size();
-        for (int i = 0, counter = 0; i < size; i++) {
-            PlanElement el = plan.getPlanElements().get(i);
-            if (el instanceof Activity) {
-                if (counter == 0 && dummy_first_coord != null) {
-                    plan.getPlanElements().add(i + 1, population.getFactory().createLeg(TransportMode.drt));
-                    plan.getPlanElements().add(i + 2, createDummyActivity(dummy_first_coord, population));
-                    i += 2;
-                } else if (counter == 1 && dummy_last_coord != null) {
-                    plan.getPlanElements().add(i, population.getFactory().createLeg(TransportMode.drt));
-                    plan.getPlanElements().add(i, createDummyActivity(dummy_last_coord, population));
-                    i += 2;
-                }
-                counter++;
-            }
+        if (dummy_last_coord != null) {
+            plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
+            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.walk));
+        }
+        if (dummy_first_coord != null) {
+            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.walk));
+            plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
         }
     }
 

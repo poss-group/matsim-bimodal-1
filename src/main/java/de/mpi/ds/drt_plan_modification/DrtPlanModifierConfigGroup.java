@@ -1,4 +1,4 @@
-package de.mpi.ds.matsim_bimodal.drt_plan_modification;
+package de.mpi.ds.drt_plan_modification;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
 

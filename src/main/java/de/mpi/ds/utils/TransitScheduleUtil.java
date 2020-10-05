@@ -17,7 +17,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package de.mpi.ds.matsim_bimodal.utils;
+package de.mpi.ds.utils;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
@@ -36,10 +36,11 @@ import org.matsim.vehicles.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransitScheduleUtil { // TODO: Make trams start from all sides
-    private static final int train_interval = 10;
+public class TransitScheduleUtil {
+    private static final int pt_interval = 10;
     private static final double delta_x = 100;
     private static final double delta_y = 100;
+    private static final double pt_speed = 30/3.6;
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
@@ -61,7 +62,8 @@ public class TransitScheduleUtil { // TODO: Make trams start from all sides
 
     private static Vehicles createVehicles() {
         Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-        vehicleType.setDescription("Train");
+        vehicleType.setDescription("train");
+        vehicleType.setNetworkMode("train");
         vehicleType.setLength(50);
         vehicleType.getCapacity().setSeats(10);
         vehicleType.getCapacity().setStandingRoom(10);
@@ -88,37 +90,41 @@ public class TransitScheduleUtil { // TODO: Make trams start from all sides
         int net_size = net.getNodes().values().size();
         int n_x = (int) Math.sqrt(net_size);
         int n_y = n_x;
-        for (int i = train_interval / 2; i < n_x; i += train_interval) {
+        for (int i = pt_interval / 2; i < n_x; i += pt_interval) {
             TransitLine transitLine =
                     transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)),
                             TransitLine.class));
             List<TransitRouteStop> transitRouteStopList = new ArrayList<>();
             List<Id<Link>> id_link_list = new ArrayList<>();
-            double departureDelay = 30;
-            for (int k = 0; k < (n_y - 1) * 2; k++) { // 2*n_y - 2 instead of 2*n_y - 1 because always placing the
+            double departureDelay = delta_x*pt_interval/pt_speed+30; // modified!!
+            int station_counter = 0;
+            for (int k = 0; k < (n_y - 1) * 2; k ++) { // 2*n_y - 2 instead of 2*n_y - 1 because always placing the
                 // next stop ahead
                 int j = !reverse ? -Math.abs(k - (n_y - 1)) + (n_y - 1) :
                         (n_y - 1) + Math.abs(k - (n_y - 1)) - (n_y - 1);
                 boolean forward = !reverse ? k < (n_y - 1) : k >= (n_y - 1); // forward true for counting 0..9;
                 // forward false for 10..1
-                TransitStopFacility transitStopFacility = null;
-                transitStopFacility = createTransitStop(stop_counter, id_link_list, transitScheduleFactory, i, j,
-                        forward, vertical, n_x, n_y);
-
-                TransitRouteStop transitrouteStop = null;
-                if (k == 0) {
-                    transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
-                            0, 0);
-                } else if (k == (n_y - 2)) {
-                    transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
-                            k * (departureDelay - 10), k * (departureDelay - 10));
-                } else {
-                    transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
-                            k * (departureDelay - 10), k * (departureDelay));
+                boolean create_stop = k % pt_interval == 0;
+                TransitStopFacility transitStopFacility = createTransitStop(stop_counter, id_link_list,
+                        transitScheduleFactory, i, j,
+                        forward, vertical, n_x, n_y, create_stop);
+                if (create_stop) {
+                    TransitRouteStop transitrouteStop = null;
+                    if (k == 0) {
+                        transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
+                                0, 0);
+                    } else if (k == (n_y - 2)) {
+                        transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
+                                station_counter * departureDelay-100, station_counter * departureDelay-100); //modified!!
+                    } else {
+                        transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
+                                station_counter * departureDelay - 100, station_counter * departureDelay); //modified!!
+                    }
+                    transitrouteStop.setAwaitDepartureTime(true);
+                    transitRouteStopList.add(transitrouteStop);
+                    schedule.addStopFacility(transitStopFacility);
+                    station_counter++;
                 }
-                transitrouteStop.setAwaitDepartureTime(true);
-                transitRouteStopList.add(transitrouteStop);
-                schedule.addStopFacility(transitStopFacility);
 
                 stop_counter++;
             }
@@ -142,15 +148,16 @@ public class TransitScheduleUtil { // TODO: Make trams start from all sides
         NetworkRoute networkRoute = createNetworkRoute(id_link_list, populationFactory);
         TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(r_id, networkRoute,
                 transitRouteStopList, "train");
-        createDepartures(transitRoute, transitScheduleFactory, route_counter, 0, 24 * 60 * 60,
-                30 * 60, n_x, n_y, vehicles, departureDelay);
+        createDepartures(transitRoute, transitScheduleFactory, route_counter, 0*3600, 24 * 3600,
+                15 * 60, n_x, n_y, vehicles, departureDelay);
         return transitRoute;
     }
 
 
     private static TransitStopFacility createTransitStop(int stop_counter, List<Id<Link>> id_link_list,
                                                          TransitScheduleFactory transitScheduleFactory, int i, int j,
-                                                         boolean forward, boolean vertical, int n_x, int n_y) {
+                                                         boolean forward, boolean vertical, int n_x, int n_y,
+                                                         boolean create_stop) {
         int target;
         Id<TransitStopFacility> tsf_id = Id.create(String.valueOf(stop_counter), TransitStopFacility.class);
         TransitStopFacility transitStopFacility = null;
@@ -186,9 +193,13 @@ public class TransitScheduleUtil { // TODO: Make trams start from all sides
                     new Coord(j * delta_x, i * delta_y), false);
         }
 
-        transitStopFacility.setLinkId(Id.createLinkId(link_id));
         id_link_list.add(Id.createLinkId(link_id));
-        return transitStopFacility;
+        if (create_stop) {
+            transitStopFacility.setLinkId(Id.createLinkId(link_id));
+            return transitStopFacility;
+        } else {
+            return null;
+        }
     }
 
     private static void createDepartures(TransitRoute route, TransitScheduleFactory transitScheduleFactory,

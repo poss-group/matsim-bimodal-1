@@ -1,4 +1,4 @@
-package de.mpi.ds.matsim_bimodal.drt_plan_modification;
+package de.mpi.ds.drt_plan_modification;
 
 import org.apache.log4j.Logger;
 import org.matsim.core.controler.AbstractModule;
@@ -17,6 +17,7 @@ public class DrtPlanModifier extends AbstractModule {
     @Override
     public void install() {
         LOG.info("Initiating");
+        LOG.warn("This module only works for a population with plans <activity - leg - activity>");
         if (!this.getConfig().getModules().containsKey(DrtPlanModifierConfigGroup.NAME)) {
             this.getConfig().addModule(this.configGroup);
         }

@@ -1,4 +1,4 @@
-package de.mpi.ds.matsim_bimodal.utils;
+package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -28,25 +28,23 @@ public class PopulationUtil {
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		Population population = scenario.getPopulation();
 		Map<String, Coord> zoneGeometries = new HashMap<>();
-		fillZoneData(zoneGeometries, networkPath);
-		generatePopulation(zoneGeometries, population);
+		Network net = NetworkUtils.readNetwork(networkPath);
+		fillZoneData(zoneGeometries, net);
+		generatePopulation(zoneGeometries, population, net);
 		PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
 		populationWriter.write(populationPath);
 	}
 
-	private static void fillZoneData(Map<String, Coord> zoneGeometries, String networkPath) {
+	private static void fillZoneData(Map<String, Coord> zoneGeometries, Network net) {
 		// Add the locations you want to use here.
 		// (with proper coordinates)
-		Network net = NetworkUtils.readNetwork(networkPath);
-		int i = 0;
 		for (Node node : net.getNodes().values()) {
-			zoneGeometries.put(String.valueOf(i), node.getCoord());
-			i++;
+			zoneGeometries.put(node.getId().toString(), node.getCoord());
 		}
 	}
 
-	private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population) {
-		Network net = NetworkUtils.readNetwork("./output/network.xml");
+	private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
+										   Network net) {
 		Random rand = new Random();
 		rand.setSeed(231494);
 		int trips = 1000;
