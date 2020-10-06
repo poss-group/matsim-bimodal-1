@@ -90,7 +90,8 @@ public class TransitScheduleUtil {
         int net_size = net.getNodes().values().size();
         int n_x = (int) Math.sqrt(net_size);
         int n_y = n_x;
-        for (int i = pt_interval / 2; i < n_x; i += pt_interval) {
+        int firstStation = pt_interval / 2;
+        for (int i = firstStation; i < n_x; i += pt_interval) {
             TransitLine transitLine =
                     transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)),
                             TransitLine.class));
@@ -98,13 +99,13 @@ public class TransitScheduleUtil {
             List<Id<Link>> id_link_list = new ArrayList<>();
             double departureDelay = delta_x*pt_interval/pt_speed+30; // modified!!
             int station_counter = 0;
-            for (int k = 0; k < (n_y - 1) * 2; k ++) { // 2*n_y - 2 instead of 2*n_y - 1 because always placing the
+            for (int k = firstStation; k < (n_y - 1) * 2; k ++) { // 2*n_y - 2 instead of 2*n_y - 1 because always placing the
                 // next stop ahead
                 int j = !reverse ? -Math.abs(k - (n_y - 1)) + (n_y - 1) :
                         (n_y - 1) + Math.abs(k - (n_y - 1)) - (n_y - 1);
                 boolean forward = !reverse ? k < (n_y - 1) : k >= (n_y - 1); // forward true for counting 0..9;
                 // forward false for 10..1
-                boolean create_stop = k % pt_interval == 0;
+                boolean create_stop = (k+firstStation) % pt_interval == 0;
                 TransitStopFacility transitStopFacility = createTransitStop(stop_counter, id_link_list,
                         transitScheduleFactory, i, j,
                         forward, vertical, n_x, n_y, create_stop);

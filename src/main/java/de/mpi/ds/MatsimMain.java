@@ -4,6 +4,7 @@ import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
+import de.mpi.ds.grid_pre_planner.GridPrePlanner;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -47,6 +48,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new GridPrePlanner());
 
 //        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 

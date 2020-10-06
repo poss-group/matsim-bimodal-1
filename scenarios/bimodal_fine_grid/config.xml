@@ -24,6 +24,7 @@
 		<param name="outputDirectory" value="./output" />
 		<param name="firstIteration" value="0" />
 		<param name="lastIteration" value="0" />
+		<param name="mobsim" value="qsim" />
 		<param name="routingAlgorithmType" value="AStarLandmarks" />
 	</module>
 
@@ -101,10 +102,10 @@
 <!--		<param name="directWalkFactor" value="100" />-->
 <!--	</module>-->
 
-<!--	<module name="SBBPt" >-->
-<!--		<param name="deterministicServiceModes" value="train"/>-->
-<!--		<param name="createLinkEventsInterval" value="1"/>-->
-<!--	</module>-->
+	<module name="SBBPt" >
+		<param name="deterministicServiceModes" value="train"/>
+		<param name="createLinkEventsInterval" value="1"/>
+	</module>
 
 	<module name="qsim">
 		<param name="simStarttimeInterpretation" value="onlyUseStarttime" />
@@ -128,8 +129,8 @@
 		<parameterset type="intermodalAccessEgress">
 			<param name="mode" value="drt" />
 			<param name="maxRadius" value="10000" />
-			<param name="initialSearchRadius" value="1000"/>
-			<param name="searchExtensionRadius" value="1000"/>
+			<param name="initialSearchRadius" value="500"/>
+			<param name="searchExtensionRadius" value="500"/>
 		</parameterset>
 	</module>
 

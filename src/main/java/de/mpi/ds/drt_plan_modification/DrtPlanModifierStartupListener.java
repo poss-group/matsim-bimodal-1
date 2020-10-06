@@ -57,7 +57,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
         while (!queue.isEmpty()) {
             Node current = queue.remove();
             Collection<? extends Link> outLinks = current.getOutLinks().values();
-            if (outLinks.stream().anyMatch(l -> l.getAllowedModes().contains("train"))) {
+            if (outLinks.stream().anyMatch(l -> l.getAllowedModes().contains(TransportMode.train))) {
                 return current;
             }
             // Add closest connected nodes to queue (sorted by their distance to the toNode)
@@ -70,7 +70,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
 
     private static Activity createDummyActivity(Coord location, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
-        activity.setMaximumDuration(3600./4);
+        activity.setMaximumDuration(0);
         return activity;
     }
 
@@ -135,10 +135,10 @@ class DrtPlanModifierStartupListener implements StartupListener {
     private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord, Coord dummy_last_coord) {
         if (dummy_last_coord != null) {
             plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
-            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.walk));
+            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
         }
         if (dummy_first_coord != null) {
-            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.walk));
+            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
             plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
         }
     }

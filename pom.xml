@@ -35,10 +35,10 @@
 			<id>ojo-snapshots</id>
 			<url>http://oss.jfrog.org/libs-snapshot</url>
 		</repository>
-<!--		<repository>-->
-<!--			<id>SBB</id>-->
-<!--			<url>https://schweizerischebundesbahnen.bintray.com/simba.mvn</url>-->
-<!--		</repository>-->
+			<repository>
+				<id>SBB</id>
+				<url>https://schweizerischebundesbahnen.bintray.com/simba.mvn</url>
+			</repository>
 	</repositories>
 
 	<dependencies>
@@ -74,21 +74,6 @@
 			<artifactId>otfvis</artifactId>
 			<version>${matsim.version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>ch.sbb</groupId>-->
-<!--			<artifactId>matsim-sbb-extensions</artifactId>-->
-<!--			<version>12.11</version> &lt;!&ndash; replace this with latest available version &ndash;&gt;-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.matsim.contrib</groupId>-->
-<!--			<artifactId>taxi</artifactId>-->
-<!--			<version>${matsim.version}</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.matsim.contrib</groupId>-->
-<!--			<artifactId>av</artifactId>-->
-<!--			<version>${matsim.version}</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>drt</artifactId>
@@ -98,6 +83,11 @@
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>dvrp</artifactId>
 			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.sbb</groupId>
+			<artifactId>matsim-sbb-extensions</artifactId>
+			<version>12.12</version> <!-- replace this with latest available version -->
 		</dependency>
 	</dependencies>
 
