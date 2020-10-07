@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
@@ -35,12 +36,14 @@ import org.matsim.vehicles.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TransitScheduleUtil {
     private static final int pt_interval = 10;
     private static final double delta_x = 100;
     private static final double delta_y = 100;
-    private static final double pt_speed = 30/3.6;
+    private static final double pt_speed = 30 / 3.6;
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
@@ -91,21 +94,57 @@ public class TransitScheduleUtil {
         int n_x = (int) Math.sqrt(net_size);
         int n_y = n_x;
         int firstStation = pt_interval / 2;
+        //TODO make more generic and for new network
+//        List<Node> startNodesX = net.getNodes().values().stream()
+//                .filter(n -> (n.getCoord().getY() / delta_y + firstStation) % pt_interval == 0 && n.getCoord()
+//                        .getX() / delta_x == firstStation).collect(Collectors.toList());
+//        List<Node> startNodesXDec = net.getNodes().values().stream()
+//                .filter(n -> (n.getCoord().getY() / delta_y + firstStation) % pt_interval == 0 && n.getCoord()
+//                        .getX() / delta_x == (n_x - 1) - firstStation).collect(Collectors.toList());
+//        List<Node> startNodesY = net.getNodes().values().stream()
+//                .filter(n -> (n.getCoord().getX() / delta_x + firstStation) % pt_interval == 0 && n.getCoord()
+//                        .getY() / delta_y == firstStation).collect(Collectors.toList());
+//        List<Node> startNodesYDec = net.getNodes().values().stream()
+//                .filter(n -> (n.getCoord().getX() / delta_x + firstStation) % pt_interval == 0 && n.getCoord()
+//                        .getY() / delta_y == (n_y - 1) - firstStation).collect(Collectors.toList());
+//        for (Node sNode : startNodesX) {
+//            ArrayList<Link> visited = new ArrayList<>();
+//            ArrayList<Link> test = new ArrayList<>();
+//            String dir = "x";
+//            // if dir == x and not reverse
+//            visited.add(sNode.getOutLinks().values().stream()
+//                    .filter(l -> l.getToNode().getCoord().getX() < sNode.getCoord().getX()).findFirst().get());
+//            while (!visited.contains(link)) {
+//                visited.add(node);
+//                if (dir == "x") {
+//                    Optional<? extends Link> newLink = node.getOutLinks().values().stream()
+//                            .filter(l -> l.getToNode().getCoord().getY() == sNode.getCoord().getY() && !visited
+//                                    .contains(l.getToNode())).findFirst();
+//                    if (newLink.isPresent()) {
+//                        test.add(newLink.get());
+//                        node = newLink.get().getToNode();
+//                    }
+//                }
+////                node = node.getOutLinks()
+//            }
+//            System.out.println("test");
+//        }
         for (int i = firstStation; i < n_x; i += pt_interval) {
             TransitLine transitLine =
                     transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)),
                             TransitLine.class));
             List<TransitRouteStop> transitRouteStopList = new ArrayList<>();
             List<Id<Link>> id_link_list = new ArrayList<>();
-            double departureDelay = delta_x*pt_interval/pt_speed+30; // modified!!
+            double departureDelay = delta_x * pt_interval / pt_speed + 30; // modified!!
             int station_counter = 0;
-            for (int k = firstStation; k < (n_y - 1) * 2; k ++) { // 2*n_y - 2 instead of 2*n_y - 1 because always placing the
+            for (int k = firstStation; k < (n_y - 1) * 2; k++) { // 2*n_y - 2 instead of 2*n_y - 1 because always
+                // placing the
                 // next stop ahead
                 int j = !reverse ? -Math.abs(k - (n_y - 1)) + (n_y - 1) :
                         (n_y - 1) + Math.abs(k - (n_y - 1)) - (n_y - 1);
                 boolean forward = !reverse ? k < (n_y - 1) : k >= (n_y - 1); // forward true for counting 0..9;
                 // forward false for 10..1
-                boolean create_stop = (k+firstStation) % pt_interval == 0;
+                boolean create_stop = (k + firstStation) % pt_interval == 0;
                 TransitStopFacility transitStopFacility = createTransitStop(stop_counter, id_link_list,
                         transitScheduleFactory, i, j,
                         forward, vertical, n_x, n_y, create_stop);
@@ -116,10 +155,11 @@ public class TransitScheduleUtil {
                                 0, 0);
                     } else if (k == (n_y - 2)) {
                         transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
-                                station_counter * departureDelay-100, station_counter * departureDelay-100); //modified!!
+                                station_counter * departureDelay - 30,
+                                station_counter * departureDelay - 30); //modified!!
                     } else {
                         transitrouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility,
-                                station_counter * departureDelay - 100, station_counter * departureDelay); //modified!!
+                                station_counter * departureDelay - 30, station_counter * departureDelay); //modified!!
                     }
                     transitrouteStop.setAwaitDepartureTime(true);
                     transitRouteStopList.add(transitrouteStop);
@@ -149,7 +189,7 @@ public class TransitScheduleUtil {
         NetworkRoute networkRoute = createNetworkRoute(id_link_list, populationFactory);
         TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(r_id, networkRoute,
                 transitRouteStopList, "train");
-        createDepartures(transitRoute, transitScheduleFactory, route_counter, 0*3600, 24 * 3600,
+        createDepartures(transitRoute, transitScheduleFactory, route_counter, 0 * 3600, 24 * 3600,
                 15 * 60, n_x, n_y, vehicles, departureDelay);
         return transitRoute;
     }
@@ -159,37 +199,29 @@ public class TransitScheduleUtil {
                                                          TransitScheduleFactory transitScheduleFactory, int i, int j,
                                                          boolean forward, boolean vertical, int n_x, int n_y,
                                                          boolean create_stop) {
-        int target;
+        String target;
         Id<TransitStopFacility> tsf_id = Id.create(String.valueOf(stop_counter), TransitStopFacility.class);
         TransitStopFacility transitStopFacility = null;
         String link_id;
 
         if (vertical) {
             if (forward) {
-                target = i * n_x + j + 1;
+                target = String.valueOf(i) + "_" + String.valueOf(j + 1);
             } else {
-                target = i * n_x + j - 1;
+                target = String.valueOf(i) + "_" + String.valueOf(j - 1);
             }
-//            if (!reverse) {
-//                link_id = String.valueOf(i * n_x + j).concat("_").concat(String.valueOf(target));
-//            } else {
-//                link_id = String.valueOf(target).concat("_").concat(String.valueOf(i * n_x + j));
-//            }
-            link_id = String.valueOf(i * n_x + j).concat("_").concat(String.valueOf(target));
+            link_id = String.valueOf(i).concat("_").concat(String.valueOf(j)).concat("-")
+                    .concat(String.valueOf(target));
             transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id,
                     new Coord(i * delta_x, j * delta_y), false);
         } else {
             if (forward) {
-                target = (j + 1) * n_y + i;
+                target = String.valueOf(j + 1) + "_" + String.valueOf(i);
             } else {
-                target = (j - 1) * n_y + i;
+                target = String.valueOf(j - 1) + "_" + String.valueOf(i);
             }
-//            if (!reverse) {
-//                link_id = String.valueOf(j * n_y + i).concat("_").concat(String.valueOf(target));
-//            } else {
-//                link_id = String.valueOf(target).concat("_").concat(String.valueOf(j * n_y + i));
-//            }
-            link_id = String.valueOf(j * n_y + i).concat("_").concat(String.valueOf(target));
+            link_id = String.valueOf(j).concat("_").concat(String.valueOf(i)).concat("-")
+                    .concat(String.valueOf(target));
             transitStopFacility = transitScheduleFactory.createTransitStopFacility(tsf_id,
                     new Coord(j * delta_x, i * delta_y), false);
         }

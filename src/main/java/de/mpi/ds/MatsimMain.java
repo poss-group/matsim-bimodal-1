@@ -1,12 +1,8 @@
 package de.mpi.ds;
 
-import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
-import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
-import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.grid_pre_planner.GridPrePlanner;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -14,7 +10,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 public class MatsimMain {
@@ -25,7 +20,6 @@ public class MatsimMain {
         LOG.info("Reading config");
         Config config = ConfigUtils
                 .loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());
-//                        new DrtPlanModifierConfigGroup(), new SwissRailRaptorConfigGroup());
 //      Config config = ConfigUtils.loadConfig(args[0], new OTFVisConfigGroup());
         config.controler()
                 .setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
@@ -38,7 +32,7 @@ public class MatsimMain {
 
 
     public static void run(Config config, boolean otfvis) {
-        //TODO: configure drt so that vehicles start evenly distributed
+        //TODO run simulation until all trips are done
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);
@@ -47,7 +41,13 @@ public class MatsimMain {
 //		Scenario scenario = ScenarioUtils.loadScenario(config);
 //		Controler controler = new Controler(scenario);
 
+        // Set up SBB Transit/Raptor
+//        controler.addOverridingModule(new SBBTransitModule());
         controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.configureQSimComponents(components -> {
+//            SBBTransitEngineQSimModule.configure(components);
+//        });
+
         controler.addOverridingModule(new GridPrePlanner());
 
 //        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));

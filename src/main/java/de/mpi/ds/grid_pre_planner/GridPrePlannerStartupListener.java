@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class GridPrePlannerStartupListener implements StartupListener {
     private static final Logger LOG = Logger.getLogger(GridPrePlannerStartupListener.class.getName());
     private static final Random rand = new Random();
+    private static double cutoff_drt_pt = 2;
 
     private static Node searchTransferNode(Node actNode,
                                            List<Coord> transitStopCoords) {
@@ -49,7 +50,8 @@ public class GridPrePlannerStartupListener implements StartupListener {
         Scenario scenario = event.getServices().getScenario();
         Network network = scenario.getNetwork();
         List<Coord> transitStopCoords = scenario.getTransitSchedule().getTransitLines().values().stream()
-                .map(tl -> tl.getRoutes().values().stream().map(tr -> tr.getStops().stream().map(stop -> stop.getStopFacility().getCoord())))
+                .map(tl -> tl.getRoutes().values().stream()
+                        .map(tr -> tr.getStops().stream().map(stop -> stop.getStopFacility().getCoord())))
                 .flatMap(Function.identity())
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
@@ -98,7 +100,8 @@ public class GridPrePlannerStartupListener implements StartupListener {
         double x2 = lastAct.getCoord().getX();
         double y1 = firstAct.getCoord().getY();
         double y2 = lastAct.getCoord().getY();
-        if (Math.abs(x2 - x1) > trainDelta && Math.abs(y2 - y1) > trainDelta) {
+        if (Math.abs(x2 - x1) > cutoff_drt_pt * trainDelta || Math.abs(y2 - y1) > cutoff_drt_pt * trainDelta) {
+            // Trips longer than distance btw. transit routes:
             Coord newCoord = null;
             if (rand.nextInt(2) == 0) {
                 Node firstNode = network.getNodes().get(coordToNode.get(new Coord(x2, y1)));
@@ -108,10 +111,15 @@ public class GridPrePlannerStartupListener implements StartupListener {
                 newCoord = searchTransferNode(lastNode, transitStopCoords).getCoord();
             }
             Activity newActivity = population.getFactory().createActivityFromCoord("dummy", newCoord);
+//            population.getFactory().createActivityFromLinkId("dummy", Id); //TODO transfer loc on link
             newActivity.setMaximumDuration(0);
             Leg newLeg = population.getFactory().createLeg(TransportMode.pt);
             plan.getPlanElements().add(2, newActivity);
             plan.getPlanElements().add(3, newLeg);
+        } else {
+            // Trips shorter than distance btw. transit routes:
+            plan.getPlanElements().remove(1);
+            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
         }
     }
 }

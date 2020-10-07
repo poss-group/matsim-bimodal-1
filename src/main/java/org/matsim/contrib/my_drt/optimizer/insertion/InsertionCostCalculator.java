@@ -339,7 +339,8 @@ public class InsertionCostCalculator<D> {
         assert (detourDistance > 0 && directDistance > 0 && directDistance > detourDistance) :
                 "detour distance smaller than direct distance";
 
-        return result;
+//        return result;
+        return false;
     }
 
     public interface PenaltyCalculator {
