@@ -109,7 +109,7 @@ public class PopulationUtil {
 
     private static Activity createSecond(Coord workLocation, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", workLocation);
-        activity.setEndTime(24 * 60 * 60); // [s]
+//        activity.setEndTime(24 * 60 * 60); // [s]
         return activity;
     }
 

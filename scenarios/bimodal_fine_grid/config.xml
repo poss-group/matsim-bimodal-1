@@ -155,13 +155,13 @@
 		<param name="ignoreCarAvailability" value="false" />
 	</module>
 
-	<module name="subtourModeChoice" >
-		<!-- Defines the chain-based modes (Modes where you have to use your parked vehicle for the tour back) -->
-		<param name="chainBasedModes" value="" />
-		<!-- Defines all the modes available, including chain-based modes, seperated by commas -->
-		<param name="modes" value="pt,drt" />
-		<param name="considerCarAvailability" value="true" />
-	</module>
+<!--	<module name="subtourModeChoice" >-->
+<!--		&lt;!&ndash; Defines the chain-based modes (Modes where you have to use your parked vehicle for the tour back) &ndash;&gt;-->
+<!--		<param name="chainBasedModes" value="" />-->
+<!--		&lt;!&ndash; Defines all the modes available, including chain-based modes, seperated by commas &ndash;&gt;-->
+<!--		<param name="modes" value="pt,drt" />-->
+<!--		<param name="considerCarAvailability" value="true" />-->
+<!--	</module>-->
 
 	<module name="multiModeDrt">
 		<parameterset type="drt">
@@ -185,14 +185,14 @@
 	</module>
 
 	<module name="dvrp" >
-        <!-- both default -->
+		<!-- both default -->
 		<param name="mobsimMode" value="car" />
 		<param name="networkModes" value="car" />
 	</module>
 
-<!--	<module name="hermes" >-->
-<!--		<param name="useDeterministicPt" value="true" />-->
-<!--	</module>-->
+	<module name="hermes" >
+		<param name="useDeterministicPt" value="true" />
+	</module>
 
 <!--	<module name="travelTimeCalculator" >-->
 <!--		<param name="analyzedModes" value="car" />-->

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class GridPrePlannerStartupListener implements StartupListener {
     private static final Logger LOG = Logger.getLogger(GridPrePlannerStartupListener.class.getName());
     private static final Random rand = new Random();
-    private static double cutoff_drt_pt = 2;
+    private static final double cutoff_drt_pt = 2;
 
     private static Node searchTransferNode(Node actNode,
                                            List<Coord> transitStopCoords) {
@@ -47,6 +47,7 @@ public class GridPrePlannerStartupListener implements StartupListener {
 
     @Override
     public void notifyStartup(StartupEvent event) {
+        rand.setSeed(event.getServices().getConfig().global().getRandomSeed());
         Scenario scenario = event.getServices().getScenario();
         Network network = scenario.getNetwork();
         List<Coord> transitStopCoords = scenario.getTransitSchedule().getTransitLines().values().stream()
@@ -100,7 +101,7 @@ public class GridPrePlannerStartupListener implements StartupListener {
         double x2 = lastAct.getCoord().getX();
         double y1 = firstAct.getCoord().getY();
         double y2 = lastAct.getCoord().getY();
-        if (Math.abs(x2 - x1) > cutoff_drt_pt * trainDelta || Math.abs(y2 - y1) > cutoff_drt_pt * trainDelta) {
+        if (Math.abs(x2 - x1) > cutoff_drt_pt * trainDelta && Math.abs(y2 - y1) > cutoff_drt_pt * trainDelta) {
             // Trips longer than distance btw. transit routes:
             Coord newCoord = null;
             if (rand.nextInt(2) == 0) {

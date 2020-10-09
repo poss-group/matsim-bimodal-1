@@ -3,6 +3,7 @@ package de.mpi.ds;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.grid_pre_planner.GridPrePlanner;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -10,6 +11,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 public class MatsimMain {
@@ -33,6 +35,9 @@ public class MatsimMain {
 
     public static void run(Config config, boolean otfvis) {
         //TODO run simulation until all trips are done
+        //TODO store occupancy of vehicles
+        //TODO make PT deterministic
+        //TODO why hermes not walking (threads)
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);

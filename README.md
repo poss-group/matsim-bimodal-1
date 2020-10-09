@@ -10,13 +10,17 @@
 5. Start the simulation
 6. For visualisation a tool called [*via*](https://www.simunto.com/via/) (with a free license) is available online
 7. To clean the build type `mvn clean`
+8. To develope go to `src/main/java/de/mpi/ds/` and run the simulation from the `MatsimMain.java` class.
 
 ## Scenarios
-1. **grid_model_pt**
+1. **pt_grid**
     - This scenario represents a public transport simulation on a 2d grid with 100 agents train lines.
 ---
-2. **grid_model_drt**
+2. **drt_grid**
     - This scenario represents a simulation of demand responsive transport on a 2d grid with 100 agents and 10 transport vehicles.
 ---
-3. **grid_model_bimodal**
+3. **bimodal_grid**
     - This scenario represents a simulation of demand responsive transport combined wit public transport on a 2d grid with 100 agents, 10 transport vehicles and train lines.
+---
+4. **bimodal_fine_grid**
+    - This scenario represents a simulation of demand responsive transport combined wit public transport on a 2d grid with 1000 agents, 20 train lines and 25 drt vehicles.
