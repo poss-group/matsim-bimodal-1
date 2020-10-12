@@ -101,22 +101,24 @@ public class GridPrePlannerStartupListener implements StartupListener {
         double x2 = lastAct.getCoord().getX();
         double y1 = firstAct.getCoord().getY();
         double y2 = lastAct.getCoord().getY();
-        if (Math.abs(x2 - x1) > cutoff_drt_pt * trainDelta && Math.abs(y2 - y1) > cutoff_drt_pt * trainDelta) {
-            // Trips longer than distance btw. transit routes:
-            Coord newCoord = null;
-            if (rand.nextInt(2) == 0) {
-                Node firstNode = network.getNodes().get(coordToNode.get(new Coord(x2, y1)));
-                newCoord = searchTransferNode(firstNode, transitStopCoords).getCoord();
-            } else {
-                Node lastNode = network.getNodes().get(coordToNode.get(new Coord(x1, y2)));
-                newCoord = searchTransferNode(lastNode, transitStopCoords).getCoord();
-            }
-            Activity newActivity = population.getFactory().createActivityFromCoord("dummy", newCoord);
+        if (DistanceUtils.calculateDistance(firstAct.getCoord(), lastAct.getCoord()) > cutoff_drt_pt * trainDelta) {
+            if (Math.abs(x2 - x1) > cutoff_drt_pt * trainDelta && Math.abs(y2 - y1) > cutoff_drt_pt * trainDelta) {
+                // Trips longer than distance btw. transit routes:
+                Coord newCoord = null;
+                if (rand.nextInt(2) == 0) {
+                    Node firstNode = network.getNodes().get(coordToNode.get(new Coord(x2, y1)));
+                    newCoord = searchTransferNode(firstNode, transitStopCoords).getCoord();
+                } else {
+                    Node lastNode = network.getNodes().get(coordToNode.get(new Coord(x1, y2)));
+                    newCoord = searchTransferNode(lastNode, transitStopCoords).getCoord();
+                }
+                Activity newActivity = population.getFactory().createActivityFromCoord("dummy", newCoord);
 //            population.getFactory().createActivityFromLinkId("dummy", Id); //TODO transfer loc on link
-            newActivity.setMaximumDuration(0);
-            Leg newLeg = population.getFactory().createLeg(TransportMode.pt);
-            plan.getPlanElements().add(2, newActivity);
-            plan.getPlanElements().add(3, newLeg);
+                newActivity.setMaximumDuration(0);
+                Leg newLeg = population.getFactory().createLeg(TransportMode.pt);
+                plan.getPlanElements().add(2, newActivity);
+                plan.getPlanElements().add(3, newLeg);
+            }
         } else {
             // Trips shorter than distance btw. transit routes:
             plan.getPlanElements().remove(1);

@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 public class NetworkUtil {
 
     // capacity at all links
-    private static final long CAP_MAIN = 10; // [veh/h]
+    private static final long CAP_MAIN = 1000; // [veh/h]
     // link length for all links
     private static final long LINK_LENGTH = 100; // [m]
     // link freespeed for all links

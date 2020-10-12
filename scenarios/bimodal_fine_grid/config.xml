@@ -96,6 +96,7 @@
 		<!--otherwise pt legs would be teleported-->
 		<param name="useTransit" value="true"/>
 		<param name="transitModes" value="pt"/>
+<!--		<param name="usingTransitInMobsim" value="true" />-->
 	</module>
 
 <!--	<module name="transitRouter" >-->
@@ -190,9 +191,9 @@
 		<param name="networkModes" value="car" />
 	</module>
 
-	<module name="hermes" >
-		<param name="useDeterministicPt" value="true" />
-	</module>
+<!--	<module name="hermes" >-->
+<!--		<param name="useDeterministicPt" value="true" />-->
+<!--	</module>-->
 
 <!--	<module name="travelTimeCalculator" >-->
 <!--		<param name="analyzedModes" value="car" />-->

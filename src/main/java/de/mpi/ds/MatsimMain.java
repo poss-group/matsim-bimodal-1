@@ -1,6 +1,7 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.grid_pre_planner.GridPrePlanner;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
@@ -34,10 +35,10 @@ public class MatsimMain {
 
 
     public static void run(Config config, boolean otfvis) {
-        //TODO run simulation until all trips are done
         //TODO store occupancy of vehicles
         //TODO make PT deterministic
         //TODO why hermes not walking (threads)
+        //TODO reduce drt stop time in config
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);
@@ -54,6 +55,7 @@ public class MatsimMain {
 //        });
 
         controler.addOverridingModule(new GridPrePlanner());
+//        controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
 
 //        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
