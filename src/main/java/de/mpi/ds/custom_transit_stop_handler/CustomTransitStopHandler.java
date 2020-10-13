@@ -20,8 +20,9 @@ public class CustomTransitStopHandler implements TransitStopHandler {
                                     MobsimVehicle vehicle) {
         int cntEgress = leavingPassengers.size();
         int cntAccess = enteringPassengers.size();
-        double stopTime = 0;
+//        double stopTime = 0;
         if ((cntAccess > 0) || (cntEgress > 0)) {
+//            stopTime = cntAccess*40+cntEgress*20;
             for (PTPassengerAgent passenger : leavingPassengers) {
                 accessEgress.handlePassengerLeaving(passenger, vehicle, stop.getLinkId(), now);
             }

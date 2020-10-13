@@ -37,8 +37,8 @@ public class MatsimMain {
     public static void run(Config config, boolean otfvis) {
         //TODO store occupancy of vehicles
         //TODO make PT deterministic
+        //TODO if not -> make PT faster than drt
         //TODO why hermes not walking (threads)
-        //TODO reduce drt stop time in config
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);

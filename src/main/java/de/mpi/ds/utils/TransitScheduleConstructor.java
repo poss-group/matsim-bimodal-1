@@ -108,6 +108,7 @@ public class TransitScheduleConstructor {
             Node tempNode = currNode;
             if (direction.equals("x")) {
                 newLink = currNode.getOutLinks().values().stream()
+                        .filter(l -> l.getAllowedModes().contains("train"))
                         .filter(l -> l.getToNode().getCoord().getY() == startNode.getCoord().getY() && Math
                                 .signum(l.getToNode()
                                         .getCoord().getX() - tempNode.getCoord().getX()) == dir).findFirst();
@@ -120,6 +121,7 @@ public class TransitScheduleConstructor {
                 }
             } else {
                 newLink = currNode.getOutLinks().values().stream()
+                        .filter(l -> l.getAllowedModes().contains("train"))
                         .filter(l -> l.getToNode().getCoord().getX() == startNode.getCoord().getX() && Math
                                 .signum(l.getToNode()
                                         .getCoord().getY() - tempNode.getCoord().getY()) == dir).findFirst();
@@ -140,7 +142,7 @@ public class TransitScheduleConstructor {
                 Id.create(String.valueOf(stop_counter), TransitStopFacility.class), currNode.getCoord(), false);
         transitStopFacility.setLinkId(link.getId());
         TransitRouteStop transitrouteStop = transitScheduleFactory
-                .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay - stop_length,
+                .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay,// - stop_length,
                         currRouteStopCount * departure_delay);
         transitrouteStop.setAwaitDepartureTime(true);
         transitRouteStopList.add(transitrouteStop);

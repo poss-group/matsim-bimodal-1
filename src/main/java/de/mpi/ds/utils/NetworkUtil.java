@@ -34,10 +34,7 @@ import org.matsim.core.network.io.NetworkWriter;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +47,8 @@ public class NetworkUtil {
     // link length for all links
     private static final long LINK_LENGTH = 100; // [m]
     // link freespeed for all links
-    private static final double FREE_SPEED = 7.5;
+    private static final double FREE_SPEED = 30 / 3.6;
+    private static final double FREE_SPEED_TRAIN = 70 / 3.6;
     private static final int pt_interval = 10;
     private static final double NUMBER_OF_LANES = 4.;
     private static final Map<String, int[]> directions = Map.of(
@@ -82,6 +80,8 @@ public class NetworkUtil {
         Node[][] nodes = new Node[n_x][n_y];
         Link l1 = null;
         Link l2 = null;
+        Link l3 = null;
+        Link l4 = null;
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 Node n = fac.createNode(Id.createNodeId(String.valueOf(i) + "_" + String.valueOf(j)),
@@ -97,15 +97,24 @@ public class NetworkUtil {
                             nodes[i][j], nodes[i - 1][j]);
                     setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
+                    if ((j + pt_interval / 2) % pt_interval == 0) {
+                        l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i - 1][j].getId()).concat("-")
+                                        .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))),
+                                nodes[i - 1][j], nodes[i][j]);
+                        l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
+                                        .concat(String.valueOf(nodes[i - 1][j].getId()).concat("_pt"))),
+                                nodes[i][j], nodes[i - 1][j]);
+                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkModes(l3, "train");
+                        setLinkModes(l4, "train");
+                        net.addLink(l3);
+                        net.addLink(l4);
+                    }
+                    setLinkModes(l1, "car");
+                    setLinkModes(l2, "car");
                     net.addLink(l1);
                     net.addLink(l2);
-                    if ((j + pt_interval / 2) % pt_interval == 0) {
-                        setLinkModes(l1, "car, train");
-                        setLinkModes(l2, "car, train");
-                    } else {
-                        setLinkModes(l1, "car");
-                        setLinkModes(l2, "car");
-                    }
                 }
                 if (j > 0) {
                     l1 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j - 1].getId()).concat("-")
@@ -114,15 +123,24 @@ public class NetworkUtil {
                             .concat(String.valueOf(nodes[i][j - 1].getId()))), nodes[i][j], nodes[i][j - 1]);
                     setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
+                    if ((i + pt_interval / 2) % pt_interval == 0) {
+                        l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j - 1].getId()).concat("-")
+                                        .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))), nodes[i][j - 1],
+                                nodes[i][j]);
+                        l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
+                                        .concat(String.valueOf(nodes[i][j - 1].getId()).concat("_pt"))), nodes[i][j],
+                                nodes[i][j - 1]);
+                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkModes(l3, "train");
+                        setLinkModes(l4, "train");
+                        net.addLink(l3);
+                        net.addLink(l4);
+                    }
+                    setLinkModes(l1, "car");
+                    setLinkModes(l2, "car");
                     net.addLink(l1);
                     net.addLink(l2);
-                    if ((i + pt_interval / 2) % pt_interval == 0) {
-                        setLinkModes(l1, "car, train");
-                        setLinkModes(l2, "car, train");
-                    } else {
-                        setLinkModes(l1, "car");
-                        setLinkModes(l2, "car");
-                    }
                 }
             }
         }
@@ -143,6 +161,7 @@ public class NetworkUtil {
 
     private static void makeDiagConnections(Network net, NetworkFactory fac, Node[][] nodes) {
         double diag_length = Math.sqrt(delta_x * delta_x + delta_y * delta_y);
+        double side_length = Math.min(delta_x, delta_y);
         List<Link> newLinks = new ArrayList<>();
         for (Node[] node : nodes) {
             for (int j = 0; j < nodes[0].length; j++) {
@@ -152,7 +171,7 @@ public class NetworkUtil {
                         .flatMap(n -> n.getOutLinks().values().stream().map(Link::getToNode))
                         .filter(n -> {
                             double dist = DistanceUtils.calculateDistance(n.getCoord(), temp.getCoord());
-                            return dist <= diag_length && dist > 0;
+                            return dist <= diag_length && dist > side_length;
                         })
                         .distinct()
                         .collect(Collectors.toList());
@@ -230,11 +249,34 @@ public class NetworkUtil {
             net.addLink(newNode_neigh);
             net.addLink(newNode_node);
             net.addLink(node_newNode);
+
+            Link neigh_newNode_pt = fac
+                    .createLink(Id.createLinkId(neighbourNode.getId() + "-" + newNode.getId() + "_pt"), neighbourNode,
+                            newNode);
+            Link newNode_neigh_pt = fac
+                    .createLink(Id.createLinkId(newNode.getId() + "-" + neighbourNode.getId() + "_pt"), newNode,
+                            neighbourNode);
+            Link newNode_node_pt = fac
+                    .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
+            Link node_newNode_pt = fac
+                    .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
+            setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+            setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+            setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+            setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+            setLinkModes(neigh_newNode_pt, "train");
+            setLinkModes(newNode_neigh_pt, "train");
+            setLinkModes(newNode_node_pt, "train");
+            setLinkModes(node_newNode_pt, "train");
+            net.addLink(neigh_newNode_pt);
+            net.addLink(newNode_neigh_pt);
+            net.addLink(newNode_node_pt);
+            net.addLink(node_newNode_pt);
         }
     }
 
     private static void removeOrigLinks(Network net, List<Link> inLinks,
-                                        List<Link> outLinks) {
+                                           List<Link> outLinks) {
         for (Id<Link> linkId : outLinks.stream().map(Identifiable::getId).collect(Collectors.toList())) {
             net.removeLink(linkId);
         }

@@ -44,7 +44,7 @@ public class TransitScheduleUtil {
     private static final int pt_interval = 10;
     private static final double delta_x = 100;
     private static final double delta_y = 100;
-    private static final double pt_speed = 30 / 3.6;
+    private static final double FREE_SPEED_TRAIN = 70 / 3.6;
     private static final int n_xy = 101;
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
@@ -88,7 +88,7 @@ public class TransitScheduleUtil {
                         Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, pt_interval, delta_x, delta_x * pt_interval / pt_speed + 30,
+                populationFactory, net, schedule, vehicles, pt_interval, delta_x, delta_x * pt_interval / FREE_SPEED_TRAIN + 30,
                 30, 0,
                 24 * 3600, 15 * 60);
 
