@@ -4,7 +4,6 @@ import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.grid_pre_planner.GridPrePlanner;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -12,7 +11,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.counts.PtCountsModule;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 public class MatsimMain {
@@ -24,8 +23,6 @@ public class MatsimMain {
         Config config = ConfigUtils
                 .loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());
 //      Config config = ConfigUtils.loadConfig(args[0], new OTFVisConfigGroup());
-        config.controler()
-                .setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
@@ -37,9 +34,9 @@ public class MatsimMain {
     public static void run(Config config, boolean otfvis) {
         //TODO store occupancy of vehicles
         //TODO make PT deterministic
-        //TODO if not -> make PT faster than drt
         //TODO why hermes not walking (threads)
 
+//        PtCountsModule
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);
 

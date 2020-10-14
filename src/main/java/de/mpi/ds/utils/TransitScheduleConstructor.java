@@ -39,7 +39,8 @@ public class TransitScheduleConstructor {
     private int currRouteStopCount;
 
     public TransitScheduleConstructor(TransitScheduleFactory tsf,
-                                      PopulationFactory pf, Network net, TransitSchedule ts, Vehicles vehicles, int pt_interval,
+                                      PopulationFactory pf, Network net, TransitSchedule ts, Vehicles vehicles,
+                                      int pt_interval,
                                       double delta_xy,
                                       double departure_delay, double stop_length, double transitStartTime,
                                       double transitEndTime, double transitIntervalTime) {
@@ -138,15 +139,21 @@ public class TransitScheduleConstructor {
     }
 
     private void createStop(List<TransitRouteStop> transitRouteStopList, Node currNode, Link link) {
-        TransitStopFacility transitStopFacility = transitScheduleFactory.createTransitStopFacility(
-                Id.create(String.valueOf(stop_counter), TransitStopFacility.class), currNode.getCoord(), false);
-        transitStopFacility.setLinkId(link.getId());
+        Id<TransitStopFacility> stopId = Id.create(String.valueOf(link.getId()) + "_trStop", TransitStopFacility.class);
+        TransitStopFacility transitStopFacility = null;
+        if (!schedule.getFacilities().containsKey(stopId)) {
+            transitStopFacility = transitScheduleFactory.createTransitStopFacility(
+                    stopId, currNode.getCoord(), false);
+            transitStopFacility.setLinkId(link.getId());
+            schedule.addStopFacility(transitStopFacility);
+        } else {
+            transitStopFacility = schedule.getFacilities().get(stopId);
+        }
         TransitRouteStop transitrouteStop = transitScheduleFactory
                 .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay,// - stop_length,
                         currRouteStopCount * departure_delay);
         transitrouteStop.setAwaitDepartureTime(true);
         transitRouteStopList.add(transitrouteStop);
-        schedule.addStopFacility(transitStopFacility);
         currRouteStopCount++;
         stop_counter++;
     }

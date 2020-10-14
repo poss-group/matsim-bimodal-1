@@ -8,13 +8,15 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PtCountsConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.counts.PtCountsModule;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PopulationUtil {
+public class PopulationUtil implements UtilComponent {
 
     private PopulationUtil() {
     }
@@ -46,16 +48,20 @@ public class PopulationUtil {
                                            Network net) {
         Random rand = new Random();
         rand.setSeed(231494);
-        int trips = 1000;
+        int trips = N_REQUESTS;
         Id<Node> orig_id;
         Id<Node> dest_id;
-        List<Id<Node>> bla = new ArrayList<>(net.getNodes().keySet());
+        List<Id<Node>> nodeIdList = net.getNodes().values().stream()
+                .filter(n -> n.getCoord().getX() % delta_xy == 0)
+                .filter(n -> n.getCoord().getY() % delta_xy == 0)
+                .map(n -> n.getId())
+                .collect(Collectors.toList());
         // Coord orig_coord;
         // Coord dest_coord;
         for (int j = 0; j < trips; j++) {
             do {
-                orig_id = bla.get(rand.nextInt(zoneGeometries.size()));
-                dest_id = bla.get(rand.nextInt(zoneGeometries.size()));
+                orig_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
+                dest_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
             } while (orig_id.equals(dest_id));
             // // modulo cases only if agents should be placed on non pt nodes & next 2
             // lines
@@ -116,7 +122,7 @@ public class PopulationUtil {
     private static Activity createFirst(Coord homeLocation, Population population) {
         Random rand = new Random();
         Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
-        activity.setEndTime(rand.nextInt(24 * 60 * 60)); // [s]
+        activity.setEndTime(rand.nextInt(MAX_END_TIME)); // [s]
         return activity;
     }
 

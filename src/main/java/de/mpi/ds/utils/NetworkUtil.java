@@ -21,6 +21,7 @@
  */
 package de.mpi.ds.utils;
 
+import jdk.jshell.execution.Util;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
@@ -40,27 +41,14 @@ import java.util.stream.Collectors;
 /**
  * @author tthunig
  */
-public class NetworkUtil {
+public class NetworkUtil implements UtilComponent {
 
-    // capacity at all links
-    private static final long CAP_MAIN = 1000; // [veh/h]
-    // link length for all links
-    private static final long LINK_LENGTH = 100; // [m]
-    // link freespeed for all links
-    private static final double FREE_SPEED = 30 / 3.6;
-    private static final double FREE_SPEED_TRAIN = 70 / 3.6;
-    private static final int pt_interval = 10;
-    private static final double NUMBER_OF_LANES = 4.;
     private static final Map<String, int[]> directions = Map.of(
             "north", new int[]{0, 1},
             "east", new int[]{1, 0},
             "south", new int[]{0, -1},
             "west", new int[]{-1, 0}
     );
-    private static int n_x = 101;
-    private static double delta_x = 100;
-    private static int n_y = 101;
-    private static double delta_y = 100;
 
     private NetworkUtil() {
     }

@@ -35,8 +35,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,16 +43,11 @@ import java.util.stream.Stream;
  * This is an example script to create a vehicle file for taxis, SAV or DRTs.
  * The vehicles are distributed randomly in the network.
  */
-public class CreateDrtFleetVehicles {
+public class CreateDrtFleetVehicles implements UtilComponent {
 
 	/**
 	 * Adjust these variables and paths to your need.
 	 */
-
-	private static final int numberOfVehicles = 25;
-	private static final int seatsPerVehicle = 4; //this is important for DRT, value is not used by taxi
-	private static final double operationStartTime = 0;
-	private static final double operationEndTime = 24 * 60 * 60; //24h
 	private static final Random random = MatsimRandom.getRandom();
 
 	private static final Path networkFile = Paths.get("output/network.xml");
@@ -79,16 +72,17 @@ public class CreateDrtFleetVehicles {
 
 
 		Stream<DvrpVehicleSpecification> vehicleSpecificationStream = linkList.stream()
-				.limit(numberOfVehicles) // select the first *numberOfVehicles* links
+				.limit(numberOfDrtVehicles) // select the first *numberOfVehicles* links
 				.map(entry -> ImmutableDvrpVehicleSpecification.newBuilder()
 						.id(Id.create("drt_" + i[0]++, DvrpVehicle.class))
 						.startLinkId(entry.getKey())
-						.capacity(seatsPerVehicle)
+						.capacity(seatsPerDrtVehicle)
 						.serviceBeginTime(operationStartTime)
 						.serviceEndTime(operationEndTime)
 						.build());
 
 		new FleetWriter(vehicleSpecificationStream).write(outputFile.toString());
+		System.out.println("Wrote drt vehicles");
 
 	}
 

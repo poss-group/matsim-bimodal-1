@@ -40,12 +40,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TransitScheduleUtil {
-    private static final int pt_interval = 10;
-    private static final double delta_x = 100;
-    private static final double delta_y = 100;
-    private static final double FREE_SPEED_TRAIN = 70 / 3.6;
-    private static final int n_xy = 101;
+public class TransitScheduleUtil implements UtilComponent{
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
@@ -90,7 +85,7 @@ public class TransitScheduleUtil {
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, pt_interval, delta_x, delta_x * pt_interval / FREE_SPEED_TRAIN + 30,
                 30, 0,
-                24 * 3600, 15 * 60);
+                transitEndTime, transitIntervalTime);
 
         for (int i = 0; i < startNodesX.size(); i++) {
             transitScheduleConstructor.createLine(startNodesX.get(i), startNodesXDec.get(i), "x");
