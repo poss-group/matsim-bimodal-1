@@ -32,7 +32,6 @@ public class MatsimMain {
 
 
     public static void run(Config config, boolean otfvis) {
-        //TODO store occupancy of vehicles
         //TODO make PT deterministic
         //TODO why hermes not walking (threads)
 
