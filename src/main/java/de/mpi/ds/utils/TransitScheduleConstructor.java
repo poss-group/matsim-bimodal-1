@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class TransitScheduleConstructor {
+public class TransitScheduleConstructor implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(TransitScheduleConstructor.class.getName());
     private final int pt_interval;
     private final int n_xy;
@@ -64,6 +64,7 @@ public class TransitScheduleConstructor {
         VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1", VehicleType.class));
         vehicleType.setDescription("train");
         vehicleType.setNetworkMode("train");
+        vehicleType.setMaximumVelocity(FREE_SPEED_TRAIN);
         vehicleType.setLength(50);
         vehicleType.getCapacity().setSeats(10);
         vehicleType.getCapacity().setStandingRoom(10);
@@ -76,8 +77,9 @@ public class TransitScheduleConstructor {
                 .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
         List<TransitRouteStop> transitRouteStopList = new ArrayList<>();
         currRouteStopCount = 0;
-        moveFromTo(linkList, startNode, endNode, transitRouteStopList, direction);
-        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction);
+
+        moveFromTo(linkList, startNode, endNode, transitRouteStopList, direction, true);
+        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
 
         List<Id<Link>> idLinkList = linkList.stream().map(Identifiable::getId).collect(Collectors.toList());
         Id<TransitRoute> tr_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
@@ -96,46 +98,58 @@ public class TransitScheduleConstructor {
     }
 
     private void moveFromTo(ArrayList<Link> linkList, Node startNode, Node endNode,
-                            List<TransitRouteStop> transitRouteStopList, String direction) {
-        int dir;
+                            List<TransitRouteStop> transitRouteStopList, String direction,
+                            boolean addFirstAsTransitStop) {
+        int for_backward;
         if (direction.equals("x")) {
-            dir = endNode.getCoord().getX() > startNode.getCoord().getX() ? 1 : -1;
+            for_backward = endNode.getCoord().getX() > startNode.getCoord().getX() ? 1 : -1;
         } else {
-            dir = endNode.getCoord().getY() > startNode.getCoord().getY() ? 1 : -1;
+            for_backward = endNode.getCoord().getY() > startNode.getCoord().getY() ? 1 : -1;
         }
-        Optional<? extends Link> newLink = null;
         Node currNode = startNode;
         do {
-            Node tempNode = currNode;
-            if (direction.equals("x")) {
-                newLink = currNode.getOutLinks().values().stream()
-                        .filter(l -> l.getAllowedModes().contains("train"))
-                        .filter(l -> l.getToNode().getCoord().getY() == startNode.getCoord().getY() && Math
-                                .signum(l.getToNode()
-                                        .getCoord().getX() - tempNode.getCoord().getX()) == dir).findFirst();
-                if (newLink.isPresent()) {
-                    linkList.add(newLink.get());
-                    currNode = newLink.get().getToNode();
-                    if ((currNode.getCoord().getX() / delta_xy + pt_interval / 2) % pt_interval == 0) {
-                        createStop(transitRouteStopList, currNode, newLink.get());
-                    }
-                }
-            } else {
-                newLink = currNode.getOutLinks().values().stream()
-                        .filter(l -> l.getAllowedModes().contains("train"))
-                        .filter(l -> l.getToNode().getCoord().getX() == startNode.getCoord().getX() && Math
-                                .signum(l.getToNode()
-                                        .getCoord().getY() - tempNode.getCoord().getY()) == dir).findFirst();
-                if (newLink.isPresent()) {
-                    linkList.add(newLink.get());
-                    currNode = newLink.get().getToNode();
-                    if ((currNode.getCoord().getY() / delta_xy + pt_interval / 2) % pt_interval == 0) {
-                        createStop(transitRouteStopList, currNode, newLink.get());
-                    }
-                }
-            }
+            currNode = moveToNextLink(linkList, startNode, currNode, transitRouteStopList, direction, for_backward,
+                    addFirstAsTransitStop);
+            addFirstAsTransitStop = !addFirstAsTransitStop ? true : true;
         }
         while (currNode != endNode);
+        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1));
+    }
+
+    private Node moveToNextLink(ArrayList<Link> linkList, Node startNode,
+                                Node currNode,
+                                List<TransitRouteStop> transitRouteStopList,
+                                String direction, int for_backward, boolean addAsTransitStop) {
+        Optional<? extends Link> newLink = null;
+        Node tempNode = currNode;
+        if (direction.equals("x")) {
+            newLink = currNode.getOutLinks().values().stream()
+                    .filter(l -> l.getAllowedModes().contains("train"))
+                    .filter(l -> l.getToNode().getCoord().getY() == startNode.getCoord().getY() && Math
+                            .signum(l.getToNode()
+                                    .getCoord().getX() - tempNode.getCoord().getX()) == for_backward).findFirst();
+            if (newLink.isPresent()) {
+                linkList.add(newLink.get());
+                if ((currNode.getCoord().getX() / delta_xy + pt_interval / 2) % pt_interval == 0 && addAsTransitStop) {
+                    createStop(transitRouteStopList, currNode, newLink.get());
+                }
+                currNode = newLink.get().getToNode();
+            }
+        } else {
+            newLink = currNode.getOutLinks().values().stream()
+                    .filter(l -> l.getAllowedModes().contains("train"))
+                    .filter(l -> l.getToNode().getCoord().getX() == startNode.getCoord().getX() && Math
+                            .signum(l.getToNode()
+                                    .getCoord().getY() - tempNode.getCoord().getY()) == for_backward).findFirst();
+            if (newLink.isPresent()) {
+                linkList.add(newLink.get());
+                if ((currNode.getCoord().getY() / delta_xy + pt_interval / 2) % pt_interval == 0 && addAsTransitStop) {
+                    createStop(transitRouteStopList, currNode, newLink.get());
+                }
+                currNode = newLink.get().getToNode();
+            }
+        }
+        return currNode;
     }
 
     private void createStop(List<TransitRouteStop> transitRouteStopList, Node currNode, Link link) {
@@ -150,7 +164,7 @@ public class TransitScheduleConstructor {
             transitStopFacility = schedule.getFacilities().get(stopId);
         }
         TransitRouteStop transitrouteStop = transitScheduleFactory
-                .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay,// - stop_length,
+                .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay - stop_length,
                         currRouteStopCount * departure_delay);
         transitrouteStop.setAwaitDepartureTime(true);
         transitRouteStopList.add(transitrouteStop);
@@ -161,6 +175,7 @@ public class TransitScheduleConstructor {
     private void createDepartures(TransitRoute transitRoute) {
         double time = transitStartTime;
         int i = 0;
+        boolean first_dep = true;
         int transportersPerLine = (int) Math
                 .ceil((departure_delay * (n_xy * 2 - 1)) / transitIntervalTime); // calculate how many
         // transporters are presented on a line maximally
@@ -178,7 +193,13 @@ public class TransitScheduleConstructor {
             transitRoute.addDeparture(dep);
             i++;
 
-            time += transitIntervalTime;
+            if (first_dep) {
+                time += transitIntervalTime / 4;
+                first_dep = false;
+            } else {
+                time += transitIntervalTime * 3/4;
+                first_dep = true;
+            }
         }
     }
 

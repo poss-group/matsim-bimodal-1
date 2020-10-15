@@ -47,7 +47,7 @@ public class PopulationUtil implements UtilComponent {
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
                                            Network net) {
         Random rand = new Random();
-        rand.setSeed(231494);
+//        rand.setSeed(231494);
         int trips = N_REQUESTS;
         Id<Node> orig_id;
         Id<Node> dest_id;

@@ -21,7 +21,6 @@
  */
 package de.mpi.ds.utils;
 
-import jdk.jshell.execution.Util;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
@@ -35,7 +34,10 @@ import org.matsim.core.network.io.NetworkWriter;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -54,10 +56,10 @@ public class NetworkUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createGridNetwork("./output/network.xml");
+        createGridNetwork("./output/network.xml", true);
     }
 
-    public static void createGridNetwork(String path) {
+    public static void createGridNetwork(String path, boolean createTrainLanes) {
         // create an empty network
         Network net = NetworkUtils.createNetwork();
         NetworkFactory fac = net.getFactory();
@@ -85,7 +87,7 @@ public class NetworkUtil implements UtilComponent {
                             nodes[i][j], nodes[i - 1][j]);
                     setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    if ((j + pt_interval / 2) % pt_interval == 0) {
+                    if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
                         l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i - 1][j].getId()).concat("-")
                                         .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))),
                                 nodes[i - 1][j], nodes[i][j]);
@@ -111,7 +113,7 @@ public class NetworkUtil implements UtilComponent {
                             .concat(String.valueOf(nodes[i][j - 1].getId()))), nodes[i][j], nodes[i][j - 1]);
                     setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
                     setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    if ((i + pt_interval / 2) % pt_interval == 0) {
+                    if ((i + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
                         l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j - 1].getId()).concat("-")
                                         .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))), nodes[i][j - 1],
                                 nodes[i][j]);
@@ -134,7 +136,7 @@ public class NetworkUtil implements UtilComponent {
         }
         makeDiagConnections(net, fac, nodes);
         // this has to be done second because mod for pt modifies next neighbours of stations
-        putNodesCloseToStations(net, fac, nodes);
+        putNodesCloseToStations(net, fac, nodes, createTrainLanes);
         try {
             File outFile = new File(path);
             // create output folder if necessary
@@ -180,12 +182,13 @@ public class NetworkUtil implements UtilComponent {
 
     /**
      * This method adds nodes close to the nodes where the stations are going to be to reduce transitwalks of passengers
-     *
-     * @param net   the network
+     *  @param net   the network
      * @param fac   the network factory
      * @param nodes 2D array of Node
+     * @param createTrainLanes
      */
-    private static void putNodesCloseToStations(Network net, NetworkFactory fac, Node[][] nodes) {
+    private static void putNodesCloseToStations(Network net, NetworkFactory fac, Node[][] nodes,
+                                                boolean createTrainLanes) {
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 0; j < nodes[0].length; j++) {
                 if ((i + pt_interval / 2) % pt_interval == 0 && (j + pt_interval / 2) % pt_interval == 0) {
@@ -199,13 +202,14 @@ public class NetworkUtil implements UtilComponent {
                     List<Node> neighbourNodes = outLinks.stream().map(Link::getToNode).collect(
                             Collectors.toList());
                     removeOrigLinks(net, inLinks, outLinks);
-                    addNewConnection(net, fac, nodes[i][j], neighbourNodes);
+                    addNewConnection(net, fac, nodes[i][j], neighbourNodes, createTrainLanes);
                 }
             }
         }
     }
 
-    private static void addNewConnection(Network net, NetworkFactory fac, Node node, List<Node> neighbourNodes) {
+    private static void addNewConnection(Network net, NetworkFactory fac, Node node, List<Node> neighbourNodes,
+                                         boolean createTrainLanes) {
         for (String dir : directions.keySet()) {
             int[] xy_deltas = directions.get(dir);
             Node newNode = fac.createNode(Id.createNodeId(node.getId().toString() + dir),
@@ -231,6 +235,7 @@ public class NetworkUtil implements UtilComponent {
             setLinkAttributes(newNode_neigh, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
             setLinkAttributes(newNode_node, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
             setLinkAttributes(node_newNode, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
+            System.out.println(node_newNode.getAllowedModes());
 
             net.addNode(newNode);
             net.addLink(neigh_newNode);
@@ -238,33 +243,36 @@ public class NetworkUtil implements UtilComponent {
             net.addLink(newNode_node);
             net.addLink(node_newNode);
 
-            Link neigh_newNode_pt = fac
-                    .createLink(Id.createLinkId(neighbourNode.getId() + "-" + newNode.getId() + "_pt"), neighbourNode,
-                            newNode);
-            Link newNode_neigh_pt = fac
-                    .createLink(Id.createLinkId(newNode.getId() + "-" + neighbourNode.getId() + "_pt"), newNode,
-                            neighbourNode);
-            Link newNode_node_pt = fac
-                    .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
-            Link node_newNode_pt = fac
-                    .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
-            setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-            setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-            setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-            setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-            setLinkModes(neigh_newNode_pt, "train");
-            setLinkModes(newNode_neigh_pt, "train");
-            setLinkModes(newNode_node_pt, "train");
-            setLinkModes(node_newNode_pt, "train");
-            net.addLink(neigh_newNode_pt);
-            net.addLink(newNode_neigh_pt);
-            net.addLink(newNode_node_pt);
-            net.addLink(node_newNode_pt);
+            if (createTrainLanes) {
+                Link neigh_newNode_pt = fac
+                        .createLink(Id.createLinkId(neighbourNode.getId() + "-" + newNode.getId() + "_pt"),
+                                neighbourNode,
+                                newNode);
+                Link newNode_neigh_pt = fac
+                        .createLink(Id.createLinkId(newNode.getId() + "-" + neighbourNode.getId() + "_pt"), newNode,
+                                neighbourNode);
+                Link newNode_node_pt = fac
+                        .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
+                Link node_newNode_pt = fac
+                        .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
+                setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                setLinkModes(neigh_newNode_pt, "train");
+                setLinkModes(newNode_neigh_pt, "train");
+                setLinkModes(newNode_node_pt, "train");
+                setLinkModes(node_newNode_pt, "train");
+                net.addLink(neigh_newNode_pt);
+                net.addLink(newNode_neigh_pt);
+                net.addLink(newNode_node_pt);
+                net.addLink(node_newNode_pt);
+            }
         }
     }
 
     private static void removeOrigLinks(Network net, List<Link> inLinks,
-                                           List<Link> outLinks) {
+                                        List<Link> outLinks) {
         for (Id<Link> linkId : outLinks.stream().map(Identifiable::getId).collect(Collectors.toList())) {
             net.removeLink(linkId);
         }

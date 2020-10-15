@@ -11,7 +11,7 @@
 
     <properties>
         <matsim.version>13.0-SNAPSHOT</matsim.version>
-        <mainClass>de.mpi.ds.matsim_bimodal.RunGUI</mainClass>
+        <mainClass>de.mpi.ds.MatsimMain</mainClass>
     </properties>
 
 
@@ -75,11 +75,11 @@
             <artifactId>otfvis</artifactId>
             <version>${matsim.version}</version>
         </dependency>
-        <!--		<dependency>-->
-        <!--			<groupId>org.matsim.contrib</groupId>-->
-        <!--			<artifactId>drt</artifactId>-->
-        <!--			<version>${matsim.version}</version>-->
-        <!--		</dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.matsim.contrib</groupId>-->
+<!--            <artifactId>add_constraints_drt</artifactId>-->
+<!--            <version>${matsim.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>

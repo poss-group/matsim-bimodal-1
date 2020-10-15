@@ -40,7 +40,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TransitScheduleUtil implements UtilComponent{
+public class TransitScheduleUtil implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
@@ -83,9 +83,17 @@ public class TransitScheduleUtil implements UtilComponent{
                         Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, pt_interval, delta_x, delta_x * pt_interval / FREE_SPEED_TRAIN + 30,
-                30, 0,
+                populationFactory, net, schedule, vehicles, pt_interval, delta_xy,
+                delta_xy * pt_interval / FREE_SPEED_TRAIN,
+                transitStopLength, 0,
                 transitEndTime, transitIntervalTime);
+
+        LOG.info(
+                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
+                        "station: " + transitStopLength + "\nTransit Interval Time: " + transitIntervalTime +
+                        "\nTransit time grid start - grid end: " + (startNodesXDec.get(0).getCoord()
+                        .getX() - startNodesX
+                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
         for (int i = 0; i < startNodesX.size(); i++) {
             transitScheduleConstructor.createLine(startNodesX.get(i), startNodesXDec.get(i), "x");

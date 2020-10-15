@@ -6,7 +6,10 @@ public interface UtilComponent {
     static final double delta_x = 100;
     static final double delta_y = 100;
     static final double transitEndTime = 10 * 60 * 60;
-    static final double transitIntervalTime = 10*60;
+    static final double transitIntervalTime = 1285;
+//    static final double transitIntervalTime = 643;  //configured so that new trains start from both sides when old
+    // one reaches end of grid
+    static final double transitStopLength = 0;
     static final int n_xy = 101;
     static final int n_x = 101;
     static final int n_y = 101;
