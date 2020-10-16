@@ -56,7 +56,7 @@ public class NetworkUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createGridNetwork("./output/network.xml", true);
+        createGridNetwork("./output/network.xml", false);
     }
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
@@ -235,7 +235,6 @@ public class NetworkUtil implements UtilComponent {
             setLinkAttributes(newNode_neigh, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
             setLinkAttributes(newNode_node, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
             setLinkAttributes(node_newNode, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-            System.out.println(node_newNode.getAllowedModes());
 
             net.addNode(newNode);
             net.addLink(neigh_newNode);

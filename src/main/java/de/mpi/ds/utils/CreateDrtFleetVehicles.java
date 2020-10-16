@@ -60,7 +60,7 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 
 	private void run() {
 
-	    random.setSeed(42);
+//	    random.setSeed(42);
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile.toString());
 		final int[] i = {0};
