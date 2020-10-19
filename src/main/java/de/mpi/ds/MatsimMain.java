@@ -30,13 +30,13 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-//        try {
-//            runMultiple(config, false, "drt");
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
+        try {
+            runMultiple(config, false, "pt");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
-        run(config, false);
+//        run(config, false);
         LOG.info("Simulation finished");
     }
 
@@ -99,8 +99,8 @@ public class MatsimMain {
 
             assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
             config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-//            System.out.println(populationFile);
-//            System.out.println(drtVehicleFile);
+            System.out.println(populationFile);
+            System.out.println(drtVehicleFile);
 
                 run(config, otfvis);
 //            }
