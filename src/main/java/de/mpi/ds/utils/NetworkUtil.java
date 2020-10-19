@@ -56,7 +56,7 @@ public class NetworkUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createGridNetwork("./output/network.xml", false);
+        createGridNetwork("./output/network.xml", true);
     }
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
@@ -94,8 +94,8 @@ public class NetworkUtil implements UtilComponent {
                         l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
                                         .concat(String.valueOf(nodes[i - 1][j].getId()).concat("_pt"))),
                                 nodes[i][j], nodes[i - 1][j]);
-                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
                         setLinkModes(l3, "train");
                         setLinkModes(l4, "train");
                         net.addLink(l3);
@@ -120,8 +120,8 @@ public class NetworkUtil implements UtilComponent {
                         l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
                                         .concat(String.valueOf(nodes[i][j - 1].getId()).concat("_pt"))), nodes[i][j],
                                 nodes[i][j - 1]);
-                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
                         setLinkModes(l3, "train");
                         setLinkModes(l4, "train");
                         net.addLink(l3);
@@ -254,10 +254,10 @@ public class NetworkUtil implements UtilComponent {
                         .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
                 Link node_newNode_pt = fac
                         .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
-                setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-                setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-                setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
-                setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN, NUMBER_OF_LANES);
+                setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
                 setLinkModes(neigh_newNode_pt, "train");
                 setLinkModes(newNode_neigh_pt, "train");
                 setLinkModes(newNode_node_pt, "train");

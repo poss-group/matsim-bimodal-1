@@ -17,7 +17,7 @@
 	</module>
 
 	<module name="plans">
-		<param name="inputPlansFile" value="../populations/population_10000reqs_pt.xml" />
+		<param name="inputPlansFile" value="population.xml" />
 	</module>
 
 	<module name="controler">
@@ -98,9 +98,10 @@
 
 	<module name="qsim">
 		<param name="simStarttimeInterpretation" value="onlyUseStarttime" />
-		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />
+<!--		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />-->
+		<param name="simEndtimeInterpretation" value="minOfEndtimeAndMobsimFinished" />
 		<param name="startTime" value="00:00:00"/>
-		<param name="endTime" value="24:00:00"/>
+		<param name="endTime" value="26:00:00"/>
 		<param name="mainMode" value="car" />
 	</module>
 

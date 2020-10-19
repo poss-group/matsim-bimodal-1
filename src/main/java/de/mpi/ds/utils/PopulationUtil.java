@@ -8,10 +8,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PtCountsConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.counts.PtCountsModule;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,18 +20,18 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createPopulation("./output/population.xml", "./output/network.xml");
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.pt);
     }
 
-    public static void createPopulation(String populationPath, String networkPath) {
+    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, String transportMode) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
         Map<String, Coord> zoneGeometries = new HashMap<>();
         Network net = NetworkUtils.readNetwork(networkPath);
         fillZoneData(zoneGeometries, net);
-        generatePopulation(zoneGeometries, population, net);
+        generatePopulation(zoneGeometries, population, net, nRequests, transportMode);
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
-        populationWriter.write(populationPath);
+        populationWriter.write(outputPopulationPath);
     }
 
     private static void fillZoneData(Map<String, Coord> zoneGeometries, Network net) {
@@ -45,10 +43,9 @@ public class PopulationUtil implements UtilComponent {
     }
 
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
-                                           Network net) {
+                                           Network net, int nRequests, String transportMode) {
         Random rand = new Random();
 //        rand.setSeed(231494);
-        int trips = N_REQUESTS;
         Id<Node> orig_id;
         Id<Node> dest_id;
         List<Id<Node>> nodeIdList = net.getNodes().values().stream()
@@ -58,7 +55,7 @@ public class PopulationUtil implements UtilComponent {
                 .collect(Collectors.toList());
         // Coord orig_coord;
         // Coord dest_coord;
-        for (int j = 0; j < trips; j++) {
+        for (int j = 0; j < nRequests; j++) {
             do {
                 orig_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
                 dest_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
@@ -70,12 +67,13 @@ public class PopulationUtil implements UtilComponent {
             // } while (orig_id == dest_id || orig_coord.getX() / 1000 % 2 == 1 ||
             // orig_coord.getY() / 1000 % 2 == 1
             // || dest_coord.getX() / 1000 % 2 == 1 || dest_coord.getY() / 1000 % 2 == 1);
-            generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population);
+            generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population, transportMode);
         }
     }
 
     private static void generateTrip(String from, String to, int passenger_id,
-                                      Map<String, Coord> zoneGeometries, Population population) {
+                                     Map<String, Coord> zoneGeometries, Population population,
+                                     String transportMode) {
         Coord source = zoneGeometries.get(from);
         Coord sink = zoneGeometries.get(to);
         Person person = population.getFactory()
@@ -92,7 +90,7 @@ public class PopulationUtil implements UtilComponent {
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));
 //				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
 //			}
-        plan.addLeg(createDriveLeg(population, TransportMode.pt));
+        plan.addLeg(createDriveLeg(population, transportMode));
 //			if (!sinkLocation.equals(sinkTransferLocation)) {
 //				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));

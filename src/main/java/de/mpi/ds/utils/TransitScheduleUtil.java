@@ -46,19 +46,23 @@ public class TransitScheduleUtil implements UtilComponent {
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
 
     public static void main(String[] args) {
+        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule.xml", "./output/transitVehicles.xml");
+    }
+
+    static void runTransitScheduleUtil(String networkPath, String outputSchedulePath,
+                                                 String outputVehiclesPath) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         TransitSchedule schedule = scenario.getTransitSchedule();
         TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
         PopulationFactory populationFactory = scenario.getPopulation().getFactory();
-        Network net = NetworkUtils.readNetwork("./output/network.xml");
+        Network net = NetworkUtils.readNetwork(networkPath);
         Vehicles vehicles = VehicleUtils.createVehiclesContainer();
 //        Vehicles vehicles = createVehicles();
 
         createTransitSchedule(transitScheduleFactory, schedule, populationFactory, net, vehicles);
 
-        new TransitScheduleWriter(schedule).writeFile("./output/transitSchedule.xml");
-        new MatsimVehicleWriter(vehicles).writeFile("./output/transitVehicles.xml");
-
+        new TransitScheduleWriter(schedule).writeFile(outputSchedulePath);
+        new MatsimVehicleWriter(vehicles).writeFile(outputVehiclesPath);
     }
 
     public static void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,

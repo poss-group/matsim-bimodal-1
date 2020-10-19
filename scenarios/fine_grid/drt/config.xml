@@ -79,9 +79,10 @@
 
 	<module name="qsim">
 		<param name="simStarttimeInterpretation" value="onlyUseStarttime" />
-		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />
+<!--		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />-->
+		<param name="simEndtimeInterpretation" value="minOfEndtimeAndMobsimFinished" />
 		<param name="startTime" value="00:00:00"/>
-		<param name="endTime" value="24:00:00"/>
+		<param name="endTime" value="26:00:00"/>
 		<param name="mainMode" value="car" />
 	</module>
 

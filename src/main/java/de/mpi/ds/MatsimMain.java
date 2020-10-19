@@ -30,48 +30,25 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-        runMultiple(config, false);
-//        run(config, false);
+//        try {
+//            runMultiple(config, false, "drt");
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
+
+        run(config, false);
         LOG.info("Simulation finished");
     }
-
-    private static void runMultiple(Config config, boolean otfvis) {
-        String populationDir = "../populations/";
-        String vehiclesDir = "../drtvehicles/";
-        Pattern patternPop = Pattern.compile("population_(.*)_pt.xml");
-        Pattern patternDrt = Pattern.compile("drtvehicles_(.*).xml");
-        String[] populationFiles = getFiles(patternPop, populationDir);
-        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
-
-        for (int i=0; i<populationFiles.length; i++) {
-            String populationFile = populationFiles[i];
-            String drtVehicleFile = drtVehicleFiles[i];
-            Matcher matcherPop = patternPop.matcher(populationFile);
-            Matcher matcherDrt = patternPop.matcher(populationFile);
-            matcherPop.find();
-            matcherDrt.find();
-
-            config.plans().setInputFile(populationDir + populationFile);
-            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-            modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
-
-            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-
-            run(config, otfvis);
-        }
-    }
-
 
     public static void run(Config config, boolean otfvis) {
         //TODO make PT deterministic
         //TODO why hermes not walking (threads)
+        //TODO check transitschedule
 
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
-                        "and\nvehicles file: "+ vehiclesFile + "\n---------------------------");
+                        "and\nvehicles file: " + vehiclesFile + "\n---------------------------");
 
 
         // For dvrp/drt
@@ -92,6 +69,44 @@ public class MatsimMain {
 
         controler.run();
     }
+
+    private static void runMultiple(Config config, boolean otfvis, String mode) throws Exception {
+        if (mode != "pt" && mode != "drt") {
+            throw new Exception("Mode has to be drt or pt");
+        }
+        String populationDir = "../populations_24h/";
+        String vehiclesDir = "../drtvehicles_1_percent_reqs/";
+        Pattern patternPop = Pattern.compile("population_(.*)_" + mode + "\\.xml");
+        Pattern patternDrt = Pattern.compile("drtvehicles_(.*).xml");
+        String[] populationFiles = getFiles(patternPop, populationDir);
+        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
+
+        for (int i = 0; i < populationFiles.length; i++) {
+            String populationFile = populationFiles[i];
+            String drtVehicleFile = drtVehicleFiles[i];
+//            if (!populationFile.equals("population_100reqs_drt.xml") &&
+//                    !populationFile.equals("population_1000reqs_drt.xml") &&
+//                    !populationFile.equals("population_10000reqs_drt.xml")) {
+            Matcher matcherPop = patternPop.matcher(populationFile);
+            Matcher matcherDrt = patternPop.matcher(populationFile);
+            matcherPop.find();
+            matcherDrt.find();
+
+            config.plans().setInputFile(populationDir + populationFile);
+            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+            modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
+
+            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+//            System.out.println(populationFile);
+//            System.out.println(drtVehicleFile);
+
+                run(config, otfvis);
+//            }
+        }
+    }
+
 
     private static String getVehiclesFile(Config config) {
         Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();

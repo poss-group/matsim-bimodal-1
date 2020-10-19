@@ -32,8 +32,6 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,19 +48,16 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 	 */
 	private static final Random random = MatsimRandom.getRandom();
 
-	private static final Path networkFile = Paths.get("output/network.xml");
-	private static final Path outputFile = Paths.get("output/drtvehicles.xml");
-
 	public static void main(String[] args) {
 
-		new CreateDrtFleetVehicles().run();
+		new CreateDrtFleetVehicles().run("./output/network.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
 	}
 
-	private void run() {
+	public void run(String networkPath, String outputDrtVehiclesPath, int nVehicles) {
 
 //	    random.setSeed(42);
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-		new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile.toString());
+		new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
 		final int[] i = {0};
 		List<? extends Map.Entry<Id<Link>, ? extends Link>> linkList = scenario.getNetwork().getLinks().entrySet().stream()
 				.filter(entry -> entry.getValue().getAllowedModes().contains(TransportMode.car)) // drt can only start on links with Transport mode 'car'
@@ -72,7 +67,7 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 
 
 		Stream<DvrpVehicleSpecification> vehicleSpecificationStream = linkList.stream()
-				.limit(numberOfDrtVehicles) // select the first *numberOfVehicles* links
+				.limit(nVehicles) // select the first *numberOfVehicles* links
 				.map(entry -> ImmutableDvrpVehicleSpecification.newBuilder()
 						.id(Id.create("drt_" + i[0]++, DvrpVehicle.class))
 						.startLinkId(entry.getKey())
@@ -81,7 +76,7 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 						.serviceEndTime(operationEndTime)
 						.build());
 
-		new FleetWriter(vehicleSpecificationStream).write(outputFile.toString());
+		new FleetWriter(vehicleSpecificationStream).write(outputDrtVehiclesPath.toString());
 		System.out.println("Wrote drt vehicles");
 
 	}
