@@ -9,7 +9,7 @@ public class CreateScenarioElements {
     private static String SUBFOLDER = "drt_scenario/";
 
     public static void main(String[] args) {
-        createGridNetwork("./output/" + SUBFOLDER + "network.xml", false);
+//        createGridNetwork("./output/" + SUBFOLDER + "network.xml", false);
 //        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule.xml", "./output/transitVehicles
 //        .xml");
 

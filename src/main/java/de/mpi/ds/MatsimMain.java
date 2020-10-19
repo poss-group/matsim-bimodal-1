@@ -102,7 +102,7 @@ public class MatsimMain {
             System.out.println(populationFile);
             System.out.println(drtVehicleFile);
 
-                run(config, otfvis);
+            run(config, otfvis);
 //            }
         }
     }
