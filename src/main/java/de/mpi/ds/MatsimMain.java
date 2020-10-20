@@ -1,6 +1,7 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.bimodal_assignment.BimodalAssignmentModule;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -31,7 +32,7 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, false, "pt");
+            runMultiple(config, false, "drt");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -59,9 +60,10 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
+//        controler.addOverridingModule(new BimodalAssignmentModule());
 //        controler.addOverridingModule(new GridPrePlanner());
 //        controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
 //        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get
@@ -71,7 +73,7 @@ public class MatsimMain {
     }
 
     private static void runMultiple(Config config, boolean otfvis, String mode) throws Exception {
-        if (mode != "pt" && mode != "drt") {
+        if (!mode.equals("pt") && !mode.equals("drt")) {
             throw new Exception("Mode has to be drt or pt");
         }
         String populationDir = "../populations_24h/";
@@ -84,26 +86,24 @@ public class MatsimMain {
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
             String drtVehicleFile = drtVehicleFiles[i];
-//            if (!populationFile.equals("population_100reqs_drt.xml") &&
-//                    !populationFile.equals("population_1000reqs_drt.xml") &&
-//                    !populationFile.equals("population_10000reqs_drt.xml")) {
-            Matcher matcherPop = patternPop.matcher(populationFile);
-            Matcher matcherDrt = patternPop.matcher(populationFile);
-            matcherPop.find();
-            matcherDrt.find();
+            if (populationFile.equals("population_20000reqs_drt.xml")) {
+                Matcher matcherPop = patternPop.matcher(populationFile);
+                Matcher matcherDrt = patternPop.matcher(populationFile);
+                matcherPop.find();
+                matcherDrt.find();
 
-            config.plans().setInputFile(populationDir + populationFile);
-            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-            modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
+                config.plans().setInputFile(populationDir + populationFile);
+                Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+                assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+                modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
 
-            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-            System.out.println(populationFile);
-            System.out.println(drtVehicleFile);
+                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+                config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+                System.out.println(populationFile);
+                System.out.println(drtVehicleFile);
 
-            run(config, otfvis);
-//            }
+                run(config, otfvis);
+            }
         }
     }
 
