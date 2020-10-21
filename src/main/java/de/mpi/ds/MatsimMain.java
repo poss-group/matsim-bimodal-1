@@ -86,7 +86,6 @@ public class MatsimMain {
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
             String drtVehicleFile = drtVehicleFiles[i];
-            if (populationFile.equals("population_20000reqs_drt.xml")) {
                 Matcher matcherPop = patternPop.matcher(populationFile);
                 Matcher matcherDrt = patternPop.matcher(populationFile);
                 matcherPop.find();
@@ -99,11 +98,10 @@ public class MatsimMain {
 
                 assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
                 config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-                System.out.println(populationFile);
-                System.out.println(drtVehicleFile);
+//                System.out.println(populationFile);
+//                System.out.println(drtVehicleFile);
 
                 run(config, otfvis);
-            }
         }
     }
 

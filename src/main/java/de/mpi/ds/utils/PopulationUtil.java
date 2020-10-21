@@ -20,16 +20,16 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.pt);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.pt, 234);
     }
 
-    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, String transportMode) {
+    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, String transportMode, long seed) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
         Map<String, Coord> zoneGeometries = new HashMap<>();
         Network net = NetworkUtils.readNetwork(networkPath);
         fillZoneData(zoneGeometries, net);
-        generatePopulation(zoneGeometries, population, net, nRequests, transportMode);
+        generatePopulation(zoneGeometries, population, net, nRequests, transportMode, seed);
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
     }
@@ -43,9 +43,9 @@ public class PopulationUtil implements UtilComponent {
     }
 
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
-                                           Network net, int nRequests, String transportMode) {
+                                           Network net, int nRequests, String transportMode, long seed) {
         Random rand = new Random();
-//        rand.setSeed(231494);
+        rand.setSeed(seed);
         Id<Node> orig_id;
         Id<Node> dest_id;
         List<Id<Node>> nodeIdList = net.getNodes().values().stream()

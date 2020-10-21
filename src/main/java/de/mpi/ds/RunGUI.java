@@ -18,7 +18,7 @@ public class RunGUI {
             LOG.info("Running creation of sample configurations");
             NetworkUtil.createGridNetwork("./output/".concat(args[1]), true);
             PopulationUtil.createPopulation("./output/".concat(args[0]), "./output/".concat(args[1]), N_REQUESTS,
-                    TransportMode.pt);
+                    TransportMode.pt, 2141234);
         } else if (args.length == 0) {
             LOG.info("Starting matsim...");
             Gui.show("MATSim Bimodal", MatsimMain.class);
