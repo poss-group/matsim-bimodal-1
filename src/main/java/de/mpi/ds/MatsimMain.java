@@ -1,8 +1,8 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
-import de.mpi.ds.bimodal_assignment.BimodalAssignmentModule;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -10,6 +10,7 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, false, "drt");
+            runMultiple(config, false, "pt");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -42,14 +43,10 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) {
-        //TODO make PT deterministic
-        //TODO why hermes not walking (threads)
-        //TODO check transitschedule
-
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
-                        "and\nvehicles file: " + vehiclesFile + "\n---------------------------");
+                        " and\nvehicles file: " + vehiclesFile + "\n---------------------------");
 
 
         // For dvrp/drt
@@ -60,7 +57,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-//        controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
@@ -86,22 +83,22 @@ public class MatsimMain {
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
             String drtVehicleFile = drtVehicleFiles[i];
-                Matcher matcherPop = patternPop.matcher(populationFile);
-                Matcher matcherDrt = patternPop.matcher(populationFile);
-                matcherPop.find();
-                matcherDrt.find();
+            Matcher matcherPop = patternPop.matcher(populationFile);
+            Matcher matcherDrt = patternPop.matcher(populationFile);
+            matcherPop.find();
+            matcherDrt.find();
 
-                config.plans().setInputFile(populationDir + populationFile);
-                Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-                assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-                modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
+            config.plans().setInputFile(populationDir + populationFile);
+            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+            modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
 
-                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-                config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
 //                System.out.println(populationFile);
 //                System.out.println(drtVehicleFile);
 
-                run(config, otfvis);
+            run(config, otfvis);
         }
     }
 

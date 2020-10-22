@@ -176,9 +176,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         double time = transitStartTime;
         int i = 0;
         boolean first_dep = true;
-        int transportersPerLine = (int) Math
-                .ceil((departure_delay * (n_xy * 2 - 1)) / transitIntervalTime); // calculate how many
-        // transporters are presented on a line maximally
+        int transportersPerLine = 2;
         while (time < transitEndTime) {
             Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
             Id<Vehicle> vehicleId =
@@ -194,10 +192,12 @@ public class TransitScheduleConstructor implements UtilComponent {
             i++;
 
             if (first_dep) {
-                time += transitIntervalTime / 4;
+//                time += transitIntervalTime / 4;
+                time += 30*60;
                 first_dep = false;
             } else {
-                time += transitIntervalTime * 3/4;
+//                time += transitIntervalTime * 3/4;
+                time += 30*60;
                 first_dep = true;
             }
         }

@@ -60,3 +60,7 @@ scenarios/fine_grid/bimodal/population.xml filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles_1_percent_reqs/** filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/populations_24h/** filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/bimodal/network.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/pt/population.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/pt/network.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/pt/transitSchedule.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/pt/transitVehicles.xml filter=lfs diff=lfs merge=lfs -text

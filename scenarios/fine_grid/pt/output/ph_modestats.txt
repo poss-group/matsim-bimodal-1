@@ -1,0 +1,2 @@
+Iteration	pt_travel	pt_wait	stageActivity_travel	stageActivity_wait	walk_travel	walk_wait
+0	10706	220660	0	0	29086	0
