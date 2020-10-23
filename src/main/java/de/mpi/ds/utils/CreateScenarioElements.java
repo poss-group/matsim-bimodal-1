@@ -17,12 +17,14 @@ public class CreateScenarioElements {
         System.out.println(seed);
 //        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule.xml", "./output/transitVehicles
 //        .xml");
+        int[] iterations = new int[]{1000, 10000, 50000, 100000, 500000, 1000000};
 
-        for (int i = 11000; i < 20000; i += 1000) {
+        for (int i : iterations) {
             String namePopulationFileDrt = "population_" + String.valueOf(i) + "reqs_drt.xml";
             String namePopulationFilePt = "population_" + String.valueOf(i) + "reqs_pt.xml";
             String nameDrtVehiclesFile = "drtvehicles_" + String.valueOf(i) + "reqs.xml";
-            createPopulation("./output/" + SUBFOLDER + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml", i,
+            createPopulation("./output/" + SUBFOLDER + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml",
+                    i,
                     TransportMode.drt, seed);
             createPopulation("./output/" + SUBFOLDER + namePopulationFilePt, "./output/" + SUBFOLDER + "network.xml", i,
                     TransportMode.pt, seed);

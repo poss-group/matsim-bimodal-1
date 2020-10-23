@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PopulationUtil implements UtilComponent {
+    private static Random rand = new Random();
 
     private PopulationUtil() {
     }
@@ -24,6 +25,7 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, String transportMode, long seed) {
+        rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
         Map<String, Coord> zoneGeometries = new HashMap<>();
@@ -44,7 +46,6 @@ public class PopulationUtil implements UtilComponent {
 
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
                                            Network net, int nRequests, String transportMode, long seed) {
-        Random rand = new Random();
         rand.setSeed(seed);
         Id<Node> orig_id;
         Id<Node> dest_id;
@@ -118,7 +119,6 @@ public class PopulationUtil implements UtilComponent {
     }
 
     private static Activity createFirst(Coord homeLocation, Population population) {
-        Random rand = new Random();
         Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
         activity.setEndTime(rand.nextInt(MAX_END_TIME)); // [s]
         return activity;

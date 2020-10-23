@@ -2,7 +2,6 @@ package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -10,7 +9,6 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
@@ -33,7 +31,7 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, false, "pt");
+            runMultiple(config, false, "drt");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -43,11 +41,12 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) {
+        //TODO check diff btw ExtensiveInsetionSearch & SelectiveInsertionSearch
+        //TODO Create new scenario big
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
                         " and\nvehicles file: " + vehiclesFile + "\n---------------------------");
-
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);
@@ -57,7 +56,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
