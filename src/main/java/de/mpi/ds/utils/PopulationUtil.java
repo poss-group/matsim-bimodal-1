@@ -21,7 +21,7 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.pt, 234);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 42);
     }
 
     public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, String transportMode, long seed) {

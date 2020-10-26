@@ -85,3 +85,5 @@ scenarios/fine_grid/drtvehicles_large/drtvehicles_500000reqs.xml.gz filter=lfs d
 scenarios/fine_grid/drtvehicles_large/drtvehicles_50000reqs.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles_large/drtvehicles_1000000reqs.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles_large/drtvehicles_100000reqs.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit/population.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles_convcrit/drtvehicles_192000reqs.xml.gz filter=lfs diff=lfs merge=lfs -text

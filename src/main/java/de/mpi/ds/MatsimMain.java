@@ -1,6 +1,5 @@
 package de.mpi.ds;
 
-import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -31,7 +30,7 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, false, "pt");
+            runMultiple(config, false);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -56,7 +55,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
@@ -68,13 +67,10 @@ public class MatsimMain {
         controler.run();
     }
 
-    private static void runMultiple(Config config, boolean otfvis, String mode) throws Exception {
-        if (!mode.equals("pt") && !mode.equals("drt")) {
-            throw new Exception("Mode has to be drt or pt");
-        }
-        String populationDir = "../populations_large/";
-        String vehiclesDir = "../drtvehicles_large/";
-        Pattern patternPop = Pattern.compile("population_(.*)_" + mode + "\\.xml.gz");
+    private static void runMultiple(Config config, boolean otfvis) throws Exception {
+        String populationDir = "../populations_convcrit/";
+        String vehiclesDir = "../drtvehicles_convcrit/";
+        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*).xml.gz");
         String[] populationFiles = getFiles(patternPop, populationDir);
         String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
@@ -82,24 +78,22 @@ public class MatsimMain {
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
             String drtVehicleFile = drtVehicleFiles[i];
-            if (populationFile.equals("population_10000reqs_pt.xml.gz")) {
-                Matcher matcherPop = patternPop.matcher(populationFile);
-                Matcher matcherDrt = patternPop.matcher(populationFile);
-                matcherPop.find();
-                matcherDrt.find();
+            Matcher matcherPop = patternPop.matcher(populationFile);
+            Matcher matcherDrt = patternPop.matcher(populationFile);
+            matcherPop.find();
+            matcherDrt.find();
 
-                config.plans().setInputFile(populationDir + populationFile);
-                Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-                assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-                modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
+            config.plans().setInputFile(populationDir + populationFile);
+            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+            modalElements.stream().findFirst().get().setVehiclesFile(vehiclesDir + drtVehicleFile);
 
-                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-                config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-//                System.out.println(populationFile);
-//                System.out.println(drtVehicleFile);
+            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+//            System.out.println(populationFile);
+//            System.out.println(drtVehicleFile);
 
-                run(config, otfvis);
-            }
+            run(config, otfvis);
         }
 
     }

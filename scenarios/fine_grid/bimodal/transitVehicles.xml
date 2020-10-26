@@ -5,7 +5,7 @@
 	<vehicleType id="1">
 
 		<description>train</description>
-		<capacity seats="10" standingRoomInPersons="10">
+		<capacity seats="20" standingRoomInPersons="0">
 
 		</capacity>
 		<length meter="50.0"/>

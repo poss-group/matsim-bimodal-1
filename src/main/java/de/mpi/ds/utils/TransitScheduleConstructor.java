@@ -66,8 +66,8 @@ public class TransitScheduleConstructor implements UtilComponent {
         vehicleType.setNetworkMode("train");
         vehicleType.setMaximumVelocity(FREE_SPEED_TRAIN_FOR_SCHEDULE);
         vehicleType.setLength(50);
-        vehicleType.getCapacity().setSeats(10);
-        vehicleType.getCapacity().setStandingRoom(10);
+        vehicleType.getCapacity().setSeats(20);
+        vehicleType.getCapacity().setStandingRoom(0);
         vehicles.addVehicleType(vehicleType);
     }
 
@@ -79,7 +79,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         currRouteStopCount = 0;
 
         moveFromTo(linkList, startNode, endNode, transitRouteStopList, direction, true);
-        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
+//        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
 
         List<Id<Link>> idLinkList = linkList.stream().map(Identifiable::getId).collect(Collectors.toList());
         Id<TransitRoute> tr_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
@@ -176,6 +176,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         double time = transitStartTime;
         int i = 0;
         boolean first_dep = true;
+        //TODO can make this variable
         int transportersPerLine = 2;
         while (time < transitEndTime) {
             Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
@@ -193,11 +194,11 @@ public class TransitScheduleConstructor implements UtilComponent {
 
             if (first_dep) {
 //                time += transitIntervalTime / 4;
-                time += 30*60;
+                time += 15*60;
                 first_dep = false;
             } else {
 //                time += transitIntervalTime * 3/4;
-                time += 30*60;
+                time += 15*60;
                 first_dep = true;
             }
         }
