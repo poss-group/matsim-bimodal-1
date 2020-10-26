@@ -32,9 +32,9 @@ public class CreateScenarioElements {
             String nameDrtVehiclesFile = "drtvehicles_" + String.valueOf(i) + "reqs.xml";
             createPopulation(outPath + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml",
                     i,
-                    TransportMode.drt, seed);
+                    TransportMode.drt, 0,seed);
             createPopulation(outPath + namePopulationFilePt, "./output/" + SUBFOLDER + "network.xml", i,
-                    TransportMode.pt, seed);
+                    TransportMode.pt, 0, seed);
             new CreateDrtFleetVehicles()
                     .run(outPath + "network.xml", "output/" + SUBFOLDER + nameDrtVehiclesFile,
                             (int) (0.01 * i));
@@ -48,7 +48,7 @@ public class CreateScenarioElements {
         }
     }
 
-    private static void deleteFile(String filePath) {
+    static void deleteFile(String filePath) {
         try {
             Files.deleteIfExists(Paths.get(filePath));
         } catch (Exception e) {
@@ -56,7 +56,7 @@ public class CreateScenarioElements {
         }
     }
 
-    private static void compressGzipFile(String file, String gzipFile) {
+    static void compressGzipFile(String file, String gzipFile) {
         try {
             FileInputStream fis = new FileInputStream(file);
             FileOutputStream fos = new FileOutputStream(gzipFile);

@@ -1,5 +1,6 @@
 package de.mpi.ds;
 
+import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -40,8 +41,6 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) {
-        //TODO check diff btw ExtensiveInsetionSearch & SelectiveInsertionSearch
-        //TODO Create new scenario big
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -55,7 +54,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-//        controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
@@ -70,16 +69,18 @@ public class MatsimMain {
     private static void runMultiple(Config config, boolean otfvis) throws Exception {
         String populationDir = "../populations_convcrit/";
         String vehiclesDir = "../drtvehicles_convcrit/";
-        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
+//        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
+        Pattern patternPop = Pattern.compile("population_(.*)_(?!gammaInfty)(.*)\\.xml.gz");
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*).xml.gz");
         String[] populationFiles = getFiles(patternPop, populationDir);
-        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
+//        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
 
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
-            String drtVehicleFile = drtVehicleFiles[i];
+//            String drtVehicleFile = drtVehicleFiles[i];
+            String drtVehicleFile = "drtvehicles_192000reqs.xml.gz";
             Matcher matcherPop = patternPop.matcher(populationFile);
-            Matcher matcherDrt = patternPop.matcher(populationFile);
+            Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
             matcherPop.find();
             matcherDrt.find();
 
