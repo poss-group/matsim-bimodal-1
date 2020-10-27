@@ -35,12 +35,13 @@ public class MatsimMain {
         } catch (Exception e) {
             System.out.println(e);
         }
-
+//
 //        run(config, false);
-//        LOG.info("Simulation finished");
+        LOG.info("Simulation finished");
     }
 
     public static void run(Config config, boolean otfvis) {
+        //TODO fix long waiting times for pt transit
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -54,7 +55,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
@@ -70,15 +71,16 @@ public class MatsimMain {
         String populationDir = "../populations_convcrit/";
         String vehiclesDir = "../drtvehicles_convcrit/";
 //        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
-        Pattern patternPop = Pattern.compile("population_(.*)_(?!gammaInfty)(.*)\\.xml.gz");
-        Pattern patternDrt = Pattern.compile("drtvehicles_(.*).xml.gz");
+//        Pattern patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
+        Pattern patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
+        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
         String[] populationFiles = getFiles(patternPop, populationDir);
 //        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
 
         for (int i = 0; i < populationFiles.length; i++) {
             String populationFile = populationFiles[i];
 //            String drtVehicleFile = drtVehicleFiles[i];
-            String drtVehicleFile = "drtvehicles_192000reqs.xml.gz";
+            String drtVehicleFile = "drtvehicles.xml.gz";
             Matcher matcherPop = patternPop.matcher(populationFile);
             Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
             matcherPop.find();
@@ -91,9 +93,10 @@ public class MatsimMain {
 
             assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
             config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+//            System.out.println("./output/" + matcherPop.group(1));
 //            System.out.println(populationFile);
 //            System.out.println(drtVehicleFile);
-
+//
             run(config, otfvis);
         }
 

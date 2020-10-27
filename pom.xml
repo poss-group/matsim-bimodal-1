@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.mpi.ds</groupId>
-    <artifactId>matsim-bimodal</artifactId>
+    <artifactId>matsim-bimodal-drtconvcrit</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>MATSim bimodal transport simulation</name>

@@ -86,7 +86,7 @@ public class TransitScheduleUtil implements UtilComponent {
                         .getY() / delta_y == (n_xy - 1) - firstStation).sorted(
                         Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
 
-        LOG.warn(transitIntervalTime);
+        LOG.info(transitIntervalTime);
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, pt_interval, delta_xy,
                 delta_xy * pt_interval / FREE_SPEED_TRAIN,
