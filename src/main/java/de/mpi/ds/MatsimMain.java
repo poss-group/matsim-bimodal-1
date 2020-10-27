@@ -30,13 +30,13 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-        try {
-            runMultiple(config, false);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+//        try {
+//            runMultiple(config, false);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
 //
-//        run(config, false);
+        run(config, false);
         LOG.info("Simulation finished");
     }
 
@@ -55,7 +55,7 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-//        controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
@@ -71,8 +71,8 @@ public class MatsimMain {
         String populationDir = "../populations_convcrit/";
         String vehiclesDir = "../drtvehicles_convcrit/";
 //        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
-//        Pattern patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
-        Pattern patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
+        Pattern patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
+//        Pattern patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
         String[] populationFiles = getFiles(patternPop, populationDir);
 //        String[] drtVehicleFiles = getFiles(patternDrt, vehiclesDir);
@@ -96,7 +96,7 @@ public class MatsimMain {
 //            System.out.println("./output/" + matcherPop.group(1));
 //            System.out.println(populationFile);
 //            System.out.println(drtVehicleFile);
-//
+
             run(config, otfvis);
         }
 
