@@ -65,8 +65,8 @@ public class TransitScheduleConstructor implements UtilComponent {
         vehicleType.setDescription("train");
         vehicleType.setNetworkMode("train");
         vehicleType.setMaximumVelocity(FREE_SPEED_TRAIN_FOR_SCHEDULE);
-        vehicleType.setLength(50);
-        vehicleType.getCapacity().setSeats(20);
+        vehicleType.setLength(10);
+        vehicleType.getCapacity().setSeats(10000);
         vehicleType.getCapacity().setStandingRoom(0);
         vehicles.addVehicleType(vehicleType);
     }

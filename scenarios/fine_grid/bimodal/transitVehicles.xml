@@ -5,10 +5,10 @@
 	<vehicleType id="1">
 
 		<description>train</description>
-		<capacity seats="20" standingRoomInPersons="0">
+		<capacity seats="10000" standingRoomInPersons="0">
 
 		</capacity>
-		<length meter="50.0"/>
+		<length meter="10.0"/>
 		<width meter="1.0"/>
 		<maximumVelocity meterPerSecond="23.333333333333332"/>
 		<costInformation>
