@@ -30,13 +30,13 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-//        try {
-//            runMultiple(config, false);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//
-        run(config, false);
+        try {
+            runMultiple(config, false);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+//        run(config, false);
         LOG.info("Simulation finished");
     }
 

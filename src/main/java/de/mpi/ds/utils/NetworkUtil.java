@@ -56,7 +56,7 @@ public class NetworkUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createGridNetwork("./output/network.xml", true);
+        createGridNetwork("./output/network.xml", false);
     }
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
