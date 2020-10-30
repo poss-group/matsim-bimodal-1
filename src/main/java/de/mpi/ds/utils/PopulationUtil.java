@@ -28,7 +28,7 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 0, 42);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 4, 95842);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
     }
