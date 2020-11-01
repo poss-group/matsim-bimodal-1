@@ -79,7 +79,7 @@
 		<parameterset type="teleportedModeParameters" >
 			<!-- 1.4 for manhatten, infinity for non walking, default 1.3 -->
 			<!-- turn off walking -->
-			<param name="beelineDistanceFactor" value="100" />
+			<param name="beelineDistanceFactor" value="1000000" />
 			<param name="mode" value="walk" />
 			<param name="teleportedModeFreespeedFactor" value="null" />
 			<param name="teleportedModeSpeed" value="0.8333333333333333" />
