@@ -28,7 +28,7 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 4, 95842);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 4, 31357);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
     }
@@ -101,12 +101,12 @@ public class PopulationUtil implements UtilComponent {
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));
 //				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
 //			}
-//        plan.addLeg(createDriveLeg(population, TransportMode.drt));
-        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
-            plan.addLeg(createDriveLeg(population, TransportMode.pt));
-        } else {
-            plan.addLeg(createDriveLeg(population, TransportMode.drt));
-        }
+        plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
+//            plan.addLeg(createDriveLeg(population, TransportMode.pt));
+//        } else {
+//            plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//        }
 //			if (!sinkLocation.equals(sinkTransferLocation)) {
 //				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));

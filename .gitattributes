@@ -109,3 +109,9 @@ scenarios/fine_grid/populations_convcrit_seed95842/population_gamma2_8.xml.gz fi
 scenarios/fine_grid/populations_convcrit_seed95842/population_gamma4_0.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/populations_convcrit_seed95842/population_gammaInfty.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles_convcrit_seed95842/drtvehicles.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles_convcrit_seed31357/drtvehicles.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit_seed31357/population_gamma0_7.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit_seed31357/population_gamma1_4.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit_seed31357/population_gamma2_8.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit_seed31357/population_gamma4_0.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations_convcrit_seed31357/population_gammaInfty.xml.gz filter=lfs diff=lfs merge=lfs -text
