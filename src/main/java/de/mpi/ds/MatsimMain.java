@@ -1,6 +1,8 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
+import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -30,13 +32,13 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-        try {
-            runMultiple(config, args[1], args[2], false);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
-//        run(config, false);
+//        try {
+//            runMultiple(config, args[1], args[2], false);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
+//
+        run(config, false);
         LOG.info("Simulation finished");
     }
 
@@ -55,14 +57,14 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-//        controler.addOverridingModule(new SwissRailRaptorModule());
+        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
 //        controler.addOverridingModule(new GridPrePlanner());
 //        controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
-//        controler.addOverridingModule(new DrtPlanModifier((DrtPlanModifierConfigGroup) config.getModules().get
-//        (DrtPlanModifierConfigGroup.NAME)));
+        controler.addOverridingModule(new DrtPlanModifier());
+//                (DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
         controler.run();
     }

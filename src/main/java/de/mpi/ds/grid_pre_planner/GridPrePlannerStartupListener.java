@@ -118,6 +118,13 @@ public class GridPrePlannerStartupListener implements StartupListener {
                 Leg newLeg = population.getFactory().createLeg(TransportMode.pt);
                 plan.getPlanElements().add(2, newActivity);
                 plan.getPlanElements().add(3, newLeg);
+
+
+//                Coord firstCoord = network.getNodes().get(coordToNode.get(firstAct.getCoord())).getCoord();
+//                Coord drtDummyCord = newCoord
+//                newActivity = population.getFactory().createActivityFromCoord("dummy", drtDummyCord);
+//                newActivity.setMaximumDuration(0);
+//                plan.getPlanElements().add(1,)
             }
         } else {
             // Trips shorter than distance btw. transit routes:

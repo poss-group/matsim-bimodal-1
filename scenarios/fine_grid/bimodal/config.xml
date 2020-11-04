@@ -17,7 +17,8 @@
 	</module>
 
 	<module name="plans">
-		<param name="inputPlansFile" value="population.xml" />
+		<param name="inputPlansFile" value="population_gamma1_4.xml.gz" />
+<!--		<param name="inputPlansFile" value="population.xml" />-->
 	</module>
 
 	<module name="controler">
@@ -107,21 +108,21 @@
 
 	<!--	Public Transport -->
 	<module name="swissRailRaptor">
-		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />
-		<param name="useIntermodalAccessEgress" value="true" />
+<!--		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />-->
+		<param name="useIntermodalAccessEgress" value="false" />
 
-		<parameterset type="intermodalAccessEgress">
-            <param name="mode" value="walk"/>
-			<param name="maxRadius" value="100"/>
-			<param name="initialSearchRadius" value="10"/>
-			<param name="searchExtensionRadius" value="10"/>
-		</parameterset>
-		<parameterset type="intermodalAccessEgress">
-			<param name="mode" value="drt" />
-			<param name="maxRadius" value="10000" />
-			<param name="initialSearchRadius" value="1000"/>
-			<param name="searchExtensionRadius" value="1000"/>
-		</parameterset>
+<!--		<parameterset type="intermodalAccessEgress">-->
+<!--            <param name="mode" value="walk"/>-->
+<!--			<param name="maxRadius" value="100"/>-->
+<!--			<param name="initialSearchRadius" value="10"/>-->
+<!--			<param name="searchExtensionRadius" value="10"/>-->
+<!--		</parameterset>-->
+<!--		<parameterset type="intermodalAccessEgress">-->
+<!--			<param name="mode" value="drt" />-->
+<!--			<param name="maxRadius" value="10000" />-->
+<!--			<param name="initialSearchRadius" value="1000"/>-->
+<!--			<param name="searchExtensionRadius" value="1000"/>-->
+<!--		</parameterset>-->
 	</module>
 
 	<module name="multiModeDrt">
@@ -133,7 +134,18 @@
 			<param name="maxWaitTime" value="1200.0"/>
 			<param name="operationalScheme" value="door2door"/>
 			<param name="stopDuration" value="1.0"/>
-			<param name="vehiclesFile" value="drtvehicles.xml"/>
+			<param name="vehiclesFile" value="drtvehicles.xml.gz"/>
+
+<!--			<parameterset type="rebalancing">-->
+<!--				<parameterset type="minCostFlowRebalancingStrategy">-->
+<!--					<param name="targetAlpha" value="0.5"/>-->
+<!--					<param name="targetBeta" value="0.5"/>-->
+<!--				</parameterset>-->
+<!--			</parameterset>-->
+<!--			<parameterset type="zonalSystem">-->
+<!--				<param name="zonesGeneration" value="GridFromNetwork"/>-->
+<!--				<param name="cellSize" value="1000"/>-->
+<!--			</parameterset>-->
 		</parameterset>
 	</module>
 

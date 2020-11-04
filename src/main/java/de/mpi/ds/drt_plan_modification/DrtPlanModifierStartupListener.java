@@ -15,12 +15,10 @@ import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.router.TripRouter;
-import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
-import org.matsim.facilities.ActivityFacility;
-//import org.matsim.core.population.LegImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
@@ -29,44 +27,29 @@ class DrtPlanModifierStartupListener implements StartupListener {
 //    @Inject
 //    Controler controler;
 
-    private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
-        double source_x = startLoc.getX();
-        double source_y = startLoc.getY();
-        double sink_x = targetLoc.getX();
-        double sink_y = targetLoc.getY();
-        double new_x = source_x;
-        double new_y = source_y;
-        Random rnd = new Random();
-        rnd.setSeed(12342);
-        //Could also ask if sink_x/y - source_x/y == 1
-        if (sink_y - source_y == 0) {
-            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
-        } else if (sink_x - source_x == 0) {
-            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
-        } else if (rnd.nextBoolean()) {
-            new_x = source_x + Math.signum(sink_x - source_x) * 1000;
-        } else {
-            new_y = source_y + Math.signum(sink_y - source_y) * 1000;
-        }
-        return new Coord(new_x, new_y);
-    }
-
     private static Node searchTransferNode(Node fromNode, Node toNode) {
         Queue<Node> queue = new LinkedList<>();
+        List<Node> visited = new ArrayList<>();
         queue.add(fromNode);
         while (!queue.isEmpty()) {
             Node current = queue.remove();
+            visited.add(current);
             Collection<? extends Link> outLinks = current.getOutLinks().values();
-            if (outLinks.stream().anyMatch(l -> l.getAllowedModes().contains(TransportMode.train))) {
+            if (isPtStation(outLinks.stream())) {
                 return current;
             }
             // Add closest connected nodes to queue (sorted by their distance to the toNode)
             queue.addAll(outLinks.stream().map(Link::getToNode)
-                    .sorted(Comparator.comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
+                    .filter(e -> !visited.contains((e)))
+                    .sorted(Comparator
+                            .comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
                     .collect(Collectors.toList()));
         }
         return null;
     }
+
+//    private static boolean isPtStation(Stream<? extends Link> stream) {
+//    }
 
     private static Activity createDummyActivity(Coord location, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
@@ -79,10 +62,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
         LOG.info("Modifying plans...");
 //        LOG.warn(controler.getTripRouterProvider().get());
 //        TripRouter tripRouter = tripRouterProvider.get();
-//        Person testPerson = event.getServices().getScenario().getPopulation().getFactory().createPerson(Id.createPersonId("-1"));
+//        Person testPerson = event.getServices().getScenario().getPopulation().getFactory().createPerson(Id
+//        .createPersonId("-1"));
 //        ActivityFacilitiesFactoryImpl activityFacilitiesFactory =  new ActivityFacilitiesFactoryImpl();
-//        ActivityFacility fstAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility.class),Id.createLinkId("6029_6130"));
-//        ActivityFacility scndAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility.class),Id.createLinkId("5524_5625"));
+//        ActivityFacility fstAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility
+//        .class),Id.createLinkId("6029_6130"));
+//        ActivityFacility scndAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1",
+//        ActivityFacility.class),Id.createLinkId("5524_5625"));
 //        List<? extends PlanElement> routeList = tripRouter.calcRoute("car", fstAct,scndAct, 0, testPerson);
 //        LOG.warn(routeList.get(0));
 //        ((LegImpl) routeList.get(0)).travTime;
@@ -93,7 +79,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
         Map<Coord, Id<Node>> coordToNode = network.getNodes().entrySet().stream().collect(
                 Collectors.toMap(e -> e.getValue().getCoord(),
                         Map.Entry::getKey));
+        int count = 0;
         for (Person person : sc.getPopulation().getPersons().values()) {
+            if (count % 1000 == 0) {
+                LOG.info("Person" + count);
+            }
+            count++;
             for (Plan plan : person.getPlans()) {
                 Activity firstAct = null;
                 Activity lastAct = null;
@@ -112,14 +103,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 assert lastAct != null;
                 Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
                 Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
-                if (firstNode.getOutLinks().values().stream().noneMatch(e -> e.getAllowedModes().contains("train"))) {
-//                    dummyFirstCoord = searchTransferLoc(firstAct.getCoord(), lastAct.getCoord());
+                if (!isPtStation(firstNode)) {
                     Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
                     assert dummyFirstNode != null;
                     dummyFirstCoord = dummyFirstNode.getCoord();
                 }
-                if (lastNode.getOutLinks().values().stream().noneMatch(e -> e.getAllowedModes().contains("train"))) {
-//                    dummyLastCoord = searchTransferLoc(lastAct.getCoord(), firstAct.getCoord());
+                if (!isPtStation(lastNode)) {
                     Node dummyLastNode = searchTransferNode(lastNode, firstNode);
                     assert dummyLastNode != null;
                     dummyLastCoord = dummyLastNode.getCoord();
@@ -132,7 +121,20 @@ class DrtPlanModifierStartupListener implements StartupListener {
         populationWriter.write("./output/drt_plan_modified_plans.xml");
     }
 
-    private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord, Coord dummy_last_coord) {
+    private static boolean isPtStation(Node node) {
+        return node.getOutLinks().values().stream().map(e -> e.getAllowedModes().contains("train"))
+                .map(b -> b ? 1 : 0)
+                .mapToInt(Integer::intValue).sum() > 3;
+    }
+
+    private static boolean isPtStation(Stream<? extends Link> linkStream) {
+        return linkStream.map(e -> e.getAllowedModes().contains("train"))
+                .map(b -> b ? 1 : 0)
+                .mapToInt(Integer::intValue).sum() > 3;
+    }
+
+    private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord,
+                                     Coord dummy_last_coord) {
         if (dummy_last_coord != null) {
             plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
             plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
@@ -142,22 +144,4 @@ class DrtPlanModifierStartupListener implements StartupListener {
             plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
         }
     }
-
-//    @Override
-//    public void notifyIterationStarts(IterationStartsEvent event) {
-//        Scenario scenario = event.getServices().getScenario();
-//        LOG.warn("Now at Iteration Starts - scenario: " + scenario);
-//        for (Person person : scenario.getPopulation().getPersons().values()) {
-//            for (Plan plan : person.getPlans()) {
-//                Activity firstAct = null;
-//                Activity lastAct = null;
-//                boolean foundFirst = false;
-//                for (PlanElement el : plan.getPlanElements()) {
-//                    LOG.warn(el);
-//                }
-//            }
-//        }
-//    }
-
-//    private static Link wideSearchLink()
 }

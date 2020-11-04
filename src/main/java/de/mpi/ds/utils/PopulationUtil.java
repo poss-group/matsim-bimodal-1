@@ -7,15 +7,11 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
-import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
@@ -28,6 +24,11 @@ public class PopulationUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
+//        Boolean[] bools = {true, false, true, true, true, false, true, true, true, false};
+//        System.out.println(Arrays.stream(bools).map(b -> b ? 1 : 0).mapToInt(Integer::intValue).sum());
+//        for (Boolean bool : bools) {
+//            System.out.println(bool);
+//        }
         createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 4, 31357);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
