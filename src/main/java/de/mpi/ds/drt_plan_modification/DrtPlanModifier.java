@@ -18,7 +18,7 @@ public class DrtPlanModifier extends AbstractModule {
     @Override
     public void install() {
         LOG.info("Initiating");
-        LOG.warn("This module only works for a population with plans <activity - leg - activity>");
+        LOG.warn("This module only works for a population with plans of form <activity - leg - activity>");
 //        if (!this.getConfig().getModules().containsKey(DrtPlanModifierConfigGroup.NAME)) {
 //            this.getConfig().addModule(this.configGroup);
 //        }

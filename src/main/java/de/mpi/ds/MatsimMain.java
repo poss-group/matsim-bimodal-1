@@ -2,7 +2,6 @@ package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
-import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -32,13 +31,13 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-//        try {
-//            runMultiple(config, args[1], args[2], false);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//
-        run(config, false);
+        try {
+            runMultiple(config, args[1], args[2], args[3], false);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+//        run(config, false);
         LOG.info("Simulation finished");
     }
 
@@ -69,10 +68,17 @@ public class MatsimMain {
         controler.run();
     }
 
-    private static void runMultiple(Config config, String popDir, String drtDir, boolean otfvis) throws Exception {
+    private static void runMultiple(Config config, String mode, String popDir, String drtDir,
+                                    boolean otfvis) throws Exception {
 //        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
-//        Pattern patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
-        Pattern patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
+        Pattern patternPop = null;
+        if (mode.equals("drt")) {
+            patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
+        } else if (mode.equals("bim")) {
+            patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
+        } else {
+            throw new Exception("Mode (2nd argument) must be either bim or drt");
+        }
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
         String[] populationFiles = getFiles(patternPop, popDir);
 //        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);

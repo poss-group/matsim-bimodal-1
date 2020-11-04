@@ -31,8 +31,7 @@ public interface UtilComponent {
     static final double transitEndTime = 26 * 60 * 60;
     //TODO modify dis
     static final double transitIntervalTime = pt_interval * delta_x * 9 / FREE_SPEED_TRAIN * 2;
-    //    static final double transitIntervalTime = 643;  //configured so that new trains start from both sides when old
-    // one reaches end of grid
+    static final double departureIntervalTime = 5*60;
     static final double transitStopLength = 0;
     static final int n_xy = 101;
     static final int n_x = 101;

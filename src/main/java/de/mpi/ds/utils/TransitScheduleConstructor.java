@@ -177,7 +177,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         int i = 0;
         boolean first_dep = true;
         //TODO can make this variable
-        int transportersPerLine = 2;
+        int transportersPerLine = (int) Math.ceil(transitIntervalTime/departureIntervalTime);
         while (time < transitEndTime) {
             Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
             Id<Vehicle> vehicleId =
@@ -194,11 +194,11 @@ public class TransitScheduleConstructor implements UtilComponent {
 
             if (first_dep) {
 //                time += transitIntervalTime / 4;
-                time += 15*60;
+                time += departureIntervalTime;
                 first_dep = false;
             } else {
 //                time += transitIntervalTime * 3/4;
-                time += 15*60;
+                time += departureIntervalTime;
                 first_dep = true;
             }
         }

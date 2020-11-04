@@ -40,6 +40,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
+import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+
 public class TransitScheduleUtil implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
@@ -63,6 +66,10 @@ public class TransitScheduleUtil implements UtilComponent {
 
         new TransitScheduleWriter(schedule).writeFile(outputSchedulePath);
         new MatsimVehicleWriter(vehicles).writeFile(outputVehiclesPath);
+        compressGzipFile(outputSchedulePath, outputSchedulePath.concat(".gz"));
+        compressGzipFile(outputVehiclesPath, outputVehiclesPath.concat(".gz"));
+        deleteFile(outputSchedulePath);
+        deleteFile(outputVehiclesPath);
     }
 
     public static void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,

@@ -115,3 +115,9 @@ scenarios/fine_grid/populations_convcrit_seed31357/population_gamma1_4.xml.gz fi
 scenarios/fine_grid/populations_convcrit_seed31357/population_gamma2_8.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/populations_convcrit_seed31357/population_gamma4_0.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/populations_convcrit_seed31357/population_gammaInfty.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/transit_schedules/ filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/transit_schedules/** filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit_files/transitSchedule.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit_files/transitVehicles.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitSchedule.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitVehicles.xml.gz filter=lfs diff=lfs merge=lfs -text

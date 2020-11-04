@@ -81,12 +81,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         Map.Entry::getKey));
         int count = 0;
         for (Person person : sc.getPopulation().getPersons().values()) {
-            if (count % 1000 == 0) {
+            if (count % 10000 == 0) {
                 LOG.info("Person" + count);
             }
             count++;
             for (Plan plan : person.getPlans()) {
                 Activity firstAct = null;
+                Leg middleLeg = null;
                 Activity lastAct = null;
                 boolean foundFirst = false;
                 for (PlanElement el : plan.getPlanElements()) {
@@ -95,30 +96,37 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         foundFirst = true;
                     } else if (el instanceof Activity) {
                         lastAct = (Activity) el;
+                    } else {
+                        middleLeg = (Leg) el;
                     }
                 }
-                Coord dummyFirstCoord = null;
-                Coord dummyLastCoord = null;
-                assert firstAct != null;
-                assert lastAct != null;
-                Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
-                Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
-                if (!isPtStation(firstNode)) {
-                    Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
-                    assert dummyFirstNode != null;
-                    dummyFirstCoord = dummyFirstNode.getCoord();
+                assert middleLeg != null;
+                // Only insert transit activities if leg mode is pt
+                if (middleLeg.getMode().equals(TransportMode.pt)) {
+                    Coord dummyFirstCoord = null;
+                    Coord dummyLastCoord = null;
+                    assert firstAct != null;
+                    assert lastAct != null;
+                    Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
+                    Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
+                    if (!isPtStation(firstNode)) {
+                        Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
+                        assert dummyFirstNode != null;
+                        dummyFirstCoord = dummyFirstNode.getCoord();
+                    }
+                    if (!isPtStation(lastNode)) {
+                        Node dummyLastNode = searchTransferNode(lastNode, firstNode);
+                        assert dummyLastNode != null;
+                        dummyLastCoord = dummyLastNode.getCoord();
+                    }
+                    insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord);
                 }
-                if (!isPtStation(lastNode)) {
-                    Node dummyLastNode = searchTransferNode(lastNode, firstNode);
-                    assert dummyLastNode != null;
-                    dummyLastCoord = dummyLastNode.getCoord();
-                }
-                insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord);
             }
         }
         // To get resulting plans in output directory
         PopulationWriter populationWriter = new PopulationWriter(sc.getPopulation(), sc.getNetwork());
-        populationWriter.write("./output/drt_plan_modified_plans.xml");
+        populationWriter
+                .write(event.getServices().getControlerIO().getOutputPath().concat("/drt_plan_modified_plans.xml"));
     }
 
     private static boolean isPtStation(Node node) {

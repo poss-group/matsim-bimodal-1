@@ -17,8 +17,7 @@
 	</module>
 
 	<module name="plans">
-		<param name="inputPlansFile" value="population_gamma1_4.xml.gz" />
-<!--		<param name="inputPlansFile" value="population.xml" />-->
+		<param name="inputPlansFile" value="population.xml" />
 	</module>
 
 	<module name="controler">
@@ -88,8 +87,8 @@
 	</module>
 
 	<module name="transit">
-		<param name="transitScheduleFile" value="transitSchedule.xml"/>
-		<param name="vehiclesFile" value="transitVehicles.xml"/>
+		<param name="transitScheduleFile" value="../public_transit/transitSchedule_5min.xml.gz"/>
+		<param name="vehiclesFile" value="../public_transit/transitVehicles_5min.xml.gz"/>
 
 		<!--otherwise pt legs would be teleported-->
 		<param name="useTransit" value="true"/>
