@@ -121,3 +121,13 @@ scenarios/fine_grid/public_transit_files/transitSchedule.xml filter=lfs diff=lfs
 scenarios/fine_grid/public_transit_files/transitVehicles.xml filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/public_transit/transitSchedule.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/public_transit/transitVehicles.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles/drtvehicles_convcrit_seed31357 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles/drtvehicles_convcrit_seed42 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles/drtvehicles_convcrit_seed95842 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles/drtvehicles_large filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/drtvehicles/drtvehicles_1_percent_reqs filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations/populations_24h filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations/populations_convcrit_seed31357 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations/populations_convcrit_seed42 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations/populations_convcrit_seed95842 filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/populations/populations_large filter=lfs diff=lfs merge=lfs -text

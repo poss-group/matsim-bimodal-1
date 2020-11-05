@@ -32,7 +32,7 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, args[1], args[2], args[3], false);
+            runMultiple(config, args[1], args[2], false);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -42,7 +42,7 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) {
-        //TODO fix long waiting times for pt transit
+        //TODO for convenience criterion the average length has to be varied as zeta l
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -68,42 +68,35 @@ public class MatsimMain {
         controler.run();
     }
 
-    private static void runMultiple(Config config, String mode, String popDir, String drtDir,
+    private static void runMultiple(Config config, String popDir, String drtDir,
                                     boolean otfvis) throws Exception {
-//        Pattern patternPop = Pattern.compile("population_(.*)_(.*)\\.xml.gz");
-        Pattern patternPop = null;
-        if (mode.equals("drt")) {
-            patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
-        } else if (mode.equals("bim")) {
-            patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
-        } else {
-            throw new Exception("Mode (2nd argument) must be either bim or drt");
-        }
-        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
+        Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
+        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
         String[] populationFiles = getFiles(patternPop, popDir);
-//        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
+        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
 
         for (int i = 0; i < populationFiles.length; i++) {
-            String populationFile = populationFiles[i];
-//            String drtVehicleFile = drtVehicleFiles[i];
-            String drtVehicleFile = "drtvehicles.xml.gz";
-            Matcher matcherPop = patternPop.matcher(populationFile);
-            Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
-            matcherPop.find();
-            matcherDrt.find();
+            for (int j = 0; j < drtVehicleFiles.length; j++) {
+                String populationFile = populationFiles[i];
+                String drtVehicleFile = drtVehicleFiles[j];
+                Matcher matcherPop = patternPop.matcher(populationFile);
+                Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
+                matcherPop.find();
+                matcherDrt.find();
 
-            config.plans().setInputFile(popDir + populationFile);
-            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-            modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
+                config.plans().setInputFile(popDir + populationFile);
+                Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+                assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+                modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
 
-            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
-//            System.out.println("./output/" + matcherPop.group(1));
-//            System.out.println(populationFile);
-//            System.out.println(drtVehicleFile);
+//                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+                config.controler().setOutputDirectory("./output/" + matcherDrt.group(1));
+//                System.out.println(populationFile);
+//                System.out.println(drtVehicleFile);
+//                System.out.println("./output/" + matcherDrt.group(1));
 
-            run(config, otfvis);
+                run(config, otfvis);
+            }
         }
 
     }

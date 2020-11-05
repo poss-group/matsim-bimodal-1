@@ -1,0 +1,54 @@
+<!DOCTYPE vehicles SYSTEM "http://matsim.org/files/dtd/dvrp_vehicles_v1.dtd">
+
+<vehicles>
+	<vehicle id="drt_0" start_link="79_26-78_26" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_1" start_link="32_15-33_16" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_2" start_link="45_34-45_33" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_3" start_link="74_73-74_74" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_4" start_link="38_98-37_98" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_5" start_link="66_46-67_46" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_6" start_link="62_19-61_20" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_7" start_link="95_15east-95_15" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_8" start_link="22_53-21_52" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_9" start_link="72_42-72_41" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_10" start_link="65_76-66_77" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_11" start_link="38_92-37_91" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_12" start_link="87_80-86_80" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_13" start_link="14_54-15_55" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_14" start_link="58_5-57_4" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_15" start_link="17_35-18_35" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_16" start_link="27_67-26_68" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_17" start_link="33_73-33_74" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_18" start_link="93_8-93_9" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_19" start_link="31_46-32_47" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_20" start_link="27_51-28_50" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_21" start_link="46_66-47_67" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_22" start_link="96_77-97_76" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_23" start_link="95_13-94_12" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_24" start_link="56_60-57_59" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_25" start_link="14_96-13_97" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_26" start_link="37_98-36_99" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_27" start_link="38_10-38_9" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_28" start_link="72_32-73_33" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_29" start_link="42_80-42_79" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_30" start_link="16_15-15_14" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_31" start_link="76_59-76_58" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_32" start_link="83_65-84_66" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_33" start_link="51_89-51_90" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_34" start_link="63_66-64_66" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_35" start_link="9_80-10_80" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_36" start_link="59_72-58_72" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_37" start_link="100_43-100_44" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_38" start_link="79_81-78_82" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_39" start_link="96_16-96_15" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_40" start_link="18_22-18_23" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_41" start_link="78_53-78_52" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_42" start_link="80_88-80_89" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_43" start_link="37_29-37_28" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_44" start_link="57_98-57_99" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_45" start_link="19_73-20_72" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_46" start_link="22_36-23_35" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_47" start_link="98_85-97_84" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_48" start_link="87_1-87_2" t_0="0.0" t_1="93600.0" capacity="4"/>
+	<vehicle id="drt_49" start_link="30_4-30_5" t_0="0.0" t_1="93600.0" capacity="4"/>
+</vehicles>

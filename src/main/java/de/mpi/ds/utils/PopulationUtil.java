@@ -7,11 +7,15 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
+import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
@@ -29,20 +33,20 @@ public class PopulationUtil implements UtilComponent {
 //        for (Boolean bool : bools) {
 //            System.out.println(bool);
 //        }
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, TransportMode.drt, 4, 31357);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, 1, 684);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
     }
 
-    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests,
-                                        String transportMode, double gamma, long seed) {
+    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, double gamma,
+                                        long seed) {
         rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
         Map<String, Coord> zoneGeometries = new HashMap<>();
         Network net = NetworkUtils.readNetwork(networkPath);
         fillZoneData(zoneGeometries, net);
-        generatePopulation(zoneGeometries, population, net, nRequests, transportMode, gamma, seed);
+        generatePopulation(zoneGeometries, population, net, nRequests, gamma, seed);
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
     }
@@ -56,7 +60,7 @@ public class PopulationUtil implements UtilComponent {
     }
 
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
-                                           Network net, int nRequests, String transportMode, double gamma, long seed) {
+                                           Network net, int nRequests, double gamma, long seed) {
         rand.setSeed(seed);
         Id<Node> orig_id;
         Id<Node> dest_id;
@@ -79,13 +83,13 @@ public class PopulationUtil implements UtilComponent {
             // } while (orig_id == dest_id || orig_coord.getX() / 1000 % 2 == 1 ||
             // orig_coord.getY() / 1000 % 2 == 1
             // || dest_coord.getX() / 1000 % 2 == 1 || dest_coord.getY() / 1000 % 2 == 1);
-            generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population, gamma, transportMode);
+            generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population, gamma);
         }
     }
 
     private static void generateTrip(String from, String to, int passenger_id,
                                      Map<String, Coord> zoneGeometries, Population population,
-                                     double gamma, String transportMode) {
+                                     double gamma) {
         Coord source = zoneGeometries.get(from);
         Coord sink = zoneGeometries.get(to);
         Person person = population.getFactory()
@@ -102,12 +106,16 @@ public class PopulationUtil implements UtilComponent {
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));
 //				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
 //			}
-        plan.addLeg(createDriveLeg(population, TransportMode.drt));
-//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
-//            plan.addLeg(createDriveLeg(population, TransportMode.pt));
-//        } else {
-//            plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//        plan.addLeg(createDriveLeg(population, TransportMode.drt));
+//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation)/(pt_interval*delta_xy) > gamma &&
+//                DistanceUtils.calculateDistance(sourceLocation, sinkLocation)/(pt_interval*delta_xy) < 1 ) {
+//            System.out.println("bla");
 //        }
+        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
+            plan.addLeg(createDriveLeg(population, TransportMode.pt));
+        } else {
+            plan.addLeg(createDriveLeg(population, TransportMode.drt));
+        }
 //			if (!sinkLocation.equals(sinkTransferLocation)) {
 //				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
 //				plan.addLeg(createDriveLeg(population, TransportMode.drt));
