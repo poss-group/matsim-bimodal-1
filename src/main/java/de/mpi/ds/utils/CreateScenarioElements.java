@@ -30,7 +30,7 @@ public class CreateScenarioElements {
 //            createPopulation(outPath + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
 //            createPopulation(outPath + namePopulationFilePt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
             new CreateDrtFleetVehicles()
-                    .run(outPath + "network.xml", "output/" + SUBFOLDER + nameDrtVehiclesFile,
+                    .run( "./output/network.xml.gz", "output/" + SUBFOLDER + nameDrtVehiclesFile,
                             i);
 //                            (int) (0.01 * i));
 

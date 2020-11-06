@@ -40,6 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
+import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+
 /**
  * @author tthunig
  */
@@ -56,7 +59,10 @@ public class NetworkUtil implements UtilComponent {
     }
 
     public static void main(String... args) {
-        createGridNetwork("./output/network.xml", false);
+        String path = "./output/network.xml";
+        createGridNetwork(path, true);
+        compressGzipFile(path, path.concat(".gz"));
+        deleteFile(path);
     }
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
@@ -134,7 +140,7 @@ public class NetworkUtil implements UtilComponent {
                 }
             }
         }
-        makeDiagConnections(net, fac, nodes);
+//        makeDiagConnections(net, fac, nodes);
         // this has to be done second because mod for pt modifies next neighbours of stations
         putNodesCloseToStations(net, fac, nodes, createTrainLanes);
         try {
