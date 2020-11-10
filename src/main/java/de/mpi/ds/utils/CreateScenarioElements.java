@@ -16,14 +16,13 @@ public class CreateScenarioElements {
 
     public static void main(String[] args) {
         String outPath = "./output/" + SUBFOLDER;
-        createGridNetwork(outPath + "network.xml", false);
+//        createGridNetwork(outPath + "network.xml", false);
         long seed = random.nextLong();
-        System.out.println(seed);
 //        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule.xml", "./output/transitVehicles
 //        .xml");
         int[] iterations = new int[]{1000, 10000, 50000, 100000, 500000, 1000000};
 
-        for (int i = 100; i < 401; i+=10) {
+        for (int i = 50; i < 100; i+=10) {
 //            String namePopulationFileDrt = "population_" + String.valueOf(i) + "reqs_drt.xml";
 //            String namePopulationFilePt = "population_" + String.valueOf(i) + "reqs_pt.xml";
             String nameDrtVehiclesFile = "drtvehicles_" + String.valueOf(i) + ".xml";

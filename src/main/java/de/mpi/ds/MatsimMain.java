@@ -1,6 +1,7 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -32,17 +33,22 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultiple(config, args[1], args[2], false);
+            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], false);
         } catch (Exception e) {
             System.out.println(e);
         }
 
-//        run(config, false);
+//        run(config, args[1], false);
         LOG.info("Simulation finished");
     }
 
-    public static void run(Config config, boolean otfvis) {
+    public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
+        //TODO add option to not precompute intermodal access/egress
         //TODO for convenience criterion the average length has to be varied as zeta l
+        if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
+            throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
+        }
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -61,14 +67,16 @@ public class MatsimMain {
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
 //        controler.addOverridingModule(new GridPrePlanner());
-//        controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
-        controler.addOverridingModule(new DrtPlanModifier());
+        controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
+        if (modifyPlans.equals("true")) {
+            controler.addOverridingModule(new DrtPlanModifier());
+        }
 //                (DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
         controler.run();
     }
 
-    private static void runMultiple(Config config, String popDir, String drtDir,
+    private static void runMultipleOptDrtCount(Config config, String modifyPlans, String popDir, String drtDir,
                                     boolean otfvis) throws Exception {
         Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
@@ -95,8 +103,47 @@ public class MatsimMain {
 //                System.out.println(drtVehicleFile);
 //                System.out.println("./output/" + matcherDrt.group(1));
 
-                run(config, otfvis);
+                run(config, modifyPlans, otfvis);
             }
+        }
+
+    }
+
+    private static void runMultipleConvCrit(Config config, String mode, String popDir, String drtDir,
+                                               boolean otfvis) throws Exception {
+        Pattern patternPop = null;
+        if (mode.equals("bim")) {
+            patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
+        } else if (mode.equals("drt")) {
+            patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
+        } else {
+            throw new Exception("Mode (2nd argument) must be either bim or drt");
+        }
+        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
+        String[] populationFiles = getFiles(patternPop, popDir);
+//        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
+
+        for (int i = 0; i < populationFiles.length; i++) {
+            String populationFile = populationFiles[i];
+//            String drtVehicleFile = drtVehicleFiles[i];
+            String drtVehicleFile = "drtvehicles.xml.gz";
+            Matcher matcherPop = patternPop.matcher(populationFile);
+            Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
+            matcherPop.find();
+            matcherDrt.find();
+
+            config.plans().setInputFile(popDir + populationFile);
+            Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+            assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+            modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
+
+            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+//            System.out.println(populationFile);
+//            System.out.println(drtVehicleFile);
+//            System.out.println("./output/" + matcherPop.group(1));
+
+            run(config, "true", otfvis);
         }
 
     }

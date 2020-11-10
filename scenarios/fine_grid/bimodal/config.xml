@@ -13,7 +13,7 @@
 	</module>
 
 	<module name="network">
-		<param name="inputNetworkFile" value="network.xml" />
+		<param name="inputNetworkFile" value="network_diag.xml.gz" />
 	</module>
 
 	<module name="plans">
@@ -127,7 +127,7 @@
 	<module name="multiModeDrt">
 		<parameterset type="drt">
 			<parameterset type="SelectiveInsertionSearch"/>
-			<param name="estimatedDrtSpeed" value="8.333333333333334"/>
+<!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
 			<param name="maxTravelTimeAlpha" value="1.5"/>
 			<param name="maxTravelTimeBeta" value="1200.0"/>
 			<param name="maxWaitTime" value="1200.0"/>

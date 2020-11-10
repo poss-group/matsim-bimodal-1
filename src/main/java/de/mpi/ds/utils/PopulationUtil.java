@@ -33,7 +33,7 @@ public class PopulationUtil implements UtilComponent {
 //        for (Boolean bool : bools) {
 //            System.out.println(bool);
 //        }
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, 1, 684);
+        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, 0, 31357);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
     }
