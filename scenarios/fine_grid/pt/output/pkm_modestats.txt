@@ -1,2 +1,0 @@
-Iteration	pt	walk
-0	677105	87309

@@ -87,8 +87,8 @@
 	</module>
 
 	<module name="transit">
-		<param name="transitScheduleFile" value="../public_transit/transitSchedule_5min.xml.gz"/>
-		<param name="vehiclesFile" value="../public_transit/transitVehicles_5min.xml.gz"/>
+		<param name="transitScheduleFile" value="../public_transit/transitSchedule_30min.xml.gz"/>
+		<param name="vehiclesFile" value="../public_transit/transitVehicles_30min.xml.gz"/>
 
 		<!--otherwise pt legs would be teleported-->
 		<param name="useTransit" value="true"/>
@@ -133,7 +133,7 @@
 			<param name="maxWaitTime" value="1200.0"/>
 			<param name="operationalScheme" value="door2door"/>
 			<param name="stopDuration" value="1.0"/>
-			<param name="vehiclesFile" value="drtvehicles.xml.gz"/>
+			<param name="vehiclesFile" value="drtvehicles.xml"/>
 
 <!--			<parameterset type="rebalancing">-->
 <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
@@ -163,5 +163,13 @@
 		<!-- every how many iterations (starting with 0) counts comparisons are generated -->
 		<param name="ptCountsInterval" value="1" />
 	</module>
+
+<!--	<module name="counts" >-->
+<!--		<param name="analyzedModes" value="car" />-->
+<!--		<param name="averageCountsOverIterations" value="1" />-->
+<!--		<param name="inputCountsFile" value="null" />-->
+<!--		<param name="outputformat" value="txt" />-->
+<!--		<param name="writeCountsInterval" value="1" />-->
+<!--	</module>-->
 
 </config>

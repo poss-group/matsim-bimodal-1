@@ -3,6 +3,7 @@ package de.mpi.ds;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
+import de.mpi.ds.my_analysis.MyAnalysisModule;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -32,14 +33,18 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-        try {
-            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
+//        try {
+//            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], false);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
 
-//        run(config, args[1], false);
+        try {
+            run(config, args[1], false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         LOG.info("Simulation finished");
     }
 
@@ -67,6 +72,7 @@ public class MatsimMain {
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
 //        controler.addOverridingModule(new GridPrePlanner());
+        controler.addOverridingModule(new MyAnalysisModule());
         controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
         if (modifyPlans.equals("true")) {
             controler.addOverridingModule(new DrtPlanModifier());
