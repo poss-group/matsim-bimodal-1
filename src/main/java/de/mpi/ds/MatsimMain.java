@@ -16,6 +16,7 @@ import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Matcher;
@@ -33,18 +34,18 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-//        try {
-//            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], false);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-
         try {
-            run(config, args[1], false);
+            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
+
+//        try {
+//            run(config, args[1], false);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         LOG.info("Simulation finished");
     }
 
@@ -83,7 +84,7 @@ public class MatsimMain {
     }
 
     private static void runMultipleOptDrtCount(Config config, String modifyPlans, String popDir, String drtDir,
-                                    boolean otfvis) throws Exception {
+                                               String appendOutDir, boolean otfvis) throws Exception {
         Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
         Pattern patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
         String[] populationFiles = getFiles(patternPop, popDir);
@@ -104,7 +105,7 @@ public class MatsimMain {
                 modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
 
 //                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-                config.controler().setOutputDirectory("./output/" + matcherDrt.group(1));
+                config.controler().setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
 //                System.out.println(populationFile);
 //                System.out.println(drtVehicleFile);
 //                System.out.println("./output/" + matcherDrt.group(1));
@@ -116,7 +117,7 @@ public class MatsimMain {
     }
 
     private static void runMultipleConvCrit(Config config, String mode, String popDir, String drtDir,
-                                               boolean otfvis) throws Exception {
+                                            String appendOutDir, boolean otfvis) throws Exception {
         Pattern patternPop = null;
         if (mode.equals("bim")) {
             patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
@@ -144,7 +145,7 @@ public class MatsimMain {
             modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
 
             assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-            config.controler().setOutputDirectory("./output/" + matcherPop.group(1));
+            config.controler().setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherPop.group(1)).toString());
 //            System.out.println(populationFile);
 //            System.out.println(drtVehicleFile);
 //            System.out.println("./output/" + matcherPop.group(1));

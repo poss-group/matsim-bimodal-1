@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.mpi.ds</groupId>
-    <artifactId>matsim-bimodal-convcrit-customTransit</artifactId>
+    <artifactId>matsim-bimodal-convCrit</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>MATSim bimodal transport simulation</name>
@@ -80,11 +80,11 @@
 <!--            <artifactId>drt</artifactId>-->
 <!--            <version>${matsim.version}</version>-->
 <!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.matsim.contrib</groupId>-->
-<!--            <artifactId>add_constraints_drt</artifactId>-->
-<!--            <version>${matsim.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>add_constraints_drt</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
