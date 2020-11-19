@@ -34,23 +34,23 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-        try {
-            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
 //        try {
-//            run(config, args[1], false);
+//            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //        } catch (Exception e) {
-//            e.printStackTrace();
+//            System.out.println(e);
 //        }
+
+        try {
+            run(config, args[1], false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         LOG.info("Simulation finished");
     }
 
     public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
-        //TODO add option to not precompute intermodal access/egress
+        //TODO multiple drt fleets
         //TODO for convenience criterion the average length has to be varied as zeta l
         if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
             throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");

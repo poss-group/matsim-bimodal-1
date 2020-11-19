@@ -17,7 +17,8 @@
 	</module>
 
 	<module name="plans">
-		<param name="inputPlansFile" value="population.xml" />
+<!--		<param name="inputPlansFile" value="population.xml" />-->
+		<param name="inputPlansFile" value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz" />
 	</module>
 
 	<module name="controler">
@@ -133,7 +134,8 @@
 			<param name="maxWaitTime" value="1200.0"/>
 			<param name="operationalScheme" value="door2door"/>
 			<param name="stopDuration" value="1.0"/>
-			<param name="vehiclesFile" value="drtvehicles.xml"/>
+<!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
+			<param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>
 
 <!--			<parameterset type="rebalancing">-->
 <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
@@ -171,5 +173,10 @@
 <!--		<param name="outputformat" value="txt" />-->
 <!--		<param name="writeCountsInterval" value="1" />-->
 <!--	</module>-->
+
+	<module name="strategy" >
+		<!-- fraction of iterations where innovative strategies are switched off.  Something like 0.8 should be good.  E.g. if you run from iteration 400 to iteration 500, innovation is switched off at iteration 480 -->
+		<param name="fractionOfIterationsToDisableInnovation" value="0" />
+	</module>
 
 </config>
