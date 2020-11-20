@@ -2,181 +2,194 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 
 <config>
-<!--    <module name="drtPlanModifier">-->
-<!--		<param name="modifyPlans" value="true"/>-->
-<!--	</module>-->
+    <!--    <module name="drtPlanModifier">-->
+    <!--		<param name="modifyPlans" value="true"/>-->
+    <!--	</module>-->
 
-	<module name="global">
-		<param name="randomSeed" value="4392" />
-		<param name="coordinateSystem" value="Atlantis" />
-		<param name="numberOfThreads" value="4" />
-	</module>
+    <module name="global">
+        <param name="randomSeed" value="4392"/>
+        <param name="coordinateSystem" value="Atlantis"/>
+        <param name="numberOfThreads" value="4"/>
+    </module>
 
-	<module name="network">
-		<param name="inputNetworkFile" value="network_diag.xml.gz" />
-	</module>
+    <module name="network">
+        <param name="inputNetworkFile" value="network_diag.xml.gz"/>
+    </module>
 
-	<module name="plans">
-<!--		<param name="inputPlansFile" value="population.xml" />-->
-		<param name="inputPlansFile" value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz" />
-	</module>
+    <module name="plans">
+        <!--		<param name="inputPlansFile" value="population.xml" />-->
+        <param name="inputPlansFile"
+               value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz"/>
+    </module>
 
-	<module name="controler">
-		<param name="outputDirectory" value="./output" />
-		<param name="firstIteration" value="0" />
-		<param name="lastIteration" value="0" />
-		<param name="mobsim" value="qsim" />
-		<param name="routingAlgorithmType" value="AStarLandmarks" />
-		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
-	</module>
+    <module name="controler">
+        <param name="outputDirectory" value="./output"/>
+        <param name="firstIteration" value="0"/>
+        <param name="lastIteration" value="0"/>
+        <param name="mobsim" value="qsim"/>
+        <param name="routingAlgorithmType" value="AStarLandmarks"/>
+        <param name="overwriteFiles" value="deleteDirectoryIfExists"/>
+    </module>
 
-	<module name="planCalcScore" >
-		<parameterset type="scoringParameters" >
-			<param name="waitingPt" value="-1" />
-			<parameterset type="activityParams" >
-				<param name="activityType" value="dummy" />
-				<param name="scoringThisActivityAtAll" value="true" />
-				<param name="typicalDuration" value="12:00:00" />
-			</parameterset>
-			<parameterset type="modeParams" >
-				<param name="constant" value="0.0" />
-				<param name="marginalUtilityOfDistance_util_m" value="-10.0" />
-				<param name="marginalUtilityOfTraveling_util_hr" value="-6.0" />
-				<param name="mode" value="car" />
-				<param name="monetaryDistanceRate" value="0.0" />
-			</parameterset>
-			<parameterset type="modeParams" >
-				<param name="constant" value="0.0" />
-				<param name="dailyMonetaryConstant" value="0.0" />
-				<param name="dailyUtilityConstant" value="0.0" />
-				<param name="marginalUtilityOfDistance_util_m" value="0.0" />
-				<param name="marginalUtilityOfTraveling_util_hr" value="0.0" />
-				<param name="mode" value="pt" />
-				<param name="monetaryDistanceRate" value="0.0" />
-			</parameterset>
-			<parameterset type="modeParams" >
-				<param name="constant" value="0.0" />
-				<param name="dailyMonetaryConstant" value="0.0" />
-				<param name="dailyUtilityConstant" value="0.0" />
-				<param name="marginalUtilityOfDistance_util_m" value="-5.0" />
-				<param name="marginalUtilityOfTraveling_util_hr" value="-6.0" />
-				<param name="mode" value="walk" />
-				<param name="monetaryDistanceRate" value="0.0" />
-			</parameterset>
-			<parameterset type="modeParams">
-				<param name="constant" value="0.0" />
-				<param name="dailyMonetaryConstant" value="0.0" />
-				<param name="dailyUtilityConstant" value="0.0" />
-				<param name="marginalUtilityOfDistance_util_m" value="-5.0" />
-				<param name="marginalUtilityOfTraveling_util_hr" value="-5.0" />
-				<param name="mode" value="drt" />
-				<param name="monetaryDistanceRate" value="0.0" />
-			</parameterset>
-		</parameterset>
-	</module>
+    <module name="planCalcScore">
+        <parameterset type="scoringParameters">
+            <param name="waitingPt" value="-1"/>
+            <parameterset type="activityParams">
+                <param name="activityType" value="dummy"/>
+                <param name="scoringThisActivityAtAll" value="true"/>
+                <param name="typicalDuration" value="12:00:00"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="marginalUtilityOfDistance_util_m" value="-10.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-6.0"/>
+                <param name="mode" value="car"/>
+                <param name="monetaryDistanceRate" value="0.0"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="dailyMonetaryConstant" value="0.0"/>
+                <param name="dailyUtilityConstant" value="0.0"/>
+                <param name="marginalUtilityOfDistance_util_m" value="0.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="0.0"/>
+                <param name="mode" value="pt"/>
+                <param name="monetaryDistanceRate" value="0.0"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="dailyMonetaryConstant" value="0.0"/>
+                <param name="dailyUtilityConstant" value="0.0"/>
+                <param name="marginalUtilityOfDistance_util_m" value="-5.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-6.0"/>
+                <param name="mode" value="walk"/>
+                <param name="monetaryDistanceRate" value="0.0"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="dailyMonetaryConstant" value="0.0"/>
+                <param name="dailyUtilityConstant" value="0.0"/>
+                <param name="marginalUtilityOfDistance_util_m" value="-5.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-5.0"/>
+                <param name="mode" value="drt"/>
+                <param name="monetaryDistanceRate" value="0.0"/>
+            </parameterset>
+        </parameterset>
+    </module>
 
-	<module name="planscalcroute" >
-		<!-- <param name="networkModes" value="drt,pt" /> -->
-		<parameterset type="teleportedModeParameters" >
-			<!-- 1.4 for manhatten, infinity for non walking, default 1.3 -->
-			<!-- turn off walking -->
-			<param name="beelineDistanceFactor" value="1000000" />
-			<param name="mode" value="walk" />
-			<param name="teleportedModeFreespeedFactor" value="null" />
-			<param name="teleportedModeSpeed" value="0.8333333333333333" />
-		</parameterset>
-	</module>
+    <module name="planscalcroute">
+        <!-- <param name="networkModes" value="drt,pt" /> -->
+        <parameterset type="teleportedModeParameters">
+            <!-- 1.4 for manhatten, infinity for non walking, default 1.3 -->
+            <!-- turn off walking -->
+            <param name="beelineDistanceFactor" value="1000000"/>
+            <param name="mode" value="walk"/>
+            <param name="teleportedModeFreespeedFactor" value="null"/>
+            <param name="teleportedModeSpeed" value="0.8333333333333333"/>
+        </parameterset>
+    </module>
 
-	<module name="transit">
-		<param name="transitScheduleFile" value="../public_transit/transitSchedule_30min.xml.gz"/>
-		<param name="vehiclesFile" value="../public_transit/transitVehicles_30min.xml.gz"/>
+    <module name="transit">
+        <param name="transitScheduleFile" value="../public_transit/transitSchedule_30min.xml.gz"/>
+        <param name="vehiclesFile" value="../public_transit/transitVehicles_30min.xml.gz"/>
 
-		<!--otherwise pt legs would be teleported-->
-		<param name="useTransit" value="true"/>
-		<param name="transitModes" value="pt"/>
-<!--		<param name="usingTransitInMobsim" value="true" />-->
-	</module>
+        <!--otherwise pt legs would be teleported-->
+        <param name="useTransit" value="true"/>
+        <param name="transitModes" value="pt"/>
+        <!--		<param name="usingTransitInMobsim" value="true" />-->
+    </module>
 
-	<module name="qsim">
-		<param name="simStarttimeInterpretation" value="onlyUseStarttime" />
-<!--		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />-->
-		<param name="simEndtimeInterpretation" value="minOfEndtimeAndMobsimFinished" />
-		<param name="startTime" value="00:00:00"/>
-		<param name="endTime" value="26:00:00"/>
-		<param name="mainMode" value="car" />
-	</module>
+    <module name="qsim">
+        <param name="simStarttimeInterpretation" value="onlyUseStarttime"/>
+        <!--		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />-->
+        <param name="simEndtimeInterpretation" value="minOfEndtimeAndMobsimFinished"/>
+        <param name="startTime" value="00:00:00"/>
+        <param name="endTime" value="26:00:00"/>
+        <param name="mainMode" value="car"/>
+    </module>
 
-	<!--	Public Transport -->
-	<module name="swissRailRaptor">
-<!--		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />-->
-		<param name="useIntermodalAccessEgress" value="false" />
+    <!--	Public Transport -->
+    <module name="swissRailRaptor">
+        <!--		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />-->
+        <param name="useIntermodalAccessEgress" value="false"/>
 
-<!--		<parameterset type="intermodalAccessEgress">-->
-<!--            <param name="mode" value="walk"/>-->
-<!--			<param name="maxRadius" value="100"/>-->
-<!--			<param name="initialSearchRadius" value="10"/>-->
-<!--			<param name="searchExtensionRadius" value="10"/>-->
-<!--		</parameterset>-->
-<!--		<parameterset type="intermodalAccessEgress">-->
-<!--			<param name="mode" value="drt" />-->
-<!--			<param name="maxRadius" value="10000" />-->
-<!--			<param name="initialSearchRadius" value="1000"/>-->
-<!--			<param name="searchExtensionRadius" value="1000"/>-->
-<!--		</parameterset>-->
-	</module>
+        <!--		<parameterset type="intermodalAccessEgress">-->
+        <!--            <param name="mode" value="walk"/>-->
+        <!--			<param name="maxRadius" value="100"/>-->
+        <!--			<param name="initialSearchRadius" value="10"/>-->
+        <!--			<param name="searchExtensionRadius" value="10"/>-->
+        <!--		</parameterset>-->
+        <!--		<parameterset type="intermodalAccessEgress">-->
+        <!--			<param name="mode" value="drt" />-->
+        <!--			<param name="maxRadius" value="10000" />-->
+        <!--			<param name="initialSearchRadius" value="1000"/>-->
+        <!--			<param name="searchExtensionRadius" value="1000"/>-->
+        <!--		</parameterset>-->
+    </module>
 
-	<module name="multiModeDrt">
-		<parameterset type="drt">
-			<parameterset type="SelectiveInsertionSearch"/>
-<!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-			<param name="maxTravelTimeAlpha" value="1.5"/>
-			<param name="maxTravelTimeBeta" value="1200.0"/>
-			<param name="maxWaitTime" value="1200.0"/>
-			<param name="operationalScheme" value="door2door"/>
-			<param name="stopDuration" value="1.0"/>
-<!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
-			<param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>
+    <module name="multiModeDrt">
+        <parameterset type="drt">
+            <parameterset type="SelectiveInsertionSearch"/>
+            <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
+            <param name="maxTravelTimeAlpha" value="1.5"/>
+            <param name="maxTravelTimeBeta" value="1200.0"/>
+            <param name="maxWaitTime" value="1200.0"/>
+            <param name="operationalScheme" value="door2door"/>
+            <param name="stopDuration" value="1.0"/>
+            <!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
+            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>
 
-<!--			<parameterset type="rebalancing">-->
-<!--				<parameterset type="minCostFlowRebalancingStrategy">-->
-<!--					<param name="targetAlpha" value="0.5"/>-->
-<!--					<param name="targetBeta" value="0.5"/>-->
-<!--				</parameterset>-->
-<!--			</parameterset>-->
-<!--			<parameterset type="zonalSystem">-->
-<!--				<param name="zonesGeneration" value="GridFromNetwork"/>-->
-<!--				<param name="cellSize" value="1000"/>-->
-<!--			</parameterset>-->
-		</parameterset>
-	</module>
+            <!--			<parameterset type="rebalancing">-->
+            <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
+            <!--					<param name="targetAlpha" value="0.5"/>-->
+            <!--					<param name="targetBeta" value="0.5"/>-->
+            <!--				</parameterset>-->
+            <!--			</parameterset>-->
+            <!--			<parameterset type="zonalSystem">-->
+            <!--				<param name="zonesGeneration" value="GridFromNetwork"/>-->
+            <!--				<param name="cellSize" value="1000"/>-->
+            <!--			</parameterset>-->
+        </parameterset>
+        <parameterset type="drt">
+            <parameterset type="SelectiveInsertionSearch"/>
+            <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
+            <param name="mode" value="acc_egr_drt" />
+            <param name="maxTravelTimeAlpha" value="1.5"/>
+            <param name="maxTravelTimeBeta" value="1200.0"/>
+            <param name="maxWaitTime" value="1200.0"/>
+            <param name="operationalScheme" value="door2door"/>
+            <param name="stopDuration" value="1.0"/>
+            <param name="vehiclesFile" value="drtvehicles.xml"/>
+            <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>-->
+        </parameterset>
+    </module>
 
-	<module name="dvrp" >
-		<!-- both default -->
-		<param name="mobsimMode" value="car" />
-		<param name="networkModes" value="car" />
-	</module>
+    <module name="dvrp">
+        <!-- both default -->
+        <param name="mobsimMode" value="car"/>
+        <param name="networkModes" value="car"/>
+    </module>
 
-	<module name="ptCounts" >
-		<param name="inputAlightCountsFile" value="ptAlightCounts.xml" />
-		<param name="inputBoardCountsFile" value="ptBoardCounts.xml" />
-		<param name="inputOccupancyCountsFile" value="ptOccupancyCounts.xml" />
-		<!-- possible values: `html', `kml', `txt', `all' -->
-		<param name="outputformat" value="txt" />
-		<!-- every how many iterations (starting with 0) counts comparisons are generated -->
-		<param name="ptCountsInterval" value="1" />
-	</module>
+    <module name="ptCounts">
+        <param name="inputAlightCountsFile" value="ptAlightCounts.xml"/>
+        <param name="inputBoardCountsFile" value="ptBoardCounts.xml"/>
+        <param name="inputOccupancyCountsFile" value="ptOccupancyCounts.xml"/>
+        <!-- possible values: `html', `kml', `txt', `all' -->
+        <param name="outputformat" value="txt"/>
+        <!-- every how many iterations (starting with 0) counts comparisons are generated -->
+        <param name="ptCountsInterval" value="1"/>
+    </module>
 
-<!--	<module name="counts" >-->
-<!--		<param name="analyzedModes" value="car" />-->
-<!--		<param name="averageCountsOverIterations" value="1" />-->
-<!--		<param name="inputCountsFile" value="null" />-->
-<!--		<param name="outputformat" value="txt" />-->
-<!--		<param name="writeCountsInterval" value="1" />-->
-<!--	</module>-->
+    <!--	<module name="counts" >-->
+    <!--		<param name="analyzedModes" value="car" />-->
+    <!--		<param name="averageCountsOverIterations" value="1" />-->
+    <!--		<param name="inputCountsFile" value="null" />-->
+    <!--		<param name="outputformat" value="txt" />-->
+    <!--		<param name="writeCountsInterval" value="1" />-->
+    <!--	</module>-->
 
-	<module name="strategy" >
-		<!-- fraction of iterations where innovative strategies are switched off.  Something like 0.8 should be good.  E.g. if you run from iteration 400 to iteration 500, innovation is switched off at iteration 480 -->
-		<param name="fractionOfIterationsToDisableInnovation" value="0" />
-	</module>
+    <module name="strategy">
+        <!-- fraction of iterations where innovative strategies are switched off.  Something like 0.8 should be good.  E.g. if you run from iteration 400 to iteration 500, innovation is switched off at iteration 480 -->
+        <param name="fractionOfIterationsToDisableInnovation" value="0"/>
+    </module>
 
 </config>

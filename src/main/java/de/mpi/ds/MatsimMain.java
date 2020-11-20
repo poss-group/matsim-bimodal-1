@@ -62,6 +62,8 @@ public class MatsimMain {
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);
+        Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+        System.out.println(modalElements.size());
 
         // For only pt
 //		Scenario scenario = ScenarioUtils.loadScenario(config);

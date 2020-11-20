@@ -145,10 +145,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
                                      Coord dummy_last_coord) {
         if (dummy_last_coord != null) {
             plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
-            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
+//            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
+            plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
         }
         if (dummy_first_coord != null) {
-            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
+//            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
+            plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
             plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
         }
     }

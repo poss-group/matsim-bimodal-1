@@ -67,7 +67,6 @@ public class CreateScenarioElements {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 }
