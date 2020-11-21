@@ -19,7 +19,7 @@
     <module name="plans">
         <!--		<param name="inputPlansFile" value="population.xml" />-->
         <param name="inputPlansFile"
-               value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz"/>
+            value="../populations/populations_optDrtCount/population1000000reqs_gamma1_modified.xml.gz"/>
     </module>
 
     <module name="controler">
@@ -73,6 +73,15 @@
                 <param name="mode" value="drt"/>
                 <param name="monetaryDistanceRate" value="0.0"/>
             </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="dailyMonetaryConstant" value="0.0"/>
+                <param name="dailyUtilityConstant" value="0.0"/>
+                <param name="marginalUtilityOfDistance_util_m" value="-5.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-5.0"/>
+                <param name="mode" value="acc_egr_drt"/>
+                <param name="monetaryDistanceRate" value="0.0"/>
+            </parameterset>
         </parameterset>
     </module>
 
@@ -101,7 +110,7 @@
     <module name="qsim">
         <param name="simStarttimeInterpretation" value="onlyUseStarttime"/>
         <!--		<param name="simEndtimeInterpretation" value="onlyUseEndtime" />-->
-        <param name="simEndtimeInterpretation" value="minOfEndtimeAndMobsimFinished"/>
+        <param name="simEndtimeInterpretation" value="onlyUseEndtime"/>
         <param name="startTime" value="00:00:00"/>
         <param name="endTime" value="26:00:00"/>
         <param name="mainMode" value="car"/>
@@ -129,6 +138,7 @@
     <module name="multiModeDrt">
         <parameterset type="drt">
             <parameterset type="SelectiveInsertionSearch"/>
+            <param name="mode" value="drt" />
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
             <param name="maxTravelTimeBeta" value="1200.0"/>

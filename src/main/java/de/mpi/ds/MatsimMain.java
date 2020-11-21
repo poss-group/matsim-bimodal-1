@@ -17,8 +17,10 @@ import org.matsim.vis.otfvis.OTFVisConfigGroup;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,18 +36,18 @@ public class MatsimMain {
 //        config.global().setNumberOfThreads(1);
 
         LOG.info("Starting matsim simulation...");
-//        try {
-//            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-
         try {
-            run(config, args[1], false);
+            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
+
+//        try {
+//            run(config, args[1], false);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         LOG.info("Simulation finished");
     }
 
@@ -88,14 +90,26 @@ public class MatsimMain {
     private static void runMultipleOptDrtCount(Config config, String modifyPlans, String popDir, String drtDir,
                                                String appendOutDir, boolean otfvis) throws Exception {
         Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
-        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
+        Pattern patternDrt = null;
+        Pattern patternDrt2 = null;
+        boolean splittedFleet = false;
+        if (drtDir.matches(".*/splitted/?")) {
+            splittedFleet = true;
+            patternDrt = Pattern.compile("drtvehicles_(.*?)_1\\.xml\\.gz");
+            patternDrt2 = Pattern.compile("drtvehicles_(.*?)_2\\.xml\\.gz");
+        } else
+            patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
+
         String[] populationFiles = getFiles(patternPop, popDir);
         String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
+        String[] drtVehicleFiles2 = splittedFleet ? getFiles(patternDrt2, drtDir) : null;
+
 
         for (int i = 0; i < populationFiles.length; i++) {
             for (int j = 0; j < drtVehicleFiles.length; j++) {
                 String populationFile = populationFiles[i];
                 String drtVehicleFile = drtVehicleFiles[j];
+                String drtVehicleFile2 = splittedFleet ? drtVehicleFiles2[j] : null;
                 Matcher matcherPop = patternPop.matcher(populationFile);
                 Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
                 matcherPop.find();
@@ -103,13 +117,22 @@ public class MatsimMain {
 
                 config.plans().setInputFile(popDir + populationFile);
                 Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
-                assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-                modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
+                List<DrtConfigGroup> modalElementsList = new ArrayList<>(modalElements);
+                if (splittedFleet) {
+                    assert modalElementsList.size() == 2 : "Only one drt modal element expected in config file";
+                    modalElementsList.get(0).setVehiclesFile(Paths.get(drtDir, drtVehicleFile).toString());
+                    modalElementsList.get(1).setVehiclesFile(Paths.get(drtDir, drtVehicleFile2).toString());
+                } else {
+                    assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+                    modalElementsList.get(0).setVehiclesFile(drtDir + drtVehicleFile);
+                }
 
 //                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-                config.controler().setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
+                config.controler()
+                        .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
 //                System.out.println(populationFile);
 //                System.out.println(drtVehicleFile);
+//                System.out.println(drtVehicleFile2);
 //                System.out.println("./output/" + matcherDrt.group(1));
 
                 run(config, modifyPlans, otfvis);
@@ -147,7 +170,8 @@ public class MatsimMain {
             modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
 
             assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-            config.controler().setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherPop.group(1)).toString());
+            config.controler()
+                    .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherPop.group(1)).toString());
 //            System.out.println(populationFile);
 //            System.out.println(drtVehicleFile);
 //            System.out.println("./output/" + matcherPop.group(1));
