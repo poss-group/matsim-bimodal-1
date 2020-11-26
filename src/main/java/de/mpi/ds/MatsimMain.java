@@ -125,17 +125,21 @@ public class MatsimMain {
                 } else {
                     assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
                     modalElementsList.get(0).setVehiclesFile(drtDir + drtVehicleFile);
+                    //TODO remove parameter set 1
+                    modalElements.remove(modalElementsList.get(1));
+                    System.out.println("here");
                 }
 
 //                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
                 config.controler()
                         .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
-//                System.out.println(populationFile);
-//                System.out.println(drtVehicleFile);
-//                System.out.println(drtVehicleFile2);
-//                System.out.println("./output/" + matcherDrt.group(1));
+                System.out.println(populationFile);
+                System.out.println(drtVehicleFile);
+                System.out.println(drtVehicleFile2);
+                System.out.println("./output/" + matcherDrt.group(1));
+                getVehiclesFile(config);
 
-                run(config, modifyPlans, otfvis);
+//                run(config, modifyPlans, otfvis);
             }
         }
 
