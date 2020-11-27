@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.mpi.ds</groupId>
-    <artifactId>matsim-bimodal-optDrtCount</artifactId>
+    <artifactId>matsim-bimodal-optDrtCount-manhattenEllipse</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>MATSim bimodal transport simulation</name>

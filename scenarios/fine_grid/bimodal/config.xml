@@ -2,9 +2,9 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 
 <config>
-    <!--    <module name="drtPlanModifier">-->
-    <!--		<param name="modifyPlans" value="true"/>-->
-    <!--	</module>-->
+    <module name="drtPlanModifier">
+        <param name="modifyPlans" value="true"/>
+    </module>
 
     <module name="global">
         <param name="randomSeed" value="4392"/>
@@ -19,7 +19,7 @@
     <module name="plans">
         <!--		<param name="inputPlansFile" value="population.xml" />-->
         <param name="inputPlansFile"
-            value="../populations/populations_optDrtCount/population1000000reqs_gamma1_modified.xml.gz"/>
+               value="../populations/populations_optDrtCount/population1000000reqs_gamma1_modified.xml.gz"/>
     </module>
 
     <module name="controler">
@@ -138,7 +138,7 @@
     <module name="multiModeDrt">
         <parameterset type="drt">
             <parameterset type="SelectiveInsertionSearch"/>
-            <param name="mode" value="drt" />
+            <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
             <param name="maxTravelTimeBeta" value="1200.0"/>
@@ -162,7 +162,7 @@
         <parameterset type="drt">
             <parameterset type="SelectiveInsertionSearch"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-            <param name="mode" value="acc_egr_drt" />
+            <param name="mode" value="acc_egr_drt"/>
             <param name="maxTravelTimeAlpha" value="1.5"/>
             <param name="maxTravelTimeBeta" value="1200.0"/>
             <param name="maxWaitTime" value="1200.0"/>

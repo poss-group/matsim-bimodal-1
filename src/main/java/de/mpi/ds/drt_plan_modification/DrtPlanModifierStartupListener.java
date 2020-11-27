@@ -3,6 +3,7 @@ package de.mpi.ds.drt_plan_modification;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -11,6 +12,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
+import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
@@ -24,8 +26,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
     @Inject
     Provider<TripRouter> tripRouterProvider;
-//    @Inject
-//    Controler controler;
 
     private static Node searchTransferNode(Node fromNode, Node toNode) {
         Queue<Node> queue = new LinkedList<>();
@@ -75,6 +75,16 @@ class DrtPlanModifierStartupListener implements StartupListener {
         //TODO replace drtrouter in InsertionCostCalculator with this
 
         Scenario sc = event.getServices().getScenario();
+        MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(sc.getConfig());
+        int multiConfSize = multiModeConfGroup.getModalElements().size();
+        boolean splittedFleet = false;
+        if (multiConfSize == 1)
+            ;  // do nothing
+        else if (multiConfSize == 2)
+            splittedFleet = true;
+        else
+            LOG.error("MultiModeDrtConfigGroup size expected to be 1 or 2");
+
         Network network = sc.getNetwork();
         Map<Coord, Id<Node>> coordToNode = network.getNodes().entrySet().stream().collect(
                 Collectors.toMap(e -> e.getValue().getCoord(),
@@ -119,7 +129,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         assert dummyLastNode != null;
                         dummyLastCoord = dummyLastNode.getCoord();
                     }
-                    insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord);
+                    insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
                 }
             }
         }
@@ -142,15 +152,19 @@ class DrtPlanModifierStartupListener implements StartupListener {
     }
 
     private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord,
-                                     Coord dummy_last_coord) {
+                                     Coord dummy_last_coord, boolean splittedFleet) {
         if (dummy_last_coord != null) {
             plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
-//            plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
-            plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
+            if (splittedFleet)
+                plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
+            else
+                plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
         }
         if (dummy_first_coord != null) {
-//            plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
-            plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
+            if (splittedFleet)
+                plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
+            else
+                plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
             plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
         }
     }

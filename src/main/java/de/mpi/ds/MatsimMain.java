@@ -10,6 +10,7 @@ import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
@@ -93,6 +94,7 @@ public class MatsimMain {
         Pattern patternDrt = null;
         Pattern patternDrt2 = null;
         boolean splittedFleet = false;
+
         if (drtDir.matches(".*/splitted/?")) {
             splittedFleet = true;
             patternDrt = Pattern.compile("drtvehicles_(.*?)_1\\.xml\\.gz");
@@ -115,31 +117,34 @@ public class MatsimMain {
                 matcherPop.find();
                 matcherDrt.find();
 
-                config.plans().setInputFile(popDir + populationFile);
-                Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
+                MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(config);
+                Collection<DrtConfigGroup> modalElements = multiModeConfGroup.getModalElements();
                 List<DrtConfigGroup> modalElementsList = new ArrayList<>(modalElements);
+                config.plans().setInputFile(popDir + populationFile);
                 if (splittedFleet) {
-                    assert modalElementsList.size() == 2 : "Only one drt modal element expected in config file";
+                    LOG.error("Two drt modal elements expected in config file for splitted Fleet scenario!");
                     modalElementsList.get(0).setVehiclesFile(Paths.get(drtDir, drtVehicleFile).toString());
                     modalElementsList.get(1).setVehiclesFile(Paths.get(drtDir, drtVehicleFile2).toString());
                 } else {
-                    assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+                    LOG.error("Only one drt modal element expected in config file; removing additional one");
                     modalElementsList.get(0).setVehiclesFile(drtDir + drtVehicleFile);
-                    //TODO remove parameter set 1
-                    modalElements.remove(modalElementsList.get(1));
-                    System.out.println("here");
+                    try {
+                        multiModeConfGroup.removeParameterSet(modalElementsList.get(1));
+                    } catch (Exception e) {
+                        LOG.warn("Already removed second parameter set");
+                    }
                 }
+
 
 //                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
                 config.controler()
                         .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
-                System.out.println(populationFile);
-                System.out.println(drtVehicleFile);
-                System.out.println(drtVehicleFile2);
-                System.out.println("./output/" + matcherDrt.group(1));
-                getVehiclesFile(config);
+//                System.out.println(populationFile);
+//                System.out.println(drtVehicleFile);
+//                System.out.println(drtVehicleFile2);
+//                System.out.println("./output/" + matcherDrt.group(1));
 
-//                run(config, modifyPlans, otfvis);
+                run(config, modifyPlans, otfvis);
             }
         }
 
@@ -189,6 +194,7 @@ public class MatsimMain {
     private static String getVehiclesFile(Config config) {
         Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
         assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
+        LOG.error("Only one drt modal element expected in config file");
         return modalElements.stream().findFirst().get().getVehiclesFile();
     }
 
