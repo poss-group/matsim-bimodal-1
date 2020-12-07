@@ -195,3 +195,9 @@ scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount/drtvehicles_370.xml.gz f
 scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount/drtvehicles_260.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount/drtvehicles_350.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount/drtvehicles_400.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitVehicles_15min.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitVehicles_30min.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitVehicles_5min.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitSchedule_15min.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitSchedule_30min.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/public_transit/transitSchedule_5min.xml.gz filter=lfs diff=lfs merge=lfs -text

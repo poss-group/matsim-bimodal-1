@@ -29,8 +29,8 @@ public interface UtilComponent {
     static final double delta_x = 100;
     static final double delta_y = 100;
     static final double transitEndTime = 26 * 60 * 60;
-    static final double transitIntervalTime = pt_interval * delta_x * 9 / FREE_SPEED_TRAIN * 2;
-    static final double departureIntervalTime = 30*60;
+    static final double transitIntervalTime = pt_interval * delta_x * 10 / FREE_SPEED_TRAIN;
+    static final double departureIntervalTime = 15*60;
     static final double transitStopLength = 0;
     static final int n_xy = 101;
     static final int n_x = 101;

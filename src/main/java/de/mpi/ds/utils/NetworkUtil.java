@@ -71,76 +71,32 @@ public class NetworkUtil implements UtilComponent {
         NetworkFactory fac = net.getFactory();
 
         // create nodes
-        int n_x_new = n_y + 2 * n_x / pt_interval;
-        int n_y_new = n_x + 2 * n_y / pt_interval;
+        // Add nodes to network
         Node[][] nodes = new Node[n_x][n_y];
-        Link l1 = null;
-        Link l2 = null;
-        Link l3 = null;
-        Link l4 = null;
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 Node n = fac.createNode(Id.createNodeId(String.valueOf(i) + "_" + String.valueOf(j)),
                         new Coord(i * delta_x, j * delta_y));
                 nodes[i][j] = n;
                 net.addNode(n);
-                if (i > 0) {
-                    l1 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i - 1][j].getId()).concat("-")
-                                    .concat(String.valueOf(nodes[i][j].getId()))),
-                            nodes[i - 1][j], nodes[i][j]);
-                    l2 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
-                                    .concat(String.valueOf(nodes[i - 1][j].getId()))),
-                            nodes[i][j], nodes[i - 1][j]);
-                    setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
-                        l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i - 1][j].getId()).concat("-")
-                                        .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))),
-                                nodes[i - 1][j], nodes[i][j]);
-                        l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
-                                        .concat(String.valueOf(nodes[i - 1][j].getId()).concat("_pt"))),
-                                nodes[i][j], nodes[i - 1][j]);
-                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                        setLinkModes(l3, "train");
-                        setLinkModes(l4, "train");
-                        net.addLink(l3);
-                        net.addLink(l4);
-                    }
-                    setLinkModes(l1, "car");
-                    setLinkModes(l2, "car");
-                    net.addLink(l1);
-                    net.addLink(l2);
+            }
+        }
+        // Add links to network
+        for (int i = 0; i < n_y; i++) {
+            for (int j = 0; j < n_x; j++) {
+                int i_minus1_periodic = (((i - 1) % n_y) + n_y) % n_y;
+                int j_minus1_periodic = (((j - 1) % n_x) + n_x) % n_x;
+                insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);
+                if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
+                    insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);
                 }
-                if (j > 0) {
-                    l1 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j - 1].getId()).concat("-")
-                            .concat(String.valueOf(nodes[i][j].getId()))), nodes[i][j - 1], nodes[i][j]);
-                    l2 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
-                            .concat(String.valueOf(nodes[i][j - 1].getId()))), nodes[i][j], nodes[i][j - 1]);
-                    setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
-                    if ((i + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
-                        l3 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j - 1].getId()).concat("-")
-                                        .concat(String.valueOf(nodes[i][j].getId()).concat("_pt"))), nodes[i][j - 1],
-                                nodes[i][j]);
-                        l4 = fac.createLink(Id.createLinkId(String.valueOf(nodes[i][j].getId()).concat("-")
-                                        .concat(String.valueOf(nodes[i][j - 1].getId()).concat("_pt"))), nodes[i][j],
-                                nodes[i][j - 1]);
-                        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                        setLinkModes(l3, "train");
-                        setLinkModes(l4, "train");
-                        net.addLink(l3);
-                        net.addLink(l4);
-                    }
-                    setLinkModes(l1, "car");
-                    setLinkModes(l2, "car");
-                    net.addLink(l1);
-                    net.addLink(l2);
+                insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic]);
+                if ((i + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
+                    insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic]);
                 }
             }
         }
-//        makeDiagConnections(net, fac, nodes);
+        makeDiagConnections(net, fac, nodes);
         // this has to be done second because mod for pt modifies next neighbours of stations
         putNodesCloseToStations(net, fac, nodes, createTrainLanes);
         try {
@@ -153,6 +109,36 @@ public class NetworkUtil implements UtilComponent {
             System.out.println("Failed to write output...");
             e.printStackTrace();
         }
+    }
+
+    private static void insertTrainLinks(Network net, NetworkFactory fac, Node a, Node b) {
+        Link l3 = fac.createLink(Id.createLinkId(String.valueOf(a.getId()).concat("-")
+                        .concat(String.valueOf(b.getId()).concat("_pt"))),
+                a, b);
+        Link l4 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
+                        .concat(String.valueOf(a.getId()).concat("_pt"))),
+                b, a);
+        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+        setLinkModes(l3, "train");
+        setLinkModes(l4, "train");
+        net.addLink(l3);
+        net.addLink(l4);
+    }
+
+    private static void insertCarLinks(Network net, NetworkFactory fac, Node a, Node b) {
+        Link l1 = fac.createLink(Id.createLinkId(String.valueOf(a.getId()).concat("-")
+                        .concat(String.valueOf(b.getId()))),
+                a, b);
+        Link l2 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
+                        .concat(String.valueOf(a.getId()))),
+                b, a);
+        setLinkAttributes(l1, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
+        setLinkAttributes(l2, CAP_MAIN, LINK_LENGTH, FREE_SPEED, NUMBER_OF_LANES);
+        setLinkModes(l1, "car");
+        setLinkModes(l2, "car");
+        net.addLink(l1);
+        net.addLink(l2);
     }
 
     private static void makeDiagConnections(Network net, NetworkFactory fac, Node[][] nodes) {
@@ -188,9 +174,10 @@ public class NetworkUtil implements UtilComponent {
 
     /**
      * This method adds nodes close to the nodes where the stations are going to be to reduce transitwalks of passengers
-     *  @param net   the network
-     * @param fac   the network factory
-     * @param nodes 2D array of Node
+     *
+     * @param net              the network
+     * @param fac              the network factory
+     * @param nodes            2D array of Node
      * @param createTrainLanes
      */
     private static void putNodesCloseToStations(Network net, NetworkFactory fac, Node[][] nodes,

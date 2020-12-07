@@ -49,11 +49,13 @@ public class TransitScheduleUtil implements UtilComponent {
     private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
 
     public static void main(String[] args) {
-        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule.xml", "./output/transitVehicles.xml");
+        String suffix = "_15min";
+        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule" + suffix + ".xml",
+                "./output/transitVehicles" + suffix + ".xml");
     }
 
     static void runTransitScheduleUtil(String networkPath, String outputSchedulePath,
-                                                 String outputVehiclesPath) {
+                                       String outputVehiclesPath) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         TransitSchedule schedule = scenario.getTransitSchedule();
         TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
