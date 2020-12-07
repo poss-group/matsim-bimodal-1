@@ -202,3 +202,4 @@ scenarios/fine_grid/public_transit/transitSchedule_15min.xml.gz filter=lfs diff=
 scenarios/fine_grid/public_transit/transitSchedule_30min.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/public_transit/transitSchedule_5min.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/public_transit/transitSchedule_5mintest.xml.gz filter=lfs diff=lfs merge=lfs -text
+*.gz filter=lfs diff=lfs merge=lfs -text
