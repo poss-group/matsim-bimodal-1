@@ -1,9 +1,6 @@
 package de.mpi.ds.drt_plan_modification;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -16,34 +13,44 @@ import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
-import org.matsim.core.router.TripRouter;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
-    @Inject
-    Provider<TripRouter> tripRouterProvider;
 
-    private static Node searchTransferNode(Node fromNode, Node toNode) {
-        Queue<Node> queue = new LinkedList<>();
-        List<Node> visited = new ArrayList<>();
-        queue.add(fromNode);
-        while (!queue.isEmpty()) {
-            Node current = queue.remove();
-            visited.add(current);
-            Collection<? extends Link> outLinks = current.getOutLinks().values();
-            if (isPtStation(outLinks.stream())) {
-                return current;
+    private static Node searchTransferNode(Node fromNode, Node toNode,
+                                           List<Coord> transitStopCoords,
+                                           Map<Coord, Node> coordToNode,
+                                           String mode) {
+        if (mode.equals("wide_search")) {
+            Queue<Node> queue = new LinkedList<>();
+            List<Node> visited = new ArrayList<>();
+            queue.add(fromNode);
+            while (!queue.isEmpty()) {
+                Node current = queue.remove();
+                visited.add(current);
+                Collection<? extends Link> outLinks = current.getOutLinks().values();
+                if (isPtStation(outLinks.stream())) {
+                    return current;
+                }
+                // TODO check if this makes the method slow
+                // Add closest connected nodes to queue (sorted by their distance to the toNode)
+                queue.addAll(outLinks.stream().map(Link::getToNode)
+                        .filter(e -> !visited.contains((e)))
+                        .sorted(Comparator
+                                .comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
+                        .collect(Collectors.toList()));
             }
-            // Add closest connected nodes to queue (sorted by their distance to the toNode)
-            queue.addAll(outLinks.stream().map(Link::getToNode)
-                    .filter(e -> !visited.contains((e)))
-                    .sorted(Comparator
-                            .comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
-                    .collect(Collectors.toList()));
+        } else if (mode.equals("shortest_dist")) {
+            Coord min = transitStopCoords.stream()
+                    .min(Comparator
+                            .comparingDouble(coord -> DistanceUtils.calculateDistance(coord, fromNode.getCoord())))
+                    .orElseThrow();
+            return coordToNode.get(min);
         }
         return null;
     }
@@ -60,35 +67,31 @@ class DrtPlanModifierStartupListener implements StartupListener {
     @Override
     public void notifyStartup(StartupEvent event) {
         LOG.info("Modifying plans...");
-//        LOG.warn(controler.getTripRouterProvider().get());
-//        TripRouter tripRouter = tripRouterProvider.get();
-//        Person testPerson = event.getServices().getScenario().getPopulation().getFactory().createPerson(Id
-//        .createPersonId("-1"));
-//        ActivityFacilitiesFactoryImpl activityFacilitiesFactory =  new ActivityFacilitiesFactoryImpl();
-//        ActivityFacility fstAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1", ActivityFacility
-//        .class),Id.createLinkId("6029_6130"));
-//        ActivityFacility scndAct = activityFacilitiesFactory.createActivityFacility(Id.create("-1",
-//        ActivityFacility.class),Id.createLinkId("5524_5625"));
-//        List<? extends PlanElement> routeList = tripRouter.calcRoute("car", fstAct,scndAct, 0, testPerson);
-//        LOG.warn(routeList.get(0));
-//        ((LegImpl) routeList.get(0)).travTime;
-        //TODO replace drtrouter in InsertionCostCalculator with this
 
         Scenario sc = event.getServices().getScenario();
+        Network network = sc.getNetwork();
+        Map<Coord, Node> coordToNode = network.getNodes().entrySet().stream().collect(
+                Collectors.toMap(e -> e.getValue().getCoord(),
+                        e -> network.getNodes().get(e.getKey())));
+
+        List<Coord> transitStopCoords = sc.getTransitSchedule().getTransitLines().values().stream()
+                .flatMap(tl -> tl.getRoutes().values().stream()
+                        .map(tr -> tr.getStops().stream().map(stop -> stop.getStopFacility().getCoord())))
+                .flatMap(Function.identity())
+                .collect(Collectors.toList());
+
         MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(sc.getConfig());
         int multiConfSize = multiModeConfGroup.getModalElements().size();
         boolean splittedFleet = false;
         if (multiConfSize == 1)
-            ;  // do nothing
-        else if (multiConfSize == 2)
+            LOG.warn("Working with only drt legs");
+        else if (multiConfSize == 2) {
             splittedFleet = true;
+            LOG.warn("Working with \"drt\" and \"acc_egr_drt\" legs");
+        }
         else
             LOG.error("MultiModeDrtConfigGroup size expected to be 1 or 2");
 
-        Network network = sc.getNetwork();
-        Map<Coord, Id<Node>> coordToNode = network.getNodes().entrySet().stream().collect(
-                Collectors.toMap(e -> e.getValue().getCoord(),
-                        Map.Entry::getKey));
         int count = 0;
         for (Person person : sc.getPopulation().getPersons().values()) {
             if (count % 10000 == 0) {
@@ -117,15 +120,17 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     Coord dummyLastCoord = null;
                     assert firstAct != null;
                     assert lastAct != null;
-                    Node firstNode = network.getNodes().get(coordToNode.get(firstAct.getCoord()));
-                    Node lastNode = network.getNodes().get(coordToNode.get(lastAct.getCoord()));
+                    Node firstNode = coordToNode.get(firstAct.getCoord());
+                    Node lastNode = coordToNode.get(lastAct.getCoord());
                     if (!isPtStation(firstNode)) {
-                        Node dummyFirstNode = searchTransferNode(firstNode, lastNode);
+                        Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords, coordToNode,
+                                "shortest_dist");
                         assert dummyFirstNode != null;
                         dummyFirstCoord = dummyFirstNode.getCoord();
                     }
                     if (!isPtStation(lastNode)) {
-                        Node dummyLastNode = searchTransferNode(lastNode, firstNode);
+                        Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
+                                "shortest_dist");
                         assert dummyLastNode != null;
                         dummyLastCoord = dummyLastNode.getCoord();
                     }

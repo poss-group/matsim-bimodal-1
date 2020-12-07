@@ -17,9 +17,9 @@
     </module>
 
     <module name="plans">
-        		<param name="inputPlansFile" value="population.xml" />
-<!--        <param name="inputPlansFile"-->
-<!--               value="../populations/populations_optDrtCount/population1000000reqs_gamma1_modified.xml.gz"/>-->
+<!--        		<param name="inputPlansFile" value="population.xml" />-->
+        <param name="inputPlansFile"
+               value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz"/>
     </module>
 
     <module name="controler">
@@ -98,10 +98,8 @@
     </module>
 
     <module name="transit">
-<!--        <param name="transitScheduleFile" value="../public_transit/transitSchedule_15min.xml.gz"/>-->
-<!--        <param name="vehiclesFile" value="../public_transit/transitVehicles_15min.xml.gz"/>-->
-        <param name="transitScheduleFile" value="transitSchedule.xml.gz"/>
-        <param name="vehiclesFile" value="transitVehicles.xml.gz"/>
+        <param name="transitScheduleFile" value="../public_transit/transitSchedule_15min.xml.gz"/>
+        <param name="vehiclesFile" value="../public_transit/transitVehicles_15min.xml.gz"/>
 
         <!--otherwise pt legs would be teleported-->
         <param name="useTransit" value="true"/>
@@ -139,8 +137,8 @@
 
     <module name="multiModeDrt">
         <parameterset type="drt">
-<!--            <parameterset type="SelectiveInsertionSearch"/>-->
-            <parameterset type="ExtensiveInsertionSearch"/>
+            <parameterset type="SelectiveInsertionSearch"/>
+		<!--            <parameterset type="ExtensiveInsertionSearch"/>-->
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
@@ -149,7 +147,7 @@
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
-            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>
+            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_200.xml.gz"/>
 
             <!--			<parameterset type="rebalancing">-->
             <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
@@ -162,18 +160,18 @@
             <!--				<param name="cellSize" value="1000"/>-->
             <!--			</parameterset>-->
         </parameterset>
-        <parameterset type="drt">
-            <parameterset type="SelectiveInsertionSearch"/>
-            <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-            <param name="mode" value="acc_egr_drt"/>
-            <param name="maxTravelTimeAlpha" value="1.5"/>
-            <param name="maxTravelTimeBeta" value="1200.0"/>
-            <param name="maxWaitTime" value="1200.0"/>
-            <param name="operationalScheme" value="door2door"/>
-            <param name="stopDuration" value="1.0"/>
-            <param name="vehiclesFile" value="drtvehicles.xml"/>
-            <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>-->
-        </parameterset>
+<!--        <parameterset type="drt">-->
+<!--            <parameterset type="SelectiveInsertionSearch"/>-->
+<!--            &lt;!&ndash;			<param name="estimatedDrtSpeed" value="8.333333333333334"/>&ndash;&gt;-->
+<!--            <param name="mode" value="acc_egr_drt"/>-->
+<!--            <param name="maxTravelTimeAlpha" value="1.5"/>-->
+<!--            <param name="maxTravelTimeBeta" value="1200.0"/>-->
+<!--            <param name="maxWaitTime" value="1200.0"/>-->
+<!--            <param name="operationalScheme" value="door2door"/>-->
+<!--            <param name="stopDuration" value="1.0"/>-->
+<!--            <param name="vehiclesFile" value="drtvehicles.xml"/>-->
+<!--            &lt;!&ndash;            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_400.xml.gz"/>&ndash;&gt;-->
+<!--        </parameterset>-->
     </module>
 
     <module name="dvrp">
