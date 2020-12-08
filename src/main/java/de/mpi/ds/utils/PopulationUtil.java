@@ -4,6 +4,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
@@ -12,10 +13,8 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
@@ -45,10 +44,28 @@ public class PopulationUtil implements UtilComponent {
         Population population = scenario.getPopulation();
         Map<String, Coord> zoneGeometries = new HashMap<>();
         Network net = NetworkUtils.readNetwork(networkPath);
+        double[] netDims = getNetworkDimensions(net);
+        System.out.println("Network dimensions: " + Arrays.toString(netDims));
+        InverseTransformSampler sampler = new InverseTransformSampler(a -> 1 / (netDims[1] - netDims[0]), netDims[0],
+                netDims[1]);
         fillZoneData(zoneGeometries, net);
-        generatePopulation(zoneGeometries, population, net, nRequests, gamma, seed);
+        generatePopulation(zoneGeometries, population, net, nRequests, gamma, seed, sampler);
+
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
+    }
+
+    private static double[] getNetworkDimensions(Network net) {
+        List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
+                .collect(Collectors.toList());
+        List<Double> yCoords = net.getNodes().values().stream().map(n -> n.getCoord().getY())
+                .collect(Collectors.toList());
+        double xmin = Collections.min(xCoords);
+        double xmax = Collections.max(xCoords);
+        double ymin = Collections.min(yCoords);
+        double ymax = Collections.max(yCoords);
+
+        return new double[]{Math.min(xmin, ymin), Math.max(xmax, ymax)};
     }
 
     private static void fillZoneData(Map<String, Coord> zoneGeometries, Network net) {
@@ -60,7 +77,8 @@ public class PopulationUtil implements UtilComponent {
     }
 
     private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
-                                           Network net, int nRequests, double gamma, long seed) {
+                                           Network net, int nRequests, double gamma, long seed,
+                                           InverseTransformSampler sampler) {
         rand.setSeed(seed);
         Id<Node> orig_id;
         Id<Node> dest_id;
@@ -74,15 +92,17 @@ public class PopulationUtil implements UtilComponent {
         for (int j = 0; j < nRequests; j++) {
             do {
                 orig_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
-                dest_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
+                Coord orig_coord = zoneGeometries.get(orig_id);
+                if (sampler != null) {
+                    double dist = sampler.getSample();
+                    double angle = rand.nextDouble() * 2 * Math.PI;
+                    Coord target = new Coord(orig_coord.getX() + dist * Math.cos(angle),
+                            orig_coord.getY() + dist * Math.sin(angle));
+                    s
+                } else {
+                    dest_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
+                }
             } while (orig_id.equals(dest_id));
-            // // modulo cases only if agents should be placed on non pt nodes & next 2
-            // lines
-            // orig_coord = zoneGeometries.get(String.valueOf(orig_id));
-            // dest_coord = zoneGeometries.get(String.valueOf(dest_id));
-            // } while (orig_id == dest_id || orig_coord.getX() / 1000 % 2 == 1 ||
-            // orig_coord.getY() / 1000 % 2 == 1
-            // || dest_coord.getX() / 1000 % 2 == 1 || dest_coord.getY() / 1000 % 2 == 1);
             generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population, gamma);
         }
     }
@@ -173,5 +193,18 @@ public class PopulationUtil implements UtilComponent {
 
     private static Id<Person> createId(String source, String sink, int i, String transportMode) {
         return Id.create(source + "_" + sink + "_" + i, Person.class);
+    }
+
+
+    //TODO
+    private static Node searchTransferNode(Node fromNode, Node toNode,
+                                           List<Coord> transitStopCoords,
+                                           Map<Coord, Node> coordToNode,
+                                           String mode) {
+        Coord min = transitStopCoords.stream()
+                .min(Comparator
+                        .comparingDouble(coord -> DistanceUtils.calculateDistance(coord, fromNode.getCoord())))
+                .orElseThrow();
+        return coordToNode.get(min);
     }
 }

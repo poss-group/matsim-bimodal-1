@@ -17,7 +17,7 @@ public class InverseTransformSampler {
     int N = 10000;
     Random rand = new Random();
 
-    InverseTransformSampler(Function<Double, Double> function, double x0, double x1) throws IOException {
+    InverseTransformSampler(Function<Double, Double> function, double x0, double x1) {
         this.function = function;
         this.x0 = x0;
         this.x0 = x1;
@@ -51,18 +51,6 @@ public class InverseTransformSampler {
         double last_delta = Double.POSITIVE_INFINITY;
         int idx = search(random, cummulative_values);
         return cummulative_keys[idx];
-//        Iterator it = cummulative.entrySet().iterator();
-//        for (int i=0; i < cummulative.size(); i++) {
-//        while (it.hasNext()) {
-//        for (Map.Entry<Double, Double> entry : cummulative.entrySet()) {
-//            double key = entry.getKey();
-//            double val = entry.getValue();
-//            delta = Math.abs(val - random);
-//            if (delta > last_delta) {
-//                return key;
-//            }
-//            last_delta = delta;
-//        }
     }
 
     public void applyFunc(Double argument) {
