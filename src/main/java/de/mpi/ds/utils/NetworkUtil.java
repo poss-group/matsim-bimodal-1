@@ -86,7 +86,6 @@ public class NetworkUtil implements UtilComponent {
             for (int j = 0; j < n_x; j++) {
                 int i_minus1_periodic = (((i - 1) % n_y) + n_y) % n_y;
                 int j_minus1_periodic = (((j - 1) % n_x) + n_x) % n_x;
-                //TODO is this also for cars usable?
                 insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);
                 if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
                     insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);

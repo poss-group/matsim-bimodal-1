@@ -38,9 +38,9 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            run(config, args[1], false);
+            run(config, args[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }

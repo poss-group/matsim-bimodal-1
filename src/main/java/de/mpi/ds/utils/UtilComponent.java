@@ -9,7 +9,7 @@ public interface UtilComponent {
 
     //Population variables
     static final int MAX_END_TIME = 24 * 3600;
-    static final int N_REQUESTS = 100000;
+    static final int N_REQUESTS = 10000;
     static double delta_xy = 100;
 
     //Network variables

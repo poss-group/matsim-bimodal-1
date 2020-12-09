@@ -1,9 +1,6 @@
 package de.mpi.ds.utils;
 
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.*;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -19,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+import static de.mpi.ds.utils.InverseTransformSampler.normalDist;
 
 public class PopulationUtil implements UtilComponent {
     private static Random rand = new Random();
@@ -42,20 +40,24 @@ public class PopulationUtil implements UtilComponent {
         rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
-        Map<String, Coord> zoneGeometries = new HashMap<>();
+//        Map<String, Coord> zoneGeometries = new HashMap<>();
         Network net = NetworkUtils.readNetwork(networkPath);
-        double[] netDims = getNetworkDimensions(net);
-        System.out.println("Network dimensions: " + Arrays.toString(netDims));
-        InverseTransformSampler sampler = new InverseTransformSampler(a -> 1 / (netDims[1] - netDims[0]), netDims[0],
-                netDims[1]);
-        fillZoneData(zoneGeometries, net);
-        generatePopulation(zoneGeometries, population, net, nRequests, gamma, seed, sampler);
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
+        System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
+//        InverseTransformSampler sampler = new InverseTransformSampler(a -> 1 / (netDimsMinMax[1] - netDimsMinMax[0]),
+        InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 2000, 500),
+                netDimsMinMax[0],
+                netDimsMinMax[1]);
+//        for (Node node : net.getNodes().values()) {
+//            zoneGeometries.put(node.getId().toString(), node.getCoord());
+//        }
+        generatePopulation(population, net, nRequests, gamma, seed, sampler, netDimsMinMax[1]);
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
     }
 
-    private static double[] getNetworkDimensions(Network net) {
+    private static double[] getNetworkDimensionsMinMax(Network net) {
         List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
                 .collect(Collectors.toList());
         List<Double> yCoords = net.getNodes().values().stream().map(n -> n.getCoord().getY())
@@ -68,50 +70,57 @@ public class PopulationUtil implements UtilComponent {
         return new double[]{Math.min(xmin, ymin), Math.max(xmax, ymax)};
     }
 
-    private static void fillZoneData(Map<String, Coord> zoneGeometries, Network net) {
-        // Add the locations you want to use here.
-        // (with proper coordinates)
-        for (Node node : net.getNodes().values()) {
-            zoneGeometries.put(node.getId().toString(), node.getCoord());
-        }
-    }
 
-    private static void generatePopulation(Map<String, Coord> zoneGeometries, Population population,
-                                           Network net, int nRequests, double gamma, long seed,
-                                           InverseTransformSampler sampler) {
+    private static void generatePopulation(Population population, Network net, int nRequests, double gamma, long seed,
+                                           InverseTransformSampler sampler, double L) {
         rand.setSeed(seed);
-        Id<Node> orig_id;
-        Id<Node> dest_id;
-        List<Id<Node>> nodeIdList = net.getNodes().values().stream()
-                .filter(n -> n.getCoord().getX() % delta_xy == 0)
-                .filter(n -> n.getCoord().getY() % delta_xy == 0)
-                .map(n -> n.getId())
+//        Id<Node> orig_id;
+//        Id<Node> dest_id;
+//        List<Id<Node>> nodeIdList = net.getNodes().values().stream()
+//                .filter(n -> n.getCoord().getX() % delta_xy == 0)
+//                .filter(n -> n.getCoord().getY() % delta_xy == 0)
+//                .map(Identifiable::getId)
+//                .collect(Collectors.toList());
+        Coord orig_coord;
+        Coord dest_coord;
+        List<Node> nodeList = net.getNodes().values().stream()
+                .filter(n -> (n.getCoord().getX() % delta_x == 0) && (n.getCoord().getY() % delta_y == 0))
                 .collect(Collectors.toList());
-        // Coord orig_coord;
-        // Coord dest_coord;
         for (int j = 0; j < nRequests; j++) {
             do {
-                orig_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
-                Coord orig_coord = zoneGeometries.get(orig_id);
+//                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
+                orig_coord = nodeList.get(rand.nextInt(nodeList.size())).getCoord();
                 if (sampler != null) {
-                    double dist = sampler.getSample();
+                    double dist = 0;
+                    try {
+                        dist = sampler.getSample();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     double angle = rand.nextDouble() * 2 * Math.PI;
-                    Coord target = new Coord(orig_coord.getX() + dist * Math.cos(angle),
-                            orig_coord.getY() + dist * Math.sin(angle));
-                    s
+
+                    double newX = ((orig_coord.getX() + dist * Math.cos(angle)) % L + L) % L;
+                    double newY = ((orig_coord.getY() + dist * Math.sin(angle)) % L + L) % L;
+                    Coord pre_target = new Coord(newX, newY);
+                    dest_coord = getClosestNode(pre_target, nodeList, L).getCoord();
                 } else {
-                    dest_id = nodeIdList.get(rand.nextInt(nodeIdList.size()));
+//                    dest_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
+                    dest_coord = nodeList.get(rand.nextInt(nodeList.size())).getCoord();
                 }
-            } while (orig_id.equals(dest_id));
-            generateTrip(orig_id.toString(), dest_id.toString(), j, zoneGeometries, population, gamma);
+            } while (orig_coord.equals(dest_coord));
+            generateTrip(orig_coord, dest_coord, j, population, gamma);
         }
     }
 
-    private static void generateTrip(String from, String to, int passenger_id,
-                                     Map<String, Coord> zoneGeometries, Population population,
-                                     double gamma) {
-        Coord source = zoneGeometries.get(from);
-        Coord sink = zoneGeometries.get(to);
+    private static double getDirectionPeriodicBC(double v, double L) {
+        return v % L;
+    }
+
+    private static Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
+        return collection.stream().skip(rand.nextInt(collection.size())).findFirst().orElseThrow();
+    }
+
+    private static void generateTrip(Coord source, Coord sink, int passenger_id, Population population, double gamma) {
         Person person = population.getFactory()
                 .createPerson(Id.createPersonId(String.valueOf(passenger_id)));
         // person.getCustomAttributes().put("hasLicense", "false");
@@ -196,15 +205,18 @@ public class PopulationUtil implements UtilComponent {
     }
 
 
-    //TODO
-    private static Node searchTransferNode(Node fromNode, Node toNode,
-                                           List<Coord> transitStopCoords,
-                                           Map<Coord, Node> coordToNode,
-                                           String mode) {
-        Coord min = transitStopCoords.stream()
+    private static Node getClosestNode(Coord coord, List<Node> nodes, double L) {
+        return nodes.stream()
                 .min(Comparator
-                        .comparingDouble(coord -> DistanceUtils.calculateDistance(coord, fromNode.getCoord())))
+                        .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();
-        return coordToNode.get(min);
+    }
+
+    private static double calculateDistancePeriodicBC(Coord from, Coord to, double L) {
+        double deltaX = Math.abs(to.getX() - from.getX());
+        double deltaXperiodic = deltaX < L / 2 ? deltaX : -deltaX + L;
+        double deltaY = Math.abs(to.getY() - from.getY());
+        double deltaYperiodic = deltaY < L / 2 ? deltaY : -deltaY + L;
+        return Math.sqrt(deltaXperiodic * deltaXperiodic + deltaYperiodic * deltaYperiodic);
     }
 }

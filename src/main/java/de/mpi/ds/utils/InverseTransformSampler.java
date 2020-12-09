@@ -1,5 +1,7 @@
 package de.mpi.ds.utils;
 
+import org.opengis.parameter.InvalidParameterValueException;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,7 +39,7 @@ public class InverseTransformSampler {
             last_arg = arg;
 //            out += (String.valueOf(arg) + ";" + String.valueOf(value) + ";" + String.valueOf(cumsum) + "\n");
         }
-        assert cumsum > 0.99 && cumsum < 1.01 : "distribution is not normalized";
+        assert cumsum > 0.99 && cumsum < 1.01 : "distribution is not normalized (on given domain)";
         cummulative_values = cummulative.values().stream().mapToDouble(Double::doubleValue).toArray();
         cummulative_keys = cummulative.keySet().stream().mapToDouble(Double::doubleValue).toArray();
 //        BufferedWriter writer = new BufferedWriter(new FileWriter("testout.csv"));
@@ -45,22 +47,18 @@ public class InverseTransformSampler {
 //        writer.close();
     }
 
-    public double getSample() {
+    public double getSample() throws Exception {
         double random = rand.nextDouble();
-        double delta = 0;
-        double last_delta = Double.POSITIVE_INFINITY;
         int idx = search(random, cummulative_values);
         return cummulative_keys[idx];
     }
 
-    public void applyFunc(Double argument) {
-        System.out.println(this.function.apply(argument));
-    }
 
     public static void main(String[] args) {
         try {
 //            InverseTransformSampler test = new InverseTransformSampler(a -> 1/10., 0, 10);
-            InverseTransformSampler test = new InverseTransformSampler(a -> normalDist(a, 0, 1), -10, 10);
+//            InverseTransformSampler test = new InverseTransformSampler(a -> normalDist(a, 0, 1), -10, 10);
+            InverseTransformSampler test = new InverseTransformSampler(x -> normalDist(x, 2000, 500), 0, 10000);
 //            System.out.println(test.getSample());
             StringBuilder testout = new StringBuilder();
             for (int i = 0; i < 10000; i++) {
@@ -69,21 +67,23 @@ public class InverseTransformSampler {
             BufferedWriter writer = new BufferedWriter(new FileWriter("testout.csv"));
             writer.write(testout.toString());
             writer.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static double normalDist(double x, double mu, double sig) {
-        return 1/Math.sqrt(2*Math.PI)*Math.exp(-0.5*(x-mu/sig)*(x-mu/sig));
+        return 1/(Math.sqrt(2*Math.PI)*sig)*Math.exp(-0.5*((x-mu)/sig)*((x-mu)/sig));
     }
 
-    public static int search(double value, double[] a) {
+    public static int search(double value, double[] a) throws Exception {
         if(value < a[0]) {
-            return 0;
+            throw new Exception("value is smaller than smallest element in array to be searched in for");
+//            return 0;
         }
         if(value > a[a.length-1]) {
-            return a.length-1;
+            throw new Exception("value is bigger than biggest element in array to be searched in for");
+//            return a.length-1;
         }
 
         int lo = 0;
