@@ -2,7 +2,6 @@ package de.mpi.ds.drt_plan_modification;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -21,6 +20,11 @@ import java.util.stream.Stream;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
+    private double zetaCut;
+
+    DrtPlanModifierStartupListener(DrtPlanModifierConfigGroup configGroup) {
+        this.zetaCut = configGroup.getZetaCut();
+    }
 
     private static Node searchTransferNode(Node fromNode, Node toNode,
                                            List<Coord> transitStopCoords,
@@ -80,6 +84,15 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
 
+        List<Double> trainDeltas = network.getLinks().values().stream()
+                .filter(e -> e.getAllowedModes().contains(TransportMode.train))
+                .filter(e -> e.getFromNode().getCoord().getY() == 0)
+                .map(e -> e.getCoord().getX())
+                .sorted()
+                .limit(2)
+                .collect(Collectors.toList());
+        double trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+
         MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(sc.getConfig());
         int multiConfSize = multiModeConfGroup.getModalElements().size();
         boolean splittedFleet = false;
@@ -116,25 +129,30 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 assert middleLeg != null;
                 // Only insert transit activities if leg mode is pt
                 if (middleLeg.getMode().equals(TransportMode.pt)) {
-                    Coord dummyFirstCoord = null;
-                    Coord dummyLastCoord = null;
-                    assert firstAct != null;
-                    assert lastAct != null;
-                    Node firstNode = coordToNode.get(firstAct.getCoord());
-                    Node lastNode = coordToNode.get(lastAct.getCoord());
-                    if (!isPtStation(firstNode)) {
-                        Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords, coordToNode,
-                                "shortest_dist");
-                        assert dummyFirstNode != null;
-                        dummyFirstCoord = dummyFirstNode.getCoord();
+                    if (DistanceUtils.calculateDistance(firstAct.getCoord(), lastAct.getCoord()) > zetaCut *trainDelta) {
+                        Coord dummyFirstCoord = null;
+                        Coord dummyLastCoord = null;
+                        assert firstAct != null;
+                        assert lastAct != null;
+                        Node firstNode = coordToNode.get(firstAct.getCoord());
+                        Node lastNode = coordToNode.get(lastAct.getCoord());
+                        if (!isPtStation(firstNode)) {
+                            Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords,
+                                    coordToNode,
+                                    "shortest_dist");
+                            assert dummyFirstNode != null;
+                            dummyFirstCoord = dummyFirstNode.getCoord();
+                        }
+                        if (!isPtStation(lastNode)) {
+                            Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
+                                    "shortest_dist");
+                            assert dummyLastNode != null;
+                            dummyLastCoord = dummyLastNode.getCoord();
+                        }
+                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
+                    } else {
+                        middleLeg.setMode(TransportMode.drt);
                     }
-                    if (!isPtStation(lastNode)) {
-                        Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
-                                "shortest_dist");
-                        assert dummyLastNode != null;
-                        dummyLastCoord = dummyLastNode.getCoord();
-                    }
-                    insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
                 }
             }
         }

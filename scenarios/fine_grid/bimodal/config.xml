@@ -2,9 +2,10 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 
 <config>
-<!--    <module name="drtPlanModifier">-->
-<!--        <param name="modifyPlans" value="true"/>-->
-<!--    </module>-->
+    <module name="drtPlanModifier">
+        <param name="modifyPlans" value="true"/>
+        <param name="zetaCut" value="1.4"/>
+    </module>
 
     <module name="global">
         <param name="randomSeed" value="4392"/>
@@ -19,7 +20,7 @@
     <module name="plans">
 <!--        		<param name="inputPlansFile" value="population.xml.gz" />-->
         <param name="inputPlansFile"
-               value="../populations/populations_optDrtCount/population1000000reqs_gamma1.xml.gz"/>
+               value="../populations/populations_optDrtCount/population1000000reqs_zeta1.xml.gz"/>
     </module>
 
     <module name="controler">

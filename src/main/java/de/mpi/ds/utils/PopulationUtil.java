@@ -46,8 +46,10 @@ public class PopulationUtil implements UtilComponent {
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
 //        InverseTransformSampler sampler = new InverseTransformSampler(a -> 1 / (netDimsMinMax[1] - netDimsMinMax[0]),
         InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 2000, 500),
+                true,
                 netDimsMinMax[0],
-                netDimsMinMax[1]);
+                netDimsMinMax[1],
+                10000);
 //        for (Node node : net.getNodes().values()) {
 //            zoneGeometries.put(node.getId().toString(), node.getCoord());
 //        }
@@ -218,5 +220,10 @@ public class PopulationUtil implements UtilComponent {
         double deltaY = Math.abs(to.getY() - from.getY());
         double deltaYperiodic = deltaY < L / 2 ? deltaY : -deltaY + L;
         return Math.sqrt(deltaXperiodic * deltaXperiodic + deltaYperiodic * deltaYperiodic);
+    }
+
+    public static double taxiDistDistributionNotNormalized(double x, double mean, double k) {
+        double z = x / mean;
+        return Math.exp(-1. / z) * Math.pow(z, -k);
     }
 }

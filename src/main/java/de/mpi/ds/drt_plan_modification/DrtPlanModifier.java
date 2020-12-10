@@ -9,23 +9,26 @@ first search is computed from that node on to look for the closest pt station
 */
 public class DrtPlanModifier extends AbstractModule {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifier.class.getName());
-//    final DrtPlanModifierConfigGroup configGroup;
+    final DrtPlanModifierConfigGroup configGroup;
 
-//    public DrtPlanModifier(DrtPlanModifierConfigGroup config) {
-//        this.configGroup = config;
-//    }
+    public DrtPlanModifier(DrtPlanModifierConfigGroup configGroup) {
+        this.configGroup = configGroup;
+    }
 
     @Override
     public void install() {
         LOG.info("Initiating");
         LOG.warn("This module only works for a population with plans of form <activity - leg - activity>");
-//        if (!this.getConfig().getModules().containsKey(DrtPlanModifierConfigGroup.NAME)) {
-//            this.getConfig().addModule(this.configGroup);
-//        }
-//        if (this.configGroup.isModifyPlans()) {
+        if (!this.getConfig().getModules().containsKey(DrtPlanModifierConfigGroup.NAME))
+            this.getConfig().addModule(this.configGroup);
+
+        if (this.configGroup.isModifyPlans()) {
+            DrtPlanModifierStartupListener drtPlanModifierStartupListener = new DrtPlanModifierStartupListener(configGroup);
+            this.addControlerListenerBinding().toInstance(drtPlanModifierStartupListener);
 //            this.addControlerListenerBinding().to(DrtPlanModifierStartupListener.class);
-//        }
-        this.addControlerListenerBinding().to(DrtPlanModifierStartupListener.class);
+        }
+
+//        this.addControlerListenerBinding().to(DrtPlanModifierStartupListener.class);
         LOG.info("Finalizing");
     }
 }

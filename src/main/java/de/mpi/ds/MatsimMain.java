@@ -3,6 +3,7 @@ package de.mpi.ds;
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
+import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -39,8 +40,8 @@ public class MatsimMain {
         LOG.info("Starting matsim simulation...");
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            run(config, args[1], false);
+            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+//            run(config, args[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,7 +77,12 @@ public class MatsimMain {
         controler.addOverridingModule(new MyAnalysisModule());
         controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
         if (modifyPlans.equals("true")) {
-            controler.addOverridingModule(new DrtPlanModifier());
+//            DrtPlanModifierConfigGroup dpmcp = new DrtPlanModifierConfigGroup();
+//            dpmcp.setModifyPlans(true);
+//            dpmcp.setGammaCut(23);
+            DrtPlanModifierConfigGroup group = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
+            LOG.error(group);
+            controler.addOverridingModule(new DrtPlanModifier(group));
         }
 //                (DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
@@ -145,40 +151,28 @@ public class MatsimMain {
 
     }
 
-    private static void runMultipleConvCrit(Config config, String mode, String popDir, String drtDir,
+    private static void runMultipleConvCrit(Config config, String zetas, String popDir, String drtDir,
                                             String appendOutDir, boolean otfvis) throws Exception {
-        Pattern patternPop = null;
-        if (mode.equals("bim")) {
-            patternPop = Pattern.compile("population_(?!gammaInfty)(.*)\\.xml.gz");
-        } else if (mode.equals("drt")) {
-            patternPop = Pattern.compile("population_(gammaInfty)\\.xml.gz");
-        } else {
-            throw new Exception("Mode (2nd argument) must be either bim or drt");
-        }
-        Pattern patternDrt = Pattern.compile("drtvehicles_(.*?).xml.gz");
-        String[] populationFiles = getFiles(patternPop, popDir);
-//        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
 
-        for (int i = 0; i < populationFiles.length; i++) {
-            String populationFile = populationFiles[i];
-//            String drtVehicleFile = drtVehicleFiles[i];
-            String drtVehicleFile = "drtvehicles.xml.gz";
-            Matcher matcherPop = patternPop.matcher(populationFile);
-            Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
-            matcherPop.find();
-            matcherDrt.find();
+        String[] zetaList = zetas.split(",");
+        System.out.println(zetaList);
 
-            config.plans().setInputFile(popDir + populationFile);
+        String populationPath = Paths.get(popDir, "population_zeta0_0.xml.gz").toString();
+        String drtPath = Paths.get(drtDir, "drtvehicles.xml").toString();
+
+        for (String zeta : zetaList) {
+
+            config.plans().setInputFile(populationPath);
             Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
             assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-            modalElements.stream().findFirst().get().setVehiclesFile(drtDir + drtVehicleFile);
+            modalElements.stream().findFirst().get().setVehiclesFile(drtPath);
 
-            assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
+            ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).setZetaCut(Double.parseDouble(zeta));
             config.controler()
-                    .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherPop.group(1)).toString());
-//            System.out.println(populationFile);
-//            System.out.println(drtVehicleFile);
-//            System.out.println("./output/" + matcherPop.group(1));
+                    .setOutputDirectory(Paths.get("./output".concat(appendOutDir), "zeta".concat(zeta)).toString());
+//            System.out.println(populationPath);
+//            System.out.println(drtPath);
+//            System.out.println("Output: " + config.controler().getOutputDirectory());
 
             run(config, "true", otfvis);
         }
@@ -189,7 +183,6 @@ public class MatsimMain {
     private static String getVehiclesFile(Config config) {
         Collection<DrtConfigGroup> modalElements = MultiModeDrtConfigGroup.get(config).getModalElements();
         assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
-        LOG.error("Only one drt modal element expected in config file");
         return modalElements.stream().findFirst().get().getVehiclesFile();
     }
 
