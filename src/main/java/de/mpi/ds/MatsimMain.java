@@ -6,6 +6,7 @@ import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -14,6 +15,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
@@ -41,6 +43,7 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
             runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleNetworks(config);
 //            run(config, args[1], false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,9 +51,14 @@ public class MatsimMain {
         LOG.info("Simulation finished");
     }
 
+    private static void runMultipleNetworks(Config config) {
+//        Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+        //TODO modify network (own network modifier class?)
+        //TODO run simulations
+    }
+
     public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
         //TODO for convenience criterion the average length has to be varied as zeta l
-        //TODO arbitrary traveldist distributions
         if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
             throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
         }
@@ -158,7 +166,7 @@ public class MatsimMain {
         System.out.println(zetaList);
 
         String populationPath = Paths.get(popDir, "population_zeta0_0.xml.gz").toString();
-        String drtPath = Paths.get(drtDir, "drtvehicles.xml").toString();
+        String drtPath = Paths.get(drtDir, "drtvehicles.xml.gz").toString();
 
         for (String zeta : zetaList) {
 
@@ -170,9 +178,9 @@ public class MatsimMain {
             ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).setZetaCut(Double.parseDouble(zeta));
             config.controler()
                     .setOutputDirectory(Paths.get("./output".concat(appendOutDir), "zeta".concat(zeta)).toString());
-//            System.out.println(populationPath);
-//            System.out.println(drtPath);
-//            System.out.println("Output: " + config.controler().getOutputDirectory());
+            System.out.println(populationPath);
+            System.out.println(drtPath);
+            System.out.println("Output: " + config.controler().getOutputDirectory());
 
             run(config, "true", otfvis);
         }

@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
+import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 import static de.mpi.ds.utils.InverseTransformSampler.normalDist;
 
 public class PopulationUtil implements UtilComponent {
@@ -59,19 +61,6 @@ public class PopulationUtil implements UtilComponent {
         populationWriter.write(outputPopulationPath);
     }
 
-    private static double[] getNetworkDimensionsMinMax(Network net) {
-        List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
-                .collect(Collectors.toList());
-        List<Double> yCoords = net.getNodes().values().stream().map(n -> n.getCoord().getY())
-                .collect(Collectors.toList());
-        double xmin = Collections.min(xCoords);
-        double xmax = Collections.max(xCoords);
-        double ymin = Collections.min(yCoords);
-        double ymax = Collections.max(yCoords);
-
-        return new double[]{Math.min(xmin, ymin), Math.max(xmax, ymax)};
-    }
-
 
     private static void generatePopulation(Population population, Network net, int nRequests, double gamma, long seed,
                                            InverseTransformSampler sampler, double L) {
@@ -112,10 +101,6 @@ public class PopulationUtil implements UtilComponent {
             } while (orig_coord.equals(dest_coord));
             generateTrip(orig_coord, dest_coord, j, population, gamma);
         }
-    }
-
-    private static double getDirectionPeriodicBC(double v, double L) {
-        return v % L;
     }
 
     private static Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
@@ -214,13 +199,6 @@ public class PopulationUtil implements UtilComponent {
                 .orElseThrow();
     }
 
-    private static double calculateDistancePeriodicBC(Coord from, Coord to, double L) {
-        double deltaX = Math.abs(to.getX() - from.getX());
-        double deltaXperiodic = deltaX < L / 2 ? deltaX : -deltaX + L;
-        double deltaY = Math.abs(to.getY() - from.getY());
-        double deltaYperiodic = deltaY < L / 2 ? deltaY : -deltaY + L;
-        return Math.sqrt(deltaXperiodic * deltaXperiodic + deltaYperiodic * deltaYperiodic);
-    }
 
     public static double taxiDistDistributionNotNormalized(double x, double mean, double k) {
         double z = x / mean;

@@ -1,5 +1,6 @@
 package de.mpi.ds.drt_plan_modification;
 
+import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
@@ -21,9 +22,11 @@ import java.util.stream.Stream;
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
     private double zetaCut;
+    private boolean privateCarMode;
 
     DrtPlanModifierStartupListener(DrtPlanModifierConfigGroup configGroup) {
         this.zetaCut = configGroup.getZetaCut();
+        this.privateCarMode = configGroup.getPrivateCarMode();
     }
 
     private static Node searchTransferNode(Node fromNode, Node toNode,
@@ -88,10 +91,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .filter(e -> e.getAllowedModes().contains(TransportMode.train))
                 .filter(e -> e.getFromNode().getCoord().getY() == 0)
                 .map(e -> e.getCoord().getX())
+                .distinct()
                 .sorted()
                 .limit(2)
                 .collect(Collectors.toList());
         double trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+
+        double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network);
 
         MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(sc.getConfig());
         int multiConfSize = multiModeConfGroup.getModalElements().size();
@@ -101,8 +107,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
         else if (multiConfSize == 2) {
             splittedFleet = true;
             LOG.warn("Working with \"drt\" and \"acc_egr_drt\" legs");
-        }
-        else
+        } else
             LOG.error("MultiModeDrtConfigGroup size expected to be 1 or 2");
 
         int count = 0;
@@ -128,12 +133,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 }
                 assert middleLeg != null;
                 // Only insert transit activities if leg mode is pt
-                if (middleLeg.getMode().equals(TransportMode.pt)) {
-                    if (DistanceUtils.calculateDistance(firstAct.getCoord(), lastAct.getCoord()) > zetaCut *trainDelta) {
+                if (middleLeg.getMode().equals(TransportMode.pt) && !privateCarMode) {
+                    if (GeneralUtils
+                            .calculateDistancePeriodicBC(firstAct.getCoord(), lastAct.getCoord(), netDimsMinMax[1]) >
+                            zetaCut * trainDelta) {
                         Coord dummyFirstCoord = null;
                         Coord dummyLastCoord = null;
-                        assert firstAct != null;
-                        assert lastAct != null;
                         Node firstNode = coordToNode.get(firstAct.getCoord());
                         Node lastNode = coordToNode.get(lastAct.getCoord());
                         if (!isPtStation(firstNode)) {
@@ -153,6 +158,8 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     } else {
                         middleLeg.setMode(TransportMode.drt);
                     }
+                } else if (privateCarMode) {
+                    middleLeg.setMode(TransportMode.car);
                 }
             }
         }
