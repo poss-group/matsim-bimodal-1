@@ -2,7 +2,7 @@ package de.mpi.ds.utils;
 
 public interface UtilComponent {
     //Drt variables
-    static final int numberOfDrtVehicles = 1000;
+    static final int numberOfDrtVehicles = 250;
     static final int seatsPerDrtVehicle = 4; //this is important for DRT, value is not used by taxi
     static final double operationStartTime = 0;
     static final double operationEndTime = 26 * 60 * 60; //24h

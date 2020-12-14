@@ -58,7 +58,6 @@ public class MatsimMain {
     }
 
     public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
-        //TODO for convenience criterion the average length has to be varied as zeta l
         if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
             throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
         }

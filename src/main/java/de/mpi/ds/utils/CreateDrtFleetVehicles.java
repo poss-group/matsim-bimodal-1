@@ -56,9 +56,9 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 
     public static void main(String[] args) {
 
-//		new CreateDrtFleetVehicles().run("./output/network.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
-        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
-                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
+		new CreateDrtFleetVehicles().run("./output/network.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
+//        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
+//                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }
 
     public void run(String networkPath, String outputDrtVehiclesPath, int nVehicles) {
