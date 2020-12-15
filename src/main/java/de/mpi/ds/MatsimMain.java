@@ -33,6 +33,7 @@ public class MatsimMain {
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
     public static void main(String[] args) {
+        //TODO why trip success so low for square grid
         LOG.info("Reading config");
         Config config = ConfigUtils
                 .loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());

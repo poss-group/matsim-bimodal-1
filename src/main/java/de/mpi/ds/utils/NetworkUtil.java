@@ -96,7 +96,7 @@ public class NetworkUtil implements UtilComponent {
                 }
             }
         }
-//        makeDiagConnections(net, fac, nodes);
+        makeDiagConnections(net, fac, nodes);
         // this has to be done second because diagonal connections where also introduced before
         putNodesCloseToStations(net, fac, nodes, createTrainLanes);
         try {
