@@ -3,6 +3,7 @@ package de.mpi.ds.drt_plan_modification;
 import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -11,8 +12,10 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.util.distance.DistanceUtils;
+import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
+import org.matsim.core.utils.io.IOUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -62,14 +65,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
         return null;
     }
 
-//    private static boolean isPtStation(Stream<? extends Link> stream) {
-//    }
-
-    private static Activity createDummyActivity(Coord location, Population population) {
-        Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
-        activity.setMaximumDuration(0);
-        return activity;
-    }
 
     @Override
     public void notifyStartup(StartupEvent event) {
@@ -141,20 +136,36 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         Coord dummyLastCoord = null;
                         Node firstNode = coordToNode.get(firstAct.getCoord());
                         Node lastNode = coordToNode.get(lastAct.getCoord());
+                        Link dummyFirstLink = null;
+                        Link dummyLastLink = null;
                         if (!isPtStation(firstNode)) {
                             Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords,
                                     coordToNode,
                                     "shortest_dist");
                             assert dummyFirstNode != null;
+                            Activity finalFirstAct = firstAct;
+                            dummyFirstLink = dummyFirstNode.getInLinks().values().stream()
+                                    .min(Comparator.comparingDouble(l ->
+                                            GeneralUtils
+                                                    .calculateDistancePeriodicBC(l.getCoord(),
+                                                            finalFirstAct.getCoord(),
+                                                            netDimsMinMax[1]))).orElseThrow();
                             dummyFirstCoord = dummyFirstNode.getCoord();
                         }
                         if (!isPtStation(lastNode)) {
                             Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
                                     "shortest_dist");
                             assert dummyLastNode != null;
+                            Activity finalLastAct = firstAct;
+                            dummyLastLink = dummyLastNode.getInLinks().values().stream()
+                                    .min(Comparator.comparingDouble(l ->
+                                            GeneralUtils
+                                                    .calculateDistancePeriodicBC(l.getCoord(), finalLastAct.getCoord(),
+                                                            netDimsMinMax[1]))).orElseThrow();
                             dummyLastCoord = dummyLastNode.getCoord();
                         }
-                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
+//                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
+                        insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
                     } else {
                         middleLeg.setMode(TransportMode.drt);
                     }
@@ -165,8 +176,8 @@ class DrtPlanModifierStartupListener implements StartupListener {
         }
         // To get resulting plans in output directory
         PopulationWriter populationWriter = new PopulationWriter(sc.getPopulation(), sc.getNetwork());
-        populationWriter
-                .write(event.getServices().getControlerIO().getOutputPath().concat("/drt_plan_modified_plans.xml"));
+        String outputPath = event.getServices().getControlerIO().getOutputPath().concat("/drt_plan_modified_plans.xml.gz");
+        populationWriter.write(outputPath);
     }
 
     private static boolean isPtStation(Node node) {
@@ -184,7 +195,9 @@ class DrtPlanModifierStartupListener implements StartupListener {
     private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord,
                                      Coord dummy_last_coord, boolean splittedFleet) {
         if (dummy_last_coord != null) {
-            plan.getPlanElements().add(2, createDummyActivity(dummy_last_coord, population));
+            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_coord);
+            activity.setMaximumDuration(0);
+            plan.getPlanElements().add(2, activity);
             if (splittedFleet)
                 plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
             else
@@ -195,7 +208,33 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
             else
                 plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
-            plan.getPlanElements().add(2, createDummyActivity(dummy_first_coord, population));
+            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_coord);
+            activity.setMaximumDuration(0);
+            plan.getPlanElements().add(2, activity);
+        }
+    }
+
+    private void insertTransferStops(Plan plan, Population population, Link dummy_first_link,
+                                     Link dummy_last_link, boolean splittedFleet) {
+        if (dummy_last_link != null) {
+            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
+            activity.setCoord(dummy_last_link.getToNode().getCoord());
+            activity.setMaximumDuration(0);
+            plan.getPlanElements().add(2, activity);
+            if (splittedFleet)
+                plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
+            else
+                plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
+        }
+        if (dummy_first_link != null) {
+            if (splittedFleet)
+                plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
+            else
+                plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
+            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
+            activity.setCoord(dummy_first_link.getToNode().getCoord());
+            activity.setMaximumDuration(0);
+            plan.getPlanElements().add(2, activity);
         }
     }
 }

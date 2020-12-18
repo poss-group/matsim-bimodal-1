@@ -31,6 +31,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkWriter;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -55,14 +56,13 @@ public class NetworkUtil implements UtilComponent {
             "west", new int[]{-1, 0}
     );
 
+
     private NetworkUtil() {
     }
 
     public static void main(String... args) {
-        String path = "./output/network.xml";
+        String path = "./output/network_diag.xml.gz";
         createGridNetwork(path, true);
-        compressGzipFile(path, path.concat(".gz"));
-        deleteFile(path);
     }
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
@@ -141,6 +141,38 @@ public class NetworkUtil implements UtilComponent {
         net.addLink(l2);
     }
 
+    private static String direction2String(int x, int y) {
+        switch (x) {
+            case -1:
+                switch (y) {
+                    case -1:
+                        return "southwest";
+                    case 0:
+                        return "west";
+                    case 1:
+                        return "northwest";
+                }
+            case 0:
+                switch (y) {
+                    case -1:
+                        return "south";
+                    case 1:
+                        return "north";
+                }
+            case 1:
+                switch (y) {
+                    case -1:
+                        return "southeast";
+                    case 0:
+                        return "east";
+                    case 1:
+                        return "northeast";
+                }
+            default:
+                return "null";
+        }
+    }
+
     private static void makeDiagConnections(Network net, NetworkFactory fac, Node[][] nodes) {
         double diag_length = Math.sqrt(delta_x * delta_x + delta_y * delta_y);
         double side_length = Math.min(delta_x, delta_y);
@@ -186,19 +218,72 @@ public class NetworkUtil implements UtilComponent {
             for (int j = 0; j < nodes[0].length; j++) {
                 if ((i + pt_interval / 2) % pt_interval == 0 && (j + pt_interval / 2) % pt_interval == 0) {
                     Node temp = nodes[i][j];
-                    List<Link> outLinks = temp.getOutLinks().values().stream()
-                            .filter(l -> l.getLength() == LINK_LENGTH)
-                            .collect(Collectors.toList());
-                    List<Link> inLinks = temp.getInLinks().values().stream()
-                            .filter(l -> l.getLength() == LINK_LENGTH)
-                            .collect(Collectors.toList());
-                    List<Node> neighbourNodes = outLinks.stream().map(Link::getToNode).collect(
-                            Collectors.toList());
-                    removeOrigLinks(net, inLinks, outLinks);
-                    addNewConnection(net, fac, nodes[i][j], neighbourNodes, createTrainLanes);
+                    for (Link link : temp.getInLinks().values()) {
+                        divide(net, fac, link, "in", createTrainLanes);
+                    }
+                    for (Link link : temp.getOutLinks().values()) {
+                        divide(net, fac, link, "out", createTrainLanes);
+                    }
+//                    List<Link> outLinks = temp.getOutLinks().values().stream()
+//                            .filter(l -> l.getLength() == LINK_LENGTH)
+//                            .collect(Collectors.toList());
+//                    List<Link> inLinks = temp.getInLinks().values().stream()
+//                            .filter(l -> l.getLength() == LINK_LENGTH)
+//                            .collect(Collectors.toList());
+//                    List<Node> neighbourNodes = outLinks.stream().map(Link::getToNode).collect(
+//                            Collectors.toList());
+//                    removeOrigLinks(net, inLinks, outLinks);
+//                    addNewConnection(net, fac, nodes[i][j], neighbourNodes, createTrainLanes);
                 }
             }
         }
+    }
+
+    private static void divide(Network net, NetworkFactory fac, Link link, String inOut,
+                               boolean createTrainLanes) {
+        Node stationNode = null;
+        Node neighbourNode = null;
+        if (inOut.equals("in")) {
+            stationNode = link.getToNode();
+            neighbourNode = link.getFromNode();
+        } else if (inOut.equals("out")) {
+            stationNode = link.getFromNode();
+            neighbourNode = link.getToNode();
+        }
+        double stationX = stationNode.getCoord().getX();
+        double stationY = stationNode.getCoord().getY();
+        double neighX = neighbourNode.getCoord().getX();
+        double neighY = neighbourNode.getCoord().getY();
+        int dirX = (int) Math.signum(neighX - stationX);
+        int dirY = (int) Math.signum(neighY - stationY);
+        Id<Node> nodeId = Id.createNodeId(
+                stationNode.getId().toString().concat(direction2String(dirX, dirY)));
+        Node node = net.getNodes().get(nodeId);
+        if (node == null) {
+            node = fac.createNode(nodeId, new Coord(stationX + dirX, stationY + dirY));
+            net.addNode(node);
+        } else {
+            node = net.getNodes().get(nodeId);
+        }
+        String ptStr = link.getAllowedModes().contains("train") ? "_pt" : "";
+        Link fstLink = fac.createLink(Id.createLinkId(link.getFromNode().getId() + "-" + node.getId() + ptStr),
+                link.getFromNode(), node);
+        Link scndLink = fac.createLink(Id.createLinkId(node.getId() + "-" + link.getToNode().getId() + ptStr), node,
+                link.getToNode());
+
+        copyLinkProperties(link, fstLink);
+        copyLinkProperties(link, scndLink);
+        fstLink.setLength(DistanceUtils.calculateDistance(fstLink.getFromNode(), fstLink.getToNode()));
+        scndLink.setLength(DistanceUtils.calculateDistance(scndLink.getFromNode(), scndLink.getToNode()));
+        net.addLink(fstLink);
+        net.addLink(scndLink);
+    }
+
+    private static void copyLinkProperties(Link link, Link toCopyLink) {
+        toCopyLink.setCapacity(link.getCapacity());
+        toCopyLink.setAllowedModes(link.getAllowedModes());
+        toCopyLink.setFreespeed(link.getFreespeed());
+        toCopyLink.setNumberOfLanes(link.getNumberOfLanes());
     }
 
     private static void addNewConnection(Network net, NetworkFactory fac, Node node, List<Node> neighbourNodes,
@@ -247,10 +332,14 @@ public class NetworkUtil implements UtilComponent {
                         .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
                 Link node_newNode_pt = fac
                         .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
-                setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-                setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+                setLinkAttributes(neigh_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE,
+                        NUMBER_OF_LANES);
+                setLinkAttributes(newNode_neigh_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE,
+                        NUMBER_OF_LANES);
+                setLinkAttributes(newNode_node_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE,
+                        NUMBER_OF_LANES);
+                setLinkAttributes(node_newNode_pt, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE,
+                        NUMBER_OF_LANES);
                 setLinkModes(neigh_newNode_pt, "train");
                 setLinkModes(newNode_neigh_pt, "train");
                 setLinkModes(newNode_node_pt, "train");

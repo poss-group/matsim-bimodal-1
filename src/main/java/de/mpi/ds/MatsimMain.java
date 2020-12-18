@@ -43,9 +43,9 @@ public class MatsimMain {
         LOG.info("Starting matsim simulation...");
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-//            run(config, args[1], false);
+            run(config, args[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,6 +59,8 @@ public class MatsimMain {
     }
 
     public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
+        //TODO make all links into acc/egr stations divide into north east ...
+        //TODO why worked when small links had long lengths
         if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
             throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
         }

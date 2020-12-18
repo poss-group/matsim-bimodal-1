@@ -4,7 +4,7 @@
 <config>
     <module name="drtPlanModifier">
         <param name="modifyPlans" value="true"/>
-        <param name="zetaCut" value="100"/>
+        <param name="zetaCut" value="1"/>
         <param name="privateCarMode" value="false" />
     </module>
 
@@ -149,7 +149,7 @@
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
-            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount_diag/drtvehicles_200.xml.gz"/>
+            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>
 
             <!--			<parameterset type="rebalancing">-->
             <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
