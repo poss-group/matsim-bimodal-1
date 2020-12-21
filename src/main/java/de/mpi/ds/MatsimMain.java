@@ -1,6 +1,7 @@
 package de.mpi.ds;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import de.mpi.ds.DrtTrajectoryAnalyzer.DrtTrajectoryAnalyzer;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
@@ -43,9 +44,9 @@ public class MatsimMain {
         LOG.info("Starting matsim simulation...");
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-            run(config, args[1], false);
+//            run(config, args[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,8 +60,6 @@ public class MatsimMain {
     }
 
     public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
-        //TODO make all links into acc/egr stations divide into north east ...
-        //TODO why worked when small links had long lengths
         if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
             throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
         }
@@ -79,20 +78,19 @@ public class MatsimMain {
 //		Controler controler = new Controler(scenario);
 
         // Set up SBB Transit/Raptor
-        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.addOverridingModule(new SwissRailRaptorModule());
 
         //Custom Modules
 //        controler.addOverridingModule(new BimodalAssignmentModule());
 //        controler.addOverridingModule(new GridPrePlanner());
         controler.addOverridingModule(new MyAnalysisModule());
         controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
+        controler.addOverridingModule(new DrtTrajectoryAnalyzer());
         if (modifyPlans.equals("true")) {
-//            DrtPlanModifierConfigGroup dpmcp = new DrtPlanModifierConfigGroup();
-//            dpmcp.setModifyPlans(true);
-//            dpmcp.setGammaCut(23);
-            DrtPlanModifierConfigGroup group = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
-            LOG.error(group);
-            controler.addOverridingModule(new DrtPlanModifier(group));
+            DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
+//            drtGroup.setModifyPlans(true);
+//            drtGroup.setGammaCut(23);
+            controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         }
 //                (DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
 
