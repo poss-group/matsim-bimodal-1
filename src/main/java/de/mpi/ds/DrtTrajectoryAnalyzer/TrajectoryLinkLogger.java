@@ -23,10 +23,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 public class TrajectoryLinkLogger implements LinkEnterEventHandler, IterationEndsListener {
@@ -59,6 +56,7 @@ public class TrajectoryLinkLogger implements LinkEnterEventHandler, IterationEnd
     }
 
     private static Map<Id<Vehicle>, List<LinkTimestampContainer>> trajectories = new HashMap<>();
+//    private static Map<Id<Vehicle>, List<LinkTimestampContainer>> trajectories = new LinkedHashMap<>();
 
 //    private void initializeVehicles(Vehicles vehicles) {
 //        for (Vehicle vehicle: vehicles.getVehicles().values()) {
@@ -93,9 +91,9 @@ public class TrajectoryLinkLogger implements LinkEnterEventHandler, IterationEnd
                 .getIterationFilename(iterationEndsEvent.getIteration(),
                         "drt_trajectories.json" + (compressed ? ".gz" : ""));
 
-        Map<String, Object> root = new HashMap<>();
+        Map<String, Object> root = new LinkedHashMap<>();
         for (Map.Entry<Id<Vehicle>, List<LinkTimestampContainer>> entry : trajectories.entrySet()) {
-            Map<String, String> element = new HashMap<>();
+            Map<String, String> element = new LinkedHashMap<>();
             for (LinkTimestampContainer data : entry.getValue()) {
                 element.put(String.valueOf(data.getTimestamp()), data.getLinkId().toString());
             }

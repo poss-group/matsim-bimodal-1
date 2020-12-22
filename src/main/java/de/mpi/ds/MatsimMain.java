@@ -43,10 +43,10 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-//            runMultipleOptDrtCount(config, args[1], args[2], args[3], args[4], false);
-            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-//            run(config, args[1], false);
+//            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,10 +59,7 @@ public class MatsimMain {
         //TODO run simulations
     }
 
-    public static void run(Config config, String modifyPlans, boolean otfvis) throws Exception {
-        if (!modifyPlans.equals("true") && !modifyPlans.equals("false")) {
-            throw new Exception("modifyPlans parameter must be \"true\" or \"false\"");
-        }
+    public static void run(Config config, boolean otfvis) throws Exception {
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -86,18 +83,13 @@ public class MatsimMain {
         controler.addOverridingModule(new MyAnalysisModule());
         controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
         controler.addOverridingModule(new DrtTrajectoryAnalyzer());
-        if (modifyPlans.equals("true")) {
-            DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
-//            drtGroup.setModifyPlans(true);
-//            drtGroup.setGammaCut(23);
-            controler.addOverridingModule(new DrtPlanModifier(drtGroup));
-        }
-//                (DrtPlanModifierConfigGroup) config.getModules().get(DrtPlanModifierConfigGroup.NAME)));
+        DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
+        controler.addOverridingModule(new DrtPlanModifier(drtGroup));
 
         controler.run();
     }
 
-    private static void runMultipleOptDrtCount(Config config, String modifyPlans, String popDir, String drtDir,
+    private static void runMultipleOptDrtCount(Config config, String popDir, String drtDir,
                                                String appendOutDir, boolean otfvis) throws Exception {
         Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
         Pattern patternDrt = null;
@@ -144,7 +136,6 @@ public class MatsimMain {
                     }
                 }
 
-
 //                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
                 config.controler()
                         .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
@@ -153,7 +144,7 @@ public class MatsimMain {
 //                System.out.println(drtVehicleFile2);
 //                System.out.println("./output/" + matcherDrt.group(1));
 
-                run(config, modifyPlans, otfvis);
+                run(config, otfvis);
             }
         }
 
@@ -182,7 +173,7 @@ public class MatsimMain {
             System.out.println(drtPath);
             System.out.println("Output: " + config.controler().getOutputDirectory());
 
-            run(config, "true", otfvis);
+            run(config, otfvis);
         }
 
     }

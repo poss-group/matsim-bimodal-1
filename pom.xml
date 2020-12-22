@@ -4,7 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.mpi.ds</groupId>
 <!--    <artifactId>matsim-bimodal-convcrit-manhattenEllipse</artifactId>-->
-    <artifactId>matsim-bimodal-optDrtCount-manhattenEllipse</artifactId>
+<!--    <artifactId>matsim-bimodal-euclideanEllipse</artifactId>-->
+    <artifactId>matsim-bimodal-optDrtCount-euclideanEllipse</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>MATSim bimodal transport simulation</name>

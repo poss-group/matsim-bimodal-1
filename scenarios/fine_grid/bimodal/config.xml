@@ -19,9 +19,9 @@
     </module>
 
     <module name="plans">
-<!--        <param name="inputPlansFile" value="population.xml"/>-->
-                <param name="inputPlansFile"
-                       value="../populations/populations_optDrtCount/population1000000reqs_zeta1.xml.gz"/>
+        <param name="inputPlansFile" value="population.xml"/>
+<!--                <param name="inputPlansFile"-->
+<!--                       value="../populations/populations_optDrtCount/population1000000reqs_zeta1.xml.gz"/>-->
     </module>
 
     <module name="controler">
