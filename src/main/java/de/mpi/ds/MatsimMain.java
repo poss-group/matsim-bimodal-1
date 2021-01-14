@@ -43,10 +43,10 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
+//            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-//            run(config, false);
+            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,6 +60,7 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) throws Exception {
+        //TODO make tracking analysis of passengers transported to PT stations
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +
