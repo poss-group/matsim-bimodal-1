@@ -20,6 +20,7 @@ public class InverseTransformSampler {
     double x1 = 0;
     int N;
     Random rand = new Random();
+    double EPSILON = 0.00001;
 
     InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
                             int integrationSteps) {
@@ -36,7 +37,8 @@ public class InverseTransformSampler {
         cummulative_values = new double[N];
 
         for (int i = 0; i < N; i++) {
-            arg = x0 + (double) i / N * (x1 - x0);
+            arg = x0 + (double) i / (N-1) * (x1 - x0); // N-1 so that integration really ends at x1 for given number
+            // of integration steps N
             double value = function.apply(arg);
             cumsum += (arg - last_arg) * value;
             domain[i] = arg;
@@ -45,8 +47,8 @@ public class InverseTransformSampler {
             last_arg = arg;
         }
         if (isNormalized) {
-            assert cumsum > 0.99999 &&
-                    cumsum < 1.000001 : "distribution is not normalized (on given domain), integral: "
+            assert cumsum > 1 - EPSILON &&
+                    cumsum < 1 + EPSILON : "distribution is not normalized (on given domain), integral: "
                     .concat(String.valueOf(cumsum));
         } else {
             double finalCumsum = cumsum;
@@ -64,11 +66,11 @@ public class InverseTransformSampler {
 
     public static void main(String[] args) {
         try {
-//            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/10., 0, 10);
-//            InverseTransformSampler sampler = new InverseTransformSampler(a -> normalDist(a, 0, 1), -10, 10);
-            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
-                    10000,
-                    10000);
+            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/10., true, 0, 10,
+                    100000);
+//            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
+//                    10000,
+//                    10000);
 //            InverseTransformSampler sampler = new InverseTransformSampler(
 //            x -> taxiDistDistributionNotNormalized(x, 2000, 3), false, 0.001, 10000, (int) 1E5);
             StringBuilder testout = new StringBuilder();
@@ -83,10 +85,6 @@ public class InverseTransformSampler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static double normalDist(double x, double mu, double sig) {
-        return 1 / (Math.sqrt(2 * Math.PI) * sig) * Math.exp(-0.5 * ((x - mu) / sig) * ((x - mu) / sig));
     }
 
     public static int search(double value, double[] a) throws Exception {
@@ -115,5 +113,9 @@ public class InverseTransformSampler {
         }
         // lo == hi + 1
         return (a[lo] - value) < (value - a[hi]) ? lo : hi;
+    }
+
+    public static double normalDist(double x, double mu, double sig) {
+        return 1 / (Math.sqrt(2 * Math.PI) * sig) * Math.exp(-0.5 * ((x - mu) / sig) * ((x - mu) / sig));
     }
 }

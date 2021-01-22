@@ -32,30 +32,37 @@ public class PopulationUtil implements UtilComponent {
 //        for (Boolean bool : bools) {
 //            System.out.println(bool);
 //        }
-        createPopulation("./output/population.xml", "./output/network.xml", N_REQUESTS, 0, 31357);
-        compressGzipFile("./output/population.xml", "./output/population.xml.gz");
-        deleteFile("./output/population.xml");
-    }
-
-    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests, double gamma,
-                                        long seed) {
-        rand.setSeed(seed);
-        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        Population population = scenario.getPopulation();
-//        Map<String, Coord> zoneGeometries = new HashMap<>();
+        String networkPath = "./output/network.xml";
         Network net = NetworkUtils.readNetwork(networkPath);
         double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
-//        InverseTransformSampler sampler = new InverseTransformSampler(a -> 1 / (netDimsMinMax[1] - netDimsMinMax[0]),
-        InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 2000, 500),
+        InverseTransformSampler sampler = new InverseTransformSampler(
+                a -> 1 / (netDimsMinMax[1] - netDimsMinMax[0]),
                 true,
                 netDimsMinMax[0],
                 netDimsMinMax[1],
                 10000);
+//        InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 2000, 500),
+//                true,
+//                netDimsMinMax[0],
+//                netDimsMinMax[1],
+//                10000);
+        createPopulation("./output/population.xml", net, N_REQUESTS,
+                0, 31357, sampler, netDimsMinMax[1]);
+        compressGzipFile("./output/population.xml", "./output/population.xml.gz");
+        deleteFile("./output/population.xml");
+    }
+
+    public static void createPopulation(String outputPopulationPath, Network net, int nRequests, double gamma,
+                                        long seed, InverseTransformSampler sampler, double L) {
+        rand.setSeed(seed);
+        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        Population population = scenario.getPopulation();
+//        Map<String, Coord> zoneGeometries = new HashMap<>();
 //        for (Node node : net.getNodes().values()) {
 //            zoneGeometries.put(node.getId().toString(), node.getCoord());
 //        }
-        generatePopulation(population, net, nRequests, gamma, seed, sampler, netDimsMinMax[1]);
+        generatePopulation(population, net, nRequests, gamma, seed, sampler, L);
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);

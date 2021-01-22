@@ -188,6 +188,10 @@
         <!-- both default -->
         <param name="mobsimMode" value="car"/>
         <param name="networkModes" value="car"/>
+        <parameterset type="travelTimeMatrix" >
+			<!-- size of square cells (meters) used for computing travel time matrix. Default value is 200 m -->
+			<param name="cellSize" value="200" />
+		</parameterset>
     </module>
 
     <module name="ptCounts">
