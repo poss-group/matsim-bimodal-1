@@ -68,5 +68,7 @@ def getPtOccupancies(path, transit_interval):
 
     #     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #         display(occupancies)
-    average_occupancies = occupancies.sum(axis=1) / occupancies.count(axis=1)
-    return average_occupancies
+    n_transporters = occupancies.count(axis=1)
+    average_occupancies = occupancies.sum(axis=1) / n_transporters
+    average_occupancies_squared = (occupancies**2).sum(axis=1) / n_transporters
+    return average_occupancies, average_occupancies_squared, n_transporters 

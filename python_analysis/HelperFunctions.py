@@ -36,5 +36,10 @@ def getAverageOcc(df, exclude_empty_vehicles=False):
 
     pass_sum = df.sum(axis=1)
     mean = (df.dot(weights) / pass_sum).mean()
-    s = (df.to_numpy() * (weights - mean) ** 2).sum(axis=1) / (pass_sum - 1)
-    return mean, np.sqrt(s).mean()
+    #var = ((df.dot(weights**2) / pass_sum)).mean() # Variance per timestep across occupancies
+    var = ((df.dot(weights) / pass_sum)**2).mean() # Variance across observed time period
+    return mean, np.sqrt(var-mean**2)
+
+    # Equivalent to Variance per timestep across occupancies
+    #s = (df.to_numpy() * (weights - mean) ** 2).sum(axis=1) / (pass_sum - 1)
+    #return mean, np.sqrt(s).mean()
