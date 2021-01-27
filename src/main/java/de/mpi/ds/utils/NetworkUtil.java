@@ -49,6 +49,7 @@ import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
  */
 public class NetworkUtil implements UtilComponent {
 
+
     private static final Map<String, int[]> directions = Map.of(
             "north", new int[]{0, 1},
             "east", new int[]{1, 0},
@@ -72,11 +73,13 @@ public class NetworkUtil implements UtilComponent {
 
         // create nodes
         // Add nodes to network
+        int n_x = pt_interval * gridLengthInCells;
+        int n_y = pt_interval * gridLengthInCells;
         Node[][] nodes = new Node[n_x][n_y];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 Node n = fac.createNode(Id.createNodeId(String.valueOf(i) + "_" + String.valueOf(j)),
-                        new Coord(i * delta_x, j * delta_y));
+                        new Coord(i * cellLength / pt_interval, j * cellLength / pt_interval));
                 nodes[i][j] = n;
                 net.addNode(n);
             }
@@ -174,8 +177,9 @@ public class NetworkUtil implements UtilComponent {
     }
 
     private static void makeDiagConnections(Network net, NetworkFactory fac, Node[][] nodes) {
-        double diag_length = Math.sqrt(delta_x * delta_x + delta_y * delta_y);
-        double side_length = Math.min(delta_x, delta_y);
+        double diag_length = Math.sqrt(cellLength / pt_interval * cellLength / pt_interval +
+                cellLength / pt_interval * cellLength / pt_interval);
+        double side_length = cellLength / pt_interval;
         List<Link> newLinks = new ArrayList<>();
         for (Node[] node : nodes) {
             for (int j = 0; j < nodes[0].length; j++) {
@@ -250,12 +254,22 @@ public class NetworkUtil implements UtilComponent {
             stationNode = link.getFromNode();
             neighbourNode = link.getToNode();
         }
+        double small_l = cellLength/pt_interval;
         double stationX = stationNode.getCoord().getX();
         double stationY = stationNode.getCoord().getY();
         double neighX = neighbourNode.getCoord().getX();
         double neighY = neighbourNode.getCoord().getY();
         int dirX = (int) Math.signum(neighX - stationX);
         int dirY = (int) Math.signum(neighY - stationY);
+
+        // Following to cases because of periodic BC
+        if (Math.abs(neighY - stationY) > small_l) {
+            dirY *= -1;
+        }
+        if (Math.abs(neighX - stationX) > small_l) {
+            dirX *= -1;
+        }
+
         Id<Node> nodeId = Id.createNodeId(
                 stationNode.getId().toString().concat(direction2String(dirX, dirY)));
         Node node = net.getNodes().get(nodeId);

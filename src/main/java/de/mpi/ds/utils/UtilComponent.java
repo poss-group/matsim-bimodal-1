@@ -25,7 +25,9 @@ public interface UtilComponent {
     static final double NUMBER_OF_LANES = 4.;
 
     //Transit Schedule variables/shared variables
-    static final int pt_interval = 10;
+    static final double cellLength = 1000;
+    static final int gridLengthInCells = 10;
+    static final int pt_interval = 2; // L/l
     static final double delta_x = 100;
     static final double delta_y = 100;
     static final double transitEndTime = 26 * 60 * 60;
@@ -33,6 +35,6 @@ public interface UtilComponent {
     static final double departureIntervalTime = 15*60;
     static final double transitStopLength = 0;
     static final int n_xy = 101;
-    static final int n_x = 101;
-    static final int n_y = 101;
+//    static final int n_x = 100;
+//    static final int n_y = 100;
 }
