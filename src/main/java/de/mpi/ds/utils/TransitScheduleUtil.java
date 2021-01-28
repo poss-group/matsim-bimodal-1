@@ -36,6 +36,7 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ public class TransitScheduleUtil implements UtilComponent {
 
     public static void main(String[] args) {
         String suffix = "_15min";
-        runTransitScheduleUtil("./output/network.xml", "./output/transitSchedule" + suffix + ".xml",
+        runTransitScheduleUtil("./output/network_diag.xml", "./output/transitSchedule" + suffix + ".xml",
                 "./output/transitVehicles" + suffix + ".xml");
     }
 

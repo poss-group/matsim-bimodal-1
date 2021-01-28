@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 
 /**
  * @author tthunig
@@ -68,6 +69,7 @@ public class NetworkUtil implements UtilComponent {
 
     public static void createGridNetwork(String path, boolean createTrainLanes) {
         // create an empty network
+        //TODO name pt stations indep. of other nodes/links so transit schedule can work for all scenarios
         Network net = NetworkUtils.createNetwork();
         NetworkFactory fac = net.getFactory();
 
@@ -75,11 +77,23 @@ public class NetworkUtil implements UtilComponent {
         // Add nodes to network
         int n_x = pt_interval * gridLengthInCells;
         int n_y = pt_interval * gridLengthInCells;
+        int n_station_x = 0;
+        int n_station_y = 0;
         Node[][] nodes = new Node[n_x][n_y];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
-                Node n = fac.createNode(Id.createNodeId(String.valueOf(i) + "_" + String.valueOf(j)),
+                String newNodeId = i + "_" + j;
+                boolean newStationAtrribute = false;
+                if (createTrainLanes) {
+                    if (((i + pt_interval / 2) % pt_interval == 0) && ((j + pt_interval / 2) % pt_interval == 0)) {
+                        newNodeId = "PT_" + i/pt_interval + "_" + j/pt_interval;
+                        newStationAtrribute = true;
+                    }
+                }
+
+                Node n = fac.createNode(Id.createNodeId(newNodeId),
                         new Coord(i * cellLength / pt_interval, j * cellLength / pt_interval));
+                n.getAttributes().putAttribute("isStation", newStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
             }
@@ -89,14 +103,23 @@ public class NetworkUtil implements UtilComponent {
             for (int j = 0; j < n_x; j++) {
                 int i_minus1_periodic = (((i - 1) % n_y) + n_y) % n_y;
                 int j_minus1_periodic = (((j - 1) % n_x) + n_x) % n_x;
+                int i_minusPtInterval_periodic = (((i - pt_interval) % n_y) + n_y) % n_y;
+                int j_minusPtInterval_periodic = (((j - pt_interval) % n_x) + n_x) % n_x;
                 insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);
-                if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
-                    insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j]);
-                }
                 insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic]);
-                if ((i + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
-                    insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic]);
+                if (((i + pt_interval / 2) % pt_interval == 0) &&
+                        ((j + pt_interval / 2) % pt_interval == 0) && createTrainLanes) {
+                    insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j]);
+                    insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic]);
                 }
+
+                // PT connections btw. all nodes
+//                if ((j + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
+//                    insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j]);
+//                }
+//                if ((i + pt_interval / 2) % pt_interval == 0 && createTrainLanes) {
+//                    insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic]);
+//                }
             }
         }
         makeDiagConnections(net, fac, nodes);
@@ -121,8 +144,8 @@ public class NetworkUtil implements UtilComponent {
         Link l4 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
                         .concat(String.valueOf(a.getId()).concat("_pt"))),
                 b, a);
-        setLinkAttributes(l3, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
-        setLinkAttributes(l4, CAP_MAIN, LINK_LENGTH, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+        setLinkAttributes(l3, CAP_MAIN, cellLength, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
+        setLinkAttributes(l4, CAP_MAIN, cellLength, FREE_SPEED_TRAIN_FOR_SCHEDULE, NUMBER_OF_LANES);
         setLinkModes(l3, "train");
         setLinkModes(l4, "train");
         net.addLink(l3);
@@ -254,7 +277,6 @@ public class NetworkUtil implements UtilComponent {
             stationNode = link.getFromNode();
             neighbourNode = link.getToNode();
         }
-        double small_l = cellLength/pt_interval;
         double stationX = stationNode.getCoord().getX();
         double stationY = stationNode.getCoord().getY();
         double neighX = neighbourNode.getCoord().getX();
@@ -263,10 +285,10 @@ public class NetworkUtil implements UtilComponent {
         int dirY = (int) Math.signum(neighY - stationY);
 
         // Following to cases because of periodic BC
-        if (Math.abs(neighY - stationY) > small_l) {
+        if (Math.abs(neighY - stationY) > cellLength) {
             dirY *= -1;
         }
-        if (Math.abs(neighX - stationX) > small_l) {
+        if (Math.abs(neighX - stationX) > cellLength) {
             dirX *= -1;
         }
 
@@ -275,22 +297,26 @@ public class NetworkUtil implements UtilComponent {
         Node node = net.getNodes().get(nodeId);
         if (node == null) {
             node = fac.createNode(nodeId, new Coord(stationX + dirX, stationY + dirY));
+            node.getAttributes().putAttribute("isStation", false);
             net.addNode(node);
         } else {
             node = net.getNodes().get(nodeId);
         }
         String ptStr = link.getAllowedModes().contains("train") ? "_pt" : "";
-        Link fstLink = fac.createLink(Id.createLinkId(link.getFromNode().getId() + "-" + node.getId() + ptStr),
+        String bla = link.getFromNode().getId() + "-" + node.getId() + ptStr;
+        Link fstLink = fac.createLink(Id.createLinkId(bla),
                 link.getFromNode(), node);
-        Link scndLink = fac.createLink(Id.createLinkId(node.getId() + "-" + link.getToNode().getId() + ptStr), node,
+        String blub = node.getId() + "-" + link.getToNode().getId() + ptStr;
+        Link scndLink = fac.createLink(Id.createLinkId(blub), node,
                 link.getToNode());
 
         copyLinkProperties(link, fstLink);
         copyLinkProperties(link, scndLink);
-        fstLink.setLength(DistanceUtils.calculateDistance(fstLink.getFromNode(), fstLink.getToNode()));
-        scndLink.setLength(DistanceUtils.calculateDistance(scndLink.getFromNode(), scndLink.getToNode()));
+        fstLink.setLength(calculateDistancePeriodicBC(fstLink.getFromNode(), fstLink.getToNode(), cellLength*gridLengthInCells));
+        scndLink.setLength(calculateDistancePeriodicBC(scndLink.getFromNode(), scndLink.getToNode(), cellLength*gridLengthInCells));
         net.addLink(fstLink);
         net.addLink(scndLink);
+        net.removeLink(link.getId());
     }
 
     private static void copyLinkProperties(Link link, Link toCopyLink) {

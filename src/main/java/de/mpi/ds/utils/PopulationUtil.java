@@ -32,7 +32,7 @@ public class PopulationUtil implements UtilComponent {
 //        for (Boolean bool : bools) {
 //            System.out.println(bool);
 //        }
-        String networkPath = "./output/network.xml";
+        String networkPath = "./output/network_diag.xml";
         Network net = NetworkUtils.readNetwork(networkPath);
         double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
@@ -48,28 +48,24 @@ public class PopulationUtil implements UtilComponent {
 //                netDimsMinMax[1],
 //                10000);
         createPopulation("./output/population.xml", net, N_REQUESTS,
-                0, 31357, sampler, netDimsMinMax[1]);
+                31357, sampler, netDimsMinMax[1]);
         compressGzipFile("./output/population.xml", "./output/population.xml.gz");
         deleteFile("./output/population.xml");
     }
 
-    public static void createPopulation(String outputPopulationPath, Network net, int nRequests, double gamma,
+    public static void createPopulation(String outputPopulationPath, Network net, int nRequests,
                                         long seed, InverseTransformSampler sampler, double L) {
         rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
-//        Map<String, Coord> zoneGeometries = new HashMap<>();
-//        for (Node node : net.getNodes().values()) {
-//            zoneGeometries.put(node.getId().toString(), node.getCoord());
-//        }
-        generatePopulation(population, net, nRequests, gamma, seed, sampler, L);
+        generatePopulation(population, net, nRequests, seed, sampler, L);
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
     }
 
 
-    private static void generatePopulation(Population population, Network net, int nRequests, double gamma, long seed,
+    private static void generatePopulation(Population population, Network net, int nRequests, long seed,
                                            InverseTransformSampler sampler, double L) {
         rand.setSeed(seed);
 //        Id<Node> orig_id;
@@ -84,10 +80,13 @@ public class PopulationUtil implements UtilComponent {
         List<Node> nodeList = net.getNodes().values().stream()
                 .filter(n -> (n.getCoord().getX() % delta_x == 0) && (n.getCoord().getY() % delta_y == 0))
                 .collect(Collectors.toList());
+        List<Node> nonStationNodeList = nodeList.stream()
+                .filter(n -> n.getAttributes().getAttribute("isStation").equals(false)).collect(
+                        Collectors.toList());
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                orig_coord = nodeList.get(rand.nextInt(nodeList.size())).getCoord();
+                orig_coord = nonStationNodeList.get(rand.nextInt(nonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
                     try {
@@ -100,13 +99,13 @@ public class PopulationUtil implements UtilComponent {
                     double newX = ((orig_coord.getX() + dist * Math.cos(angle)) % L + L) % L;
                     double newY = ((orig_coord.getY() + dist * Math.sin(angle)) % L + L) % L;
                     Coord pre_target = new Coord(newX, newY);
-                    dest_coord = getClosestNode(pre_target, nodeList, L).getCoord();
+                    dest_coord = getClosestNode(pre_target, nonStationNodeList, L).getCoord();
                 } else {
 //                    dest_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_coord = nodeList.get(rand.nextInt(nodeList.size())).getCoord();
+                    dest_coord = nonStationNodeList.get(rand.nextInt(nonStationNodeList.size())).getCoord();
                 }
             } while (orig_coord.equals(dest_coord));
-            generateTrip(orig_coord, dest_coord, j, population, gamma);
+            generateTrip(orig_coord, dest_coord, j, population);
         }
     }
 
@@ -114,7 +113,7 @@ public class PopulationUtil implements UtilComponent {
         return collection.stream().skip(rand.nextInt(collection.size())).findFirst().orElseThrow();
     }
 
-    private static void generateTrip(Coord source, Coord sink, int passenger_id, Population population, double gamma) {
+    private static void generateTrip(Coord source, Coord sink, int passenger_id, Population population) {
         Person person = population.getFactory()
                 .createPerson(Id.createPersonId(String.valueOf(passenger_id)));
         // person.getCustomAttributes().put("hasLicense", "false");
@@ -122,27 +121,14 @@ public class PopulationUtil implements UtilComponent {
         Plan plan = population.getFactory().createPlan();
         Coord sourceLocation = shoot(source);
         Coord sinkLocation = shoot(sink);
-//			Coord sourceTransferLocation = searchTransferLoc(sourceLocation, sinkLocation);
-//			Coord sinkTransferLocation = searchTransferLoc(sinkLocation, sourceLocation);
+
         plan.addActivity(createFirst(sourceLocation, population));
-//			if (!sourceLocation.equals(sourceTransferLocation)) {
-//				plan.addLeg(createDriveLeg(population, TransportMode.drt));
-//				plan.addActivity(createDrtActivity(sourceTransferLocation, population));
-//			}
-//        plan.addLeg(createDriveLeg(population, TransportMode.drt));
-//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation)/(pt_interval*delta_xy) > gamma &&
-//                DistanceUtils.calculateDistance(sourceLocation, sinkLocation)/(pt_interval*delta_xy) < 1 ) {
-//            System.out.println("bla");
+        plan.addLeg(createDriveLeg(population, TransportMode.pt));
+//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
+//            plan.addLeg(createDriveLeg(population, TransportMode.pt));
+//        } else {
+//            plan.addLeg(createDriveLeg(population, TransportMode.drt));
 //        }
-        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
-            plan.addLeg(createDriveLeg(population, TransportMode.pt));
-        } else {
-            plan.addLeg(createDriveLeg(population, TransportMode.drt));
-        }
-//			if (!sinkLocation.equals(sinkTransferLocation)) {
-//				plan.addActivity(createDrtActivity(sinkTransferLocation, population));
-//				plan.addLeg(createDriveLeg(population, TransportMode.drt));
-//			}
         plan.addActivity(createSecond(sinkLocation, population));
         person.addPlan(plan);
         population.addPerson(person);
@@ -201,6 +187,7 @@ public class PopulationUtil implements UtilComponent {
 
     private static Node getClosestNode(Coord coord, List<Node> nodes, double L) {
         return nodes.stream()
+//                        .allMatch(l -> l.getAllowedModes().stream().map(s -> s.contains("train"))))
                 .min(Comparator
                         .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();

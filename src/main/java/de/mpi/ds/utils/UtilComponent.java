@@ -9,7 +9,7 @@ public interface UtilComponent {
 
     //Population variables
     static final int MAX_END_TIME = 24 * 3600;
-    static final int N_REQUESTS = 10000;
+    static final int N_REQUESTS = 1000;
     static double delta_xy = 100;
 
     //Network variables
@@ -28,13 +28,11 @@ public interface UtilComponent {
     static final double cellLength = 1000;
     static final int gridLengthInCells = 10;
     static final int pt_interval = 2; // L/l
-    static final double delta_x = 100;
-    static final double delta_y = 100;
+    static final double delta_x = cellLength/pt_interval;
+    static final double delta_y = cellLength/pt_interval;
     static final double transitEndTime = 26 * 60 * 60;
     static final double transitIntervalTime = pt_interval * delta_x * 10 / FREE_SPEED_TRAIN;
     static final double departureIntervalTime = 15*60;
     static final double transitStopLength = 0;
-    static final int n_xy = 101;
-//    static final int n_x = 100;
-//    static final int n_y = 100;
+    static final int n_xy = gridLengthInCells/pt_interval;
 }

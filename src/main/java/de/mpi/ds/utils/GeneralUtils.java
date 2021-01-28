@@ -2,12 +2,17 @@ package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class GeneralUtils {
+    public static double calculateDistancePeriodicBC(Node from, Node to, double L) {
+        return calculateDistancePeriodicBC(from.getCoord(), to.getCoord(), L);
+    }
+
     public static double calculateDistancePeriodicBC(Coord from, Coord to, double L) {
         double deltaX = Math.abs(to.getX() - from.getX());
         double deltaXPeriodic = deltaX < L / 2 ? deltaX : -deltaX + L;

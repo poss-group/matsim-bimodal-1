@@ -34,7 +34,6 @@ public class MatsimMain {
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
     public static void main(String[] args) {
-        //TODO why trip success so low for square grid
         LOG.info("Reading config");
         Config config = ConfigUtils
                 .loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());
@@ -60,7 +59,6 @@ public class MatsimMain {
     }
 
     public static void run(Config config, boolean otfvis) throws Exception {
-        //TODO make tracking analysis of passengers transported to PT stations
         String vehiclesFile = getVehiclesFile(config);
         LOG.info(
                 "STARTING with\npopulation file: " + config.plans().getInputFile() +

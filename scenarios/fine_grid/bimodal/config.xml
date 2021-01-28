@@ -19,7 +19,7 @@
     </module>
 
     <module name="plans">
-        <param name="inputPlansFile" value="population.xml"/>
+        <param name="inputPlansFile" value="population.xml.gz"/>
         <!--                <param name="inputPlansFile"-->
         <!--                       value="../populations/populations_optDrtCount/population1000000reqs_zeta1.xml.gz"/>-->
     </module>
@@ -101,8 +101,8 @@
     </module>
 
     <module name="transit">
-        <param name="transitScheduleFile" value="../public_transit/transitSchedule_15min.xml.gz"/>
-        <param name="vehiclesFile" value="../public_transit/transitVehicles_15min.xml.gz"/>
+        <param name="transitScheduleFile" value="transitSchedule_15min.xml.gz"/>
+        <param name="vehiclesFile" value="transitVehicles_15min.xml.gz"/>
 
         <!--otherwise pt legs would be teleported-->
         <param name="useTransit" value="true"/>
@@ -156,8 +156,8 @@
             <param name="maxWaitTime" value="1200.0"/>
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
-            <!--			<param name="vehiclesFile" value="drtvehicles.xml"/>-->
-            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>
+            <param name="vehiclesFile" value="drtvehicles.xml"/>
+<!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
 
             <!--			<parameterset type="rebalancing">-->
             <!--				<parameterset type="minCostFlowRebalancingStrategy">-->

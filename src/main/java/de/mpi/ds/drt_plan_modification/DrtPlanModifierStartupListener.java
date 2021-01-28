@@ -82,15 +82,27 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
 
-        List<Double> trainDeltas = network.getLinks().values().stream()
-                .filter(e -> e.getAllowedModes().contains(TransportMode.train))
-                .filter(e -> e.getFromNode().getCoord().getY() == 0)
-                .map(e -> e.getCoord().getX())
+//        List<Double> trainDeltas = network.getLinks().values().stream()
+//                .filter(e -> e.getAllowedModes().contains(TransportMode.train))
+//                .filter(e -> e.getFromNode().getCoord().getY() == 0)
+//                .map(e -> e.getCoord().getX())
+//                .distinct()
+//                .sorted()
+//                .limit(2)
+//                .collect(Collectors.toList());
+        Node bla = network.getNodes().values().stream()
+                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
+                .findAny().orElseThrow();
+        List<Double> trainDeltas = network.getNodes().values().stream()
+                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
+                .filter(n -> n.getCoord().getY() == bla.getCoord().getY())
+                .map(n -> n.getCoord().getX())
                 .distinct()
                 .sorted()
                 .limit(2)
                 .collect(Collectors.toList());
         double trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+        assert trainDelta == 1000 : "Did not find predefined length L=1000, instead found: " + trainDelta;
 
         double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network);
 
@@ -150,7 +162,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
                                                     .calculateDistancePeriodicBC(l.getCoord(),
                                                             finalFirstAct.getCoord(),
                                                             netDimsMinMax[1]))).orElseThrow();
-                            dummyFirstCoord = dummyFirstNode.getCoord();
                         }
                         if (!isPtStation(lastNode)) {
                             Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
@@ -162,7 +173,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
                                             GeneralUtils
                                                     .calculateDistancePeriodicBC(l.getCoord(), finalLastAct.getCoord(),
                                                             netDimsMinMax[1]))).orElseThrow();
-                            dummyLastCoord = dummyLastNode.getCoord();
                         }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
                         insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
