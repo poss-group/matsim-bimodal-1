@@ -16,7 +16,6 @@ public interface UtilComponent {
     // capacity at all links
     static final long CAP_MAIN = 1000; // [veh/h]
     // link length for all links
-    static final long LINK_LENGTH = 100; // [m]
     // link freespeed for all links
     static final double FREE_SPEED = 30 / 3.6;
     static final double FREE_SPEED_TRAIN = 60 / 3.6;
@@ -25,9 +24,11 @@ public interface UtilComponent {
     static final double NUMBER_OF_LANES = 4.;
 
     //Transit Schedule variables/shared variables
+    // TODO this must be given as arguments in main class so that computation can be done properly
     static final double cellLength = 1000;
     static final int gridLengthInCells = 10;
-    static final int pt_interval = 2; // L/l
+    static final int pt_interval = 3; // L/l
+    static final double LINK_LENGTH = cellLength/pt_interval; // [m]
     static final double delta_x = cellLength/pt_interval;
     static final double delta_y = cellLength/pt_interval;
     static final double transitEndTime = 26 * 60 * 60;

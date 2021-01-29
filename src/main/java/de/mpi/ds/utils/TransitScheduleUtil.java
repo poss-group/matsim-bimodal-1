@@ -39,6 +39,7 @@ import org.matsim.vehicles.Vehicles;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
@@ -77,24 +78,25 @@ public class TransitScheduleUtil implements UtilComponent {
 
     public static void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,
                                              PopulationFactory populationFactory, Network net, Vehicles vehicles) {
-        int firstStation = pt_interval / 2;
-//        Map<Id<Link>, ? extends Link> test = net.getNodes().values().iterator().next().getOutLinks();
-        List<Node> startNodesX = net.getNodes().values().stream()
-                .filter(n -> (n.getCoord().getY() / delta_y + firstStation) % pt_interval == 0 && n.getCoord()
-                        .getX() / delta_x == firstStation).sorted(
-                        Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
-        List<Node> startNodesXDec = net.getNodes().values().stream()
-                .filter(n -> (n.getCoord().getY() / delta_y + firstStation) % pt_interval == 0 && n.getCoord()
-                        .getX() / delta_x == (n_xy - 1) - firstStation).sorted(
-                        Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
-        List<Node> startNodesY = net.getNodes().values().stream()
-                .filter(n -> (n.getCoord().getX() / delta_x + firstStation) % pt_interval == 0 && n.getCoord()
-                        .getY() / delta_y == firstStation).sorted(
-                        Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
-        List<Node> startNodesYDec = net.getNodes().values().stream()
-                .filter(n -> (n.getCoord().getX() / delta_x + firstStation) % pt_interval == 0 && n.getCoord()
-                        .getY() / delta_y == (n_xy - 1) - firstStation).sorted(
-                        Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
+
+        List<Node> stationNodes = net.getNodes().values().stream()
+                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true)).collect(Collectors.toList());
+
+        List<Node> startNodesXDir = stationNodes.stream()
+                .filter(n -> n.getCoord().getX() == 0)
+                .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
+        List<Node> startNodesXDecDir = (List<Node>) stationNodes.stream()
+                .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
+                .lastEntry().getValue().stream()
+                .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
+
+        List<Node> startNodesYDir = stationNodes.stream()
+                .filter(n -> n.getCoord().getY() == 0)
+                .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
+        List<Node> startNodesYDecDir = stationNodes.stream()
+                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+                .lastEntry().getValue().stream()
+                .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
 
         LOG.info(transitIntervalTime);
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
@@ -103,20 +105,20 @@ public class TransitScheduleUtil implements UtilComponent {
                 transitStopLength, 0,
                 transitEndTime, transitIntervalTime);
 
-        LOG.info(
-                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
-                        "station: " + transitStopLength + "\nTransit Interval Time: " + transitIntervalTime +
-                        "\nTransit time grid start - grid end: " + (startNodesXDec.get(0).getCoord()
-                        .getX() - startNodesX
-                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
+//        LOG.info(
+//                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
+//                        "station: " + transitStopLength + "\nTransit Interval Time: " + transitIntervalTime +
+//                        "\nTransit time grid start - grid end: " + (startNodesXDec.get(0).getCoord()
+//                        .getX() - startNodesX
+//                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
-        for (int i = 0; i < startNodesX.size(); i++) {
-            transitScheduleConstructor.createLine(startNodesX.get(i), startNodesXDec.get(i), "x");
-            transitScheduleConstructor.createLine(startNodesXDec.get(i), startNodesX.get(i), "x");
+        for (int i = 0; i < startNodesXDir.size(); i++) {
+            transitScheduleConstructor.createLine(startNodesXDir.get(i), startNodesXDecDir.get(i), "x");
+            transitScheduleConstructor.createLine(startNodesXDecDir.get(i), startNodesXDir.get(i), "x");
         }
-        for (int i = 0; i < startNodesY.size(); i++) {
-            transitScheduleConstructor.createLine(startNodesY.get(i), startNodesYDec.get(i), "y");
-            transitScheduleConstructor.createLine(startNodesYDec.get(i), startNodesY.get(i), "y");
+        for (int i = 0; i < startNodesYDir.size(); i++) {
+            transitScheduleConstructor.createLine(startNodesYDir.get(i), startNodesYDecDir.get(i), "y");
+            transitScheduleConstructor.createLine(startNodesYDecDir.get(i), startNodesYDir.get(i), "y");
         }
         schedule = transitScheduleConstructor.getSchedule();
         vehicles = transitScheduleConstructor.getVehicles();

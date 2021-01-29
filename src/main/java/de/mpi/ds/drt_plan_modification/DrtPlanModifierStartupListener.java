@@ -82,20 +82,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
 
-//        List<Double> trainDeltas = network.getLinks().values().stream()
-//                .filter(e -> e.getAllowedModes().contains(TransportMode.train))
-//                .filter(e -> e.getFromNode().getCoord().getY() == 0)
-//                .map(e -> e.getCoord().getX())
-//                .distinct()
-//                .sorted()
-//                .limit(2)
-//                .collect(Collectors.toList());
-        Node bla = network.getNodes().values().stream()
+        Node randomNode = network.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
                 .findAny().orElseThrow();
         List<Double> trainDeltas = network.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
-                .filter(n -> n.getCoord().getY() == bla.getCoord().getY())
+                .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
                 .map(n -> n.getCoord().getX())
                 .distinct()
                 .sorted()

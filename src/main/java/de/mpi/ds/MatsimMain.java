@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static de.mpi.ds.utils.NetworkUtil.createGridNetwork;
+import static de.mpi.ds.utils.PopulationUtil.createPopulation;
+
 public class MatsimMain {
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
@@ -45,7 +48,8 @@ public class MatsimMain {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-            run(config, false);
+            runMultipleNetworks(config);
+//            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,7 +57,22 @@ public class MatsimMain {
     }
 
     private static void runMultipleNetworks(Config config) {
-//        Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+        String tempPath = Paths.get(config.controler().getOutputDirectory(), "temp").toString();
+        for (int L_l : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
+            String netPath = Paths.get(tempPath, "network.xml").toString();
+            String popPath = Paths.get(tempPath, "population.xml").toString();
+            LOG.info("Creating network");
+            createGridNetwork(netPath, true, L_l);
+            LOG.info("Finished creating network\nCreating population for network");
+            createPopulation(popPath, netPath, (int) 1e5, 31357);
+            LOG.info("Finished creating population\nCreating transitSchedule");
+
+
+            config.network().setInputFile(netPath);
+            config.plans().setInputFile(popPath);
+            LOG.info("Running simulation");
+            LOG.info("Finished simulation with L/l = " + L_l);
+        }
         //TODO modify network (own network modifier class?)
         //TODO run simulations
     }

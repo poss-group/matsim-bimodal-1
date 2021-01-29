@@ -29,7 +29,7 @@ public class InverseTransformSampler {
         this.x0 = x1;
 
         double arg = 0;
-        double last_arg = 0;
+        double last_arg = x0;
         double cumsum = 0;
         N = integrationSteps;
         domain = new double[N];
@@ -37,8 +37,7 @@ public class InverseTransformSampler {
         cummulative_values = new double[N];
 
         for (int i = 0; i < N; i++) {
-            arg = x0 + (double) i / (N-1) * (x1 - x0); // N-1 so that integration really ends at x1 for given number
-            // of integration steps N
+            arg = x0 + (double) (i+1) / N * (x1 - x0);
             double value = function.apply(arg);
             cumsum += (arg - last_arg) * value;
             domain[i] = arg;
@@ -66,15 +65,15 @@ public class InverseTransformSampler {
 
     public static void main(String[] args) {
         try {
-            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/10., true, 0, 10,
+            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
                     100000);
 //            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
 //                    10000,
 //                    10000);
 //            InverseTransformSampler sampler = new InverseTransformSampler(
 //            x -> taxiDistDistributionNotNormalized(x, 2000, 3), false, 0.001, 10000, (int) 1E5);
-            StringBuilder testout = new StringBuilder();
 //            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
+            StringBuilder testout = new StringBuilder();
             for (int i = 0; i < (int) 1E5; i++) {
                 testout.append(String.valueOf(sampler.getSample())).append("\n");
 //                testout.append(String.valueOf(sampler.probs_values[i])).append("\n");
@@ -88,6 +87,7 @@ public class InverseTransformSampler {
     }
 
     public static int search(double value, double[] a) throws Exception {
+        //binary search
         if (value < a[0]) {
             throw new Exception("value is smaller than smallest element in array to be searched in for");
 //            return 0;
