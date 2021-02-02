@@ -2,11 +2,14 @@ package de.mpi.ds.my_analysis;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.controler.listener.IterationStartsListener;
+import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.TripRouter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

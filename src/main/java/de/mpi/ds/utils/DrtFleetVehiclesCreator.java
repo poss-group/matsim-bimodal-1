@@ -47,7 +47,7 @@ import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
  * This is an example script to create a vehicle file for taxis, SAV or DRTs.
  * The vehicles are distributed randomly in the network.
  */
-public class CreateDrtFleetVehicles implements UtilComponent {
+public class DrtFleetVehiclesCreator implements UtilComponent {
 
     /**
      * Adjust these variables and paths to your need.
@@ -56,7 +56,7 @@ public class CreateDrtFleetVehicles implements UtilComponent {
 
     public static void main(String[] args) {
 
-		new CreateDrtFleetVehicles().run("./output/network_diag.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
+		new DrtFleetVehiclesCreator().run("./output/network_diag.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }

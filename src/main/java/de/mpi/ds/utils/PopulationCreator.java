@@ -1,29 +1,23 @@
 package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.*;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
-import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
-import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
 import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
-import static de.mpi.ds.utils.InverseTransformSampler.normalDist;
 
-public class PopulationUtil implements UtilComponent {
+public class PopulationCreator implements UtilComponent {
     private static Random rand = new Random();
 
-    private PopulationUtil() {
+    private PopulationCreator() {
     }
 
     public static void main(String... args) {
@@ -33,8 +27,7 @@ public class PopulationUtil implements UtilComponent {
 //            System.out.println(bool);
 //        }
         String networkPath = "./output/network_diag.xml";
-        createPopulation("./output/population.xml.gz", networkPath, N_REQUESTS,
-                31357);
+        createPopulation("./output/population.xml.gz", networkPath, nRequests, 31357);
 
         // Not neccessary with above method (string .gz already indicates saving in gzip format)
 //        compressGzipFile("./output/population.xml", "./output/population.xml.gz");
@@ -81,10 +74,7 @@ public class PopulationUtil implements UtilComponent {
 //                .collect(Collectors.toList());
         Coord orig_coord;
         Coord dest_coord;
-        List<Node> nodeList = net.getNodes().values().stream()
-                .filter(n -> (n.getCoord().getX() % delta_x == 0) && (n.getCoord().getY() % delta_y == 0))
-                .collect(Collectors.toList());
-        List<Node> nonStationNodeList = nodeList.stream()
+        List<Node> nonStationNodeList = net.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(false)).collect(
                         Collectors.toList());
         for (int j = 0; j < nRequests; j++) {
@@ -157,7 +147,7 @@ public class PopulationUtil implements UtilComponent {
 
     private static Activity createFirst(Coord homeLocation, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
-        activity.setEndTime(rand.nextInt(MAX_END_TIME)); // [s]
+        activity.setEndTime(rand.nextInt(requestEndTime)); // [s]
         return activity;
     }
 

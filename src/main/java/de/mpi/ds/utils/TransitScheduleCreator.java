@@ -36,7 +36,6 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
@@ -45,10 +44,10 @@ import java.util.stream.Collectors;
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
 
-public class TransitScheduleUtil implements UtilComponent {
+public class TransitScheduleCreator implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
             VehicleType.class));
-    private static final Logger LOG = Logger.getLogger(TransitScheduleUtil.class.getName());
+    private static final Logger LOG = Logger.getLogger(TransitScheduleCreator.class.getName());
 
     public static void main(String[] args) {
         String suffix = "_15min";
@@ -86,7 +85,7 @@ public class TransitScheduleUtil implements UtilComponent {
                 .filter(n -> n.getCoord().getX() == 0)
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
         List<Node> startNodesXDecDir = (List<Node>) stationNodes.stream()
-                .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
+                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
 
@@ -94,16 +93,16 @@ public class TransitScheduleUtil implements UtilComponent {
                 .filter(n -> n.getCoord().getY() == 0)
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
         List<Node> startNodesYDecDir = stationNodes.stream()
-                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+                .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
 
         LOG.info(transitIntervalTime);
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, pt_interval, delta_xy,
-                delta_xy * pt_interval / FREE_SPEED_TRAIN,
+                populationFactory, net, schedule, vehicles, ptInterval, cellLength/ptInterval,
+                cellLength / freeSpeedTrain,
                 transitStopLength, 0,
-                transitEndTime, transitIntervalTime);
+                transitEndTime, cellLength*gridLengthInCells/freeSpeedTrain);
 
 //        LOG.info(
 //                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +

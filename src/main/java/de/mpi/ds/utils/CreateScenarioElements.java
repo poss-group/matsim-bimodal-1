@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
-import static de.mpi.ds.utils.NetworkUtil.createGridNetwork;
-
 public class CreateScenarioElements {
     private static String SUBFOLDER = "scenario/";
     private static final Random random = new Random();
@@ -28,7 +26,7 @@ public class CreateScenarioElements {
             String nameDrtVehiclesFile = "drtvehicles_" + String.valueOf(i) + ".xml";
 //            createPopulation(outPath + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
 //            createPopulation(outPath + namePopulationFilePt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
-            new CreateDrtFleetVehicles()
+            new DrtFleetVehiclesCreator()
                     .run( "./output/network_diag.xml.gz", "output/" + SUBFOLDER + nameDrtVehiclesFile,
                             i);
 //                            (int) (0.01 * i));

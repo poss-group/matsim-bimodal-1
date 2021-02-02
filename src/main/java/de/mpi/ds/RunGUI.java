@@ -1,13 +1,6 @@
 package de.mpi.ds;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.run.gui.Gui;
-
-import de.mpi.ds.utils.NetworkUtil;
-import de.mpi.ds.utils.PopulationUtil;
-
-import static de.mpi.ds.utils.UtilComponent.N_REQUESTS;
 
 public class RunGUI {
 

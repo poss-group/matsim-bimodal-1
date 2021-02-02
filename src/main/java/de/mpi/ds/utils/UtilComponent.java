@@ -8,32 +8,25 @@ public interface UtilComponent {
     static final double operationEndTime = 26 * 60 * 60; //24h
 
     //Population variables
-    static final int MAX_END_TIME = 24 * 3600;
-    static final int N_REQUESTS = 1000;
-    static double delta_xy = 100;
+    static final int requestEndTime = 24 * 3600;
+    static final int nRequests = 1000;
 
     //Network variables
     // capacity at all links
-    static final long CAP_MAIN = 1000; // [veh/h]
+    static final long linkCapacity = 1000; // [veh/h]
     // link length for all links
     // link freespeed for all links
-    static final double FREE_SPEED = 30 / 3.6;
-    static final double FREE_SPEED_TRAIN = 60 / 3.6;
+    static final double freeSpeedCar = 30 / 3.6;
+    static final double freeSpeedTrain = 60 / 3.6;
     // This is neccessary so that trains are running according to their schedule
-    static final double FREE_SPEED_TRAIN_FOR_SCHEDULE = 60 / 3.6 * 1.4;
-    static final double NUMBER_OF_LANES = 4.;
+    static final double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
+    static final double numberOfLanes = 4.;
 
     //Transit Schedule variables/shared variables
     // TODO this must be given as arguments in main class so that computation can be done properly
-    static final double cellLength = 1000;
-    static final int gridLengthInCells = 10;
-    static final int pt_interval = 3; // L/l
-    static final double LINK_LENGTH = cellLength/pt_interval; // [m]
-    static final double delta_x = cellLength/pt_interval;
-    static final double delta_y = cellLength/pt_interval;
+
     static final double transitEndTime = 26 * 60 * 60;
-    static final double transitIntervalTime = pt_interval * delta_x * 10 / FREE_SPEED_TRAIN;
+    static final double transitIntervalTime = 42;//ptInterval * cellLength/ ptInterval * 10 / FREE_SPEED_TRAIN;
     static final double departureIntervalTime = 15*60;
     static final double transitStopLength = 0;
-    static final int n_xy = gridLengthInCells/pt_interval;
 }

@@ -3,7 +3,7 @@
 
 <config>
     <module name="drtPlanModifier">
-        <param name="modifyPlans" value="true"/>
+        <param name="modifyPlans" value="false"/>
         <param name="zetaCut" value="1"/>
         <param name="privateCarMode" value="false"/>
     </module>
@@ -29,7 +29,7 @@
         <param name="firstIteration" value="0"/>
         <param name="lastIteration" value="0"/>
         <param name="mobsim" value="qsim"/>
-        <param name="routingAlgorithmType" value="AStarLandmarks"/>
+        <param name="routingAlgorithmType" value="FastAStarLandmarks"/>
         <param name="overwriteFiles" value="deleteDirectoryIfExists"/>
     </module>
 

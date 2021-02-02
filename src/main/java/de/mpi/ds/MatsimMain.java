@@ -1,22 +1,20 @@
 package de.mpi.ds;
 
-import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.DrtTrajectoryAnalyzer.DrtTrajectoryAnalyzer;
+import de.mpi.ds.custom_routing.CustomRoutingModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
+import de.mpi.ds.utils.NetworkCreator;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
@@ -29,10 +27,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static de.mpi.ds.utils.NetworkUtil.createGridNetwork;
-import static de.mpi.ds.utils.PopulationUtil.createPopulation;
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
+import static de.mpi.ds.utils.PopulationCreator.createPopulation;
 
 public class MatsimMain {
+    //TODO check periodic BC routing with one person
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -48,8 +48,8 @@ public class MatsimMain {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config);
-            runMultipleNetworks(config);
-//            run(config, false);
+//            runMultipleNetworks(config);
+            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,7 +62,8 @@ public class MatsimMain {
             String netPath = Paths.get(tempPath, "network.xml").toString();
             String popPath = Paths.get(tempPath, "population.xml").toString();
             LOG.info("Creating network");
-            createGridNetwork(netPath, true, L_l);
+            NetworkCreator networkCreator = new NetworkCreator(10000, 10, 4);
+            networkCreator.createGridNetwork(netPath, true);
             LOG.info("Finished creating network\nCreating population for network");
             createPopulation(popPath, netPath, (int) 1e5, 31357);
             LOG.info("Finished creating population\nCreating transitSchedule");
@@ -103,6 +104,14 @@ public class MatsimMain {
         controler.addOverridingModule(new DrtTrajectoryAnalyzer());
         DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));
+        controler.addOverridingModule(new CustomRoutingModule());
+
+        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork());
+        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
+                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
+                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
+                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
+                        "org/matsim/core/utils/collections/QuadTree.java";
 
         controler.run();
     }

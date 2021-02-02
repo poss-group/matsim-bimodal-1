@@ -10,8 +10,6 @@ public class MyAnalysisModule extends AbstractModule {
     public void install() {
         LOG.info("Initiating");
         this.addControlerListenerBinding().to(ServabilityListener.class);
-//        this.addControlerListenerBinding().to(BimodalPoolMaxListener.class);
-//        this.addEventHandlerBinding().to(BimodalPoolMaxListener.class);
         LOG.info("Finalizing");
     }
 }

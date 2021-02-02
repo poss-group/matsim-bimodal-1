@@ -47,7 +47,7 @@
     <dependencies>
         <dependency>
             <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
+            <artifactId>matsim_pBC</artifactId>
             <version>${matsim.version}</version>
         </dependency>
         <dependency>
@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
+            <artifactId>matsim_pBC</artifactId>
             <version>${matsim.version}</version>
             <type>test-jar</type>
             <scope>test</scope>

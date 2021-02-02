@@ -1,15 +1,9 @@
 package de.mpi.ds.utils;
 
-import org.opengis.parameter.InvalidParameterValueException;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static de.mpi.ds.utils.PopulationUtil.taxiDistDistributionNotNormalized;
 
 public class InverseTransformSampler {
     Function<Double, Double> function;
