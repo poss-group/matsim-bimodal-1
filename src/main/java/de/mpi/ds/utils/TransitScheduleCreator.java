@@ -49,14 +49,33 @@ public class TransitScheduleCreator implements UtilComponent {
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleCreator.class.getName());
 
-    public static void main(String[] args) {
-        String suffix = "_15min";
-        runTransitScheduleUtil("./output/network_diag.xml", "./output/transitSchedule" + suffix + ".xml",
-                "./output/transitVehicles" + suffix + ".xml");
+    private double freeSpeedTrain;
+    private double gridLengthInCells;
+    private double transitEndTime;
+    private double cellLength;
+    private double transitStopLength;
+    private double freeSpeedTrainForSchedule;
+    private double departureIntervalTime;
+
+    public TransitScheduleCreator(double cellLength, double gridLengthInCells, double freeSpeedTrain,
+                                  double transitEndTime, double transitStopLength, double freeSpeedTrainForSchedule,
+                                  double departureIntervalTime) {
+        this.cellLength = cellLength;
+        this.gridLengthInCells = gridLengthInCells;
+        this.freeSpeedTrain = freeSpeedTrain;
+        this.transitEndTime = transitEndTime;
+        this.transitStopLength = transitStopLength;
+        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.departureIntervalTime = departureIntervalTime;
     }
 
-    static void runTransitScheduleUtil(String networkPath, String outputSchedulePath,
-                                       String outputVehiclesPath) {
+    public static void main(String[] args) {
+//        String suffix = "_15min";
+//        runTransitScheduleUtil("./output/network_diag.xml", "./output/transitSchedule" + suffix + ".xml",
+//                "./output/transitVehicles" + suffix + ".xml");
+    }
+
+    public void runTransitScheduleUtil(String networkPath, String outputSchedulePath, String outputVehiclesPath) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         TransitSchedule schedule = scenario.getTransitSchedule();
         TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
@@ -69,14 +88,14 @@ public class TransitScheduleCreator implements UtilComponent {
 
         new TransitScheduleWriter(schedule).writeFile(outputSchedulePath);
         new MatsimVehicleWriter(vehicles).writeFile(outputVehiclesPath);
-        compressGzipFile(outputSchedulePath, outputSchedulePath.concat(".gz"));
-        compressGzipFile(outputVehiclesPath, outputVehiclesPath.concat(".gz"));
-        deleteFile(outputSchedulePath);
-        deleteFile(outputVehiclesPath);
+//        compressGzipFile(outputSchedulePath, outputSchedulePath.concat(".gz"));
+//        compressGzipFile(outputVehiclesPath, outputVehiclesPath.concat(".gz"));
+//        deleteFile(outputSchedulePath);
+//        deleteFile(outputVehiclesPath);
     }
 
-    public static void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,
-                                             PopulationFactory populationFactory, Network net, Vehicles vehicles) {
+    public void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,
+                                      PopulationFactory populationFactory, Network net, Vehicles vehicles) {
 
         List<Node> stationNodes = net.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(true)).collect(Collectors.toList());
@@ -97,12 +116,12 @@ public class TransitScheduleCreator implements UtilComponent {
                 .lastEntry().getValue().stream()
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
 
-        LOG.info(transitIntervalTime);
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, ptInterval, cellLength/ptInterval,
+                populationFactory, net, schedule, vehicles,
                 cellLength / freeSpeedTrain,
                 transitStopLength, 0,
-                transitEndTime, cellLength*gridLengthInCells/freeSpeedTrain);
+                transitEndTime, cellLength * gridLengthInCells / freeSpeedTrain, freeSpeedTrainForSchedule,
+                departureIntervalTime);
 
 //        LOG.info(
 //                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
@@ -119,8 +138,6 @@ public class TransitScheduleCreator implements UtilComponent {
             transitScheduleConstructor.createLine(startNodesYDir.get(i), startNodesYDecDir.get(i), "y");
             transitScheduleConstructor.createLine(startNodesYDecDir.get(i), startNodesYDir.get(i), "y");
         }
-        schedule = transitScheduleConstructor.getSchedule();
-        vehicles = transitScheduleConstructor.getVehicles();
     }
 }
 

@@ -7,6 +7,8 @@ import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
 import de.mpi.ds.utils.NetworkCreator;
+import de.mpi.ds.utils.ScenarioCreator;
+import de.mpi.ds.utils.ScenarioCreatorBuilder;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -29,10 +31,9 @@ import java.util.regex.Pattern;
 
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
-import static de.mpi.ds.utils.PopulationCreator.createPopulation;
 
 public class MatsimMain {
-    //TODO check periodic BC routing with one person
+    //TODO check routing algorithm for pt routing
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -47,35 +48,47 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleNetworks(config);
-//            runMultipleNetworks(config);
-            run(config, false);
+            runMultipleNetworks(config);
+//            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
         LOG.info("Simulation finished");
     }
 
-    private static void runMultipleNetworks(Config config) {
-        String tempPath = Paths.get(config.controler().getOutputDirectory(), "temp").toString();
+    private static void runMultipleNetworks(Config config) throws Exception {
+        String outPath = config.controler().getOutputDirectory();
         for (int L_l : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
-            String netPath = Paths.get(tempPath, "network.xml").toString();
-            String popPath = Paths.get(tempPath, "population.xml").toString();
+            String newOutPath = Paths.get(outPath, "L_l_" + L_l).toString();
+            String inputPath = Paths.get(newOutPath, "tmp").toString();
+            String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
+            String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
+            String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
+            String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
+            String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
+
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setPtInterval(L_l).build();
             LOG.info("Creating network");
-            NetworkCreator networkCreator = new NetworkCreator(10000, 10, 4);
-            networkCreator.createGridNetwork(netPath, true);
+            scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
-            createPopulation(popPath, netPath, (int) 1e5, 31357);
-            LOG.info("Finished creating population\nCreating transitSchedule");
+            scenarioCreator.createPopulation(populationPath, networkPath);
+            LOG.info("Finished creating population\nCreating transit Schedule");
+            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+            LOG.info("Finished creating transit schedule\nCreating drt fleet");
+            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
+            LOG.info("Finished creating drt fleet");
 
-
-            config.network().setInputFile(netPath);
-            config.plans().setInputFile(popPath);
+            config.controler().setOutputDirectory(newOutPath);
+            config.network().setInputFile(networkPath);
+            config.plans().setInputFile(populationPath);
+            config.transit().setTransitScheduleFile(transitSchedulePath);
+            config.transit().setVehiclesFile(transitVehiclesPath);
+            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+                    .setVehiclesFile(drtFleetPath);
             LOG.info("Running simulation");
+            run(config, false);
             LOG.info("Finished simulation with L/l = " + L_l);
         }
-        //TODO modify network (own network modifier class?)
-        //TODO run simulations
     }
 
     public static void run(Config config, boolean otfvis) throws Exception {

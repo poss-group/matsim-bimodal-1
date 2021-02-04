@@ -6,72 +6,53 @@ import org.jfree.util.Log;
 public class ScenarioCreator {
     private final static Logger LOG = Logger.getLogger(ScenarioCreator.class.getName());
 
-    private final double cellLength;
-    private final int gridLengthInCells;
-    private final int ptInterval;
-    private final long linkCapacity;
-    private final double freeSpeedCar;
-    private final double freeSpeedTrain;
-    private final double freeSpeedTrainForSchedule;
-    private final double numberOfLanes;
-
-    private final double requestEndTime;
-    private final int nRequests;
-
-    private final double transitEndTime;
-    private final double departureIntervalTime;
-    private final double transitStopLength;
-
-    public ScenarioCreator() {
-        LOG.warn("Taking default values for scenario parameters");
-        cellLength = 1000;
-        gridLengthInCells = 10;
-        ptInterval = 4;
-        linkCapacity = 1000; // [veh/h]
-        freeSpeedCar = 30 / 3.6;
-        freeSpeedTrain = 60 / 3.6;
-        freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
-        numberOfLanes = 4.;
-
-        requestEndTime = 24 * 3600;
-        nRequests = 1000;
-
-        transitEndTime = 26 * 60 * 60;
-        departureIntervalTime = 15 * 60;
-        transitStopLength = 0;
-    }
+    private NetworkCreator networkCreator;
+    private PopulationCreator populationCreator;
+    private TransitScheduleCreator transitScheduleCreator;
+    private DrtFleetVehiclesCreator drtFleetVehiclesCreator;
 
     public ScenarioCreator(double cellLength, int gridLengthInCells, int ptInterval, long linkCapacity,
-                           double freeSpeedCar,
-                           double freeSpeedTrain, double freeSpeedTrainForSchedule, int numberOfLanes,
-                           double requestEndTime, int nRequests, double transitEndTime,
-                           double departureIntervalTime, double transitStopLength) {
+                           double freeSpeedCar, double freeSpeedTrain, double freeSpeedTrainForSchedule,
+                           double numberOfLanes, int requestEndTime, int nRequests, double transitEndTime,
+                           double departureIntervalTime, double transitStopLength, int nDrtVehicles, int drtCapacity,
+                           double drtOperationStartTime, double drtOperationEndTime, long seed) {
 
-        this.cellLength = cellLength;
-        this.gridLengthInCells = gridLengthInCells;
-        this.ptInterval = ptInterval;
-        this.linkCapacity = linkCapacity;
-        this.freeSpeedCar = freeSpeedCar;
-        this.freeSpeedTrain = freeSpeedTrain;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
-        this.numberOfLanes = numberOfLanes;
-        this.requestEndTime = requestEndTime;
-        this.nRequests = nRequests;
-        this.transitEndTime = transitEndTime;
-        this.departureIntervalTime = departureIntervalTime;
-        this.transitStopLength = transitStopLength;
+        this.networkCreator = new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity,
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar);
+        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, seed);
+        this.transitScheduleCreator = new TransitScheduleCreator(cellLength, gridLengthInCells, freeSpeedTrain,
+                transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
+        this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
+                drtOperationEndTime, nDrtVehicles);
     }
 
     public static void main(String... args) {
-        ScenarioCreator scenarioCreator = new ScenarioCreator();
+        ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().build();
+
+        String netPath = "./output/network_diag.xml.gz";
+        String popPath = "./output/population.xml.gz";
+        String drtFleetPath = "output/drtvehicles.xml";
+        String transitSchedulePath = "output/transitSchedule_15min.xml.gz";
+        String transitVehiclesPath = "output/transitVehicles_15min.xml.gz";
+        scenarioCreator.createNetwork(netPath, true);
+        scenarioCreator.createPopulation(popPath, netPath);
+        scenarioCreator.createDrtFleet(netPath, drtFleetPath);
+        scenarioCreator.createTransitSchedule(netPath, transitSchedulePath, transitVehiclesPath);
     }
 
-    public void createNetwork(String path, boolean createTrainLines) {
-        NetworkCreator networkCreator = new NetworkCreator(cellLength, gridLengthInCells, ptInterval);
-        networkCreator.createGridNetwork(path, createTrainLines);
+    public void createNetwork(String outputPath, boolean createTrainLines) {
+        networkCreator.createGridNetwork(outputPath, createTrainLines);
     }
 
-    public void createPopulation() {
+    public void createPopulation(String outputPopulationPath, String networkPath) {
+        populationCreator.createPopulation(outputPopulationPath, networkPath);
+    }
 
+    public void createTransitSchedule(String networkPath, String outputSchedulePath, String outputVehiclePath) {
+        transitScheduleCreator.runTransitScheduleUtil(networkPath, outputSchedulePath, outputVehiclePath);
+    }
+
+    public void createDrtFleet(String networkPath, String outputPath) {
+        drtFleetVehiclesCreator.run(networkPath, outputPath);
     }
 }

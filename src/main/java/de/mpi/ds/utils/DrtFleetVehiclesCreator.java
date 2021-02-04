@@ -54,14 +54,28 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
      */
     private static final Random random = MatsimRandom.getRandom();
 
+    private int seatsPerDrtVehicle;
+    private double operationStartTime;
+    private double operationEndTime;
+    private int nDrtVehicles;
+
+    public DrtFleetVehiclesCreator(int seatsPerDrtVehicle, double operationStartTime, double operationEndTime,
+                                   int nDrtVehicles) {
+        this.seatsPerDrtVehicle = seatsPerDrtVehicle;
+        this.operationStartTime = operationStartTime;
+        this.operationEndTime = operationEndTime;
+        this.nDrtVehicles = nDrtVehicles;
+    }
+
     public static void main(String[] args) {
 
-		new DrtFleetVehiclesCreator().run("./output/network_diag.xml", "output/drtvehicles.xml", numberOfDrtVehicles);
+        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 200)
+                .run("./output/network_diag.xml", "output/drtvehicles.xml");
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }
 
-    public void run(String networkPath, String outputDrtVehiclesPath, int nVehicles) {
+    public void run(String networkPath, String outputDrtVehiclesPath) {
 
 //	    random.setSeed(42);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -77,7 +91,7 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
 
 
         Stream<DvrpVehicleSpecification> vehicleSpecificationStream = linkList.stream()
-                .limit(nVehicles) // select the first *numberOfVehicles* links
+                .limit(nDrtVehicles) // select the first *numberOfVehicles* links
                 .map(entry -> ImmutableDvrpVehicleSpecification.newBuilder()
                         .id(Id.create("drt_" + i[0]++, DvrpVehicle.class))
                         .startLinkId(entry.getKey())

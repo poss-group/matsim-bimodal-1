@@ -17,30 +17,28 @@ import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 public class PopulationCreator implements UtilComponent {
     private static Random rand = new Random();
 
-    private PopulationCreator() {
+    private int nRequests;
+    private int requestEndTime;
+    private long seed;
+
+    public PopulationCreator(int nRequests, int requestEndTime, long seed) {
+        this.nRequests = nRequests;
+        this.requestEndTime = requestEndTime;
+        this.seed = seed;
     }
 
     public static void main(String... args) {
-//        Boolean[] bools = {true, false, true, true, true, false, true, true, true, false};
-//        System.out.println(Arrays.stream(bools).map(b -> b ? 1 : 0).mapToInt(Integer::intValue).sum());
-//        for (Boolean bool : bools) {
-//            System.out.println(bool);
-//        }
-        String networkPath = "./output/network_diag.xml";
-        createPopulation("./output/population.xml.gz", networkPath, nRequests, 31357);
-
-        // Not neccessary with above method (string .gz already indicates saving in gzip format)
-//        compressGzipFile("./output/population.xml", "./output/population.xml.gz");
-//        deleteFile("./output/population.xml");
+        String networkPath = "./output/network_diag.xml.gz";
+        PopulationCreator populationCreator = new PopulationCreator(100000, 24*3600, 1234);
+        populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
-    public static void createPopulation(String outputPopulationPath, String networkPath, int nRequests,
-                                        long seed) {
+    public void createPopulation(String outputPopulationPath, String networkPath) {
         Network net = NetworkUtils.readNetwork(networkPath);
-        createPopulation(outputPopulationPath, net, nRequests, seed);
+        createPopulation(outputPopulationPath, net);
     }
-    public static void createPopulation(String outputPopulationPath, Network net, int nRequests,
-                                        long seed) {
+
+    public void createPopulation(String outputPopulationPath, Network net) {
 
         double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
         double xy_0 = netDimsMinMax[0];
@@ -48,7 +46,7 @@ public class PopulationCreator implements UtilComponent {
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
         InverseTransformSampler sampler = new InverseTransformSampler(
                 a -> 1 / (xy_1 - xy_0),
-                true,
+                false,
                 xy_0,
                 xy_1,
                 10000);
@@ -63,8 +61,8 @@ public class PopulationCreator implements UtilComponent {
     }
 
 
-    private static void generatePopulation(Population population, Network net, int nRequests,
-                                           InverseTransformSampler sampler, double L) {
+    private void generatePopulation(Population population, Network net, int nRequests,
+                                    InverseTransformSampler sampler, double L) {
 //        Id<Node> orig_id;
 //        Id<Node> dest_id;
 //        List<Id<Node>> nodeIdList = net.getNodes().values().stream()
@@ -103,11 +101,11 @@ public class PopulationCreator implements UtilComponent {
         }
     }
 
-    private static Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
+    private Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
         return collection.stream().skip(rand.nextInt(collection.size())).findFirst().orElseThrow();
     }
 
-    private static void generateTrip(Coord source, Coord sink, int passenger_id, Population population) {
+    private void generateTrip(Coord source, Coord sink, int passenger_id, Population population) {
         Person person = population.getFactory()
                 .createPerson(Id.createPersonId(String.valueOf(passenger_id)));
         // person.getCustomAttributes().put("hasLicense", "false");
@@ -128,30 +126,30 @@ public class PopulationCreator implements UtilComponent {
         population.addPerson(person);
     }
 
-    private static Leg createDriveLeg(Population population, String mode) {
+    private Leg createDriveLeg(Population population, String mode) {
         Leg leg = population.getFactory().createLeg(mode);
         return leg;
     }
 
-    private static Coord shoot(Coord source) {
+    private Coord shoot(Coord source) {
         // Insert code here to blur the input coordinate.
         // For example, add a random number to the x and y coordinates.
         return source;
     }
 
-    private static Activity createSecond(Coord workLocation, Population population) {
+    private Activity createSecond(Coord workLocation, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", workLocation);
 //        activity.setEndTime(24 * 60 * 60); // [s]
         return activity;
     }
 
-    private static Activity createFirst(Coord homeLocation, Population population) {
+    private Activity createFirst(Coord homeLocation, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
         activity.setEndTime(rand.nextInt(requestEndTime)); // [s]
         return activity;
     }
 
-    private static Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
+    private Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
         double source_x = startLoc.getX();
         double source_y = startLoc.getY();
         double sink_x = targetLoc.getX();
@@ -168,18 +166,18 @@ public class PopulationCreator implements UtilComponent {
         return new Coord(new_x, new_y);
     }
 
-    private static Activity createDrtActivity(Coord location, Population population) {
+    private Activity createDrtActivity(Coord location, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
         activity.setMaximumDuration(0);
         return activity;
     }
 
-    private static Id<Person> createId(String source, String sink, int i, String transportMode) {
+    private Id<Person> createId(String source, String sink, int i, String transportMode) {
         return Id.create(source + "_" + sink + "_" + i, Person.class);
     }
 
 
-    private static Node getClosestNode(Coord coord, List<Node> nodes, double L) {
+    private Node getClosestNode(Coord coord, List<Node> nodes, double L) {
         return nodes.stream()
 //                        .allMatch(l -> l.getAllowedModes().stream().map(s -> s.contains("train"))))
                 .min(Comparator
@@ -188,7 +186,7 @@ public class PopulationCreator implements UtilComponent {
     }
 
 
-    public static double taxiDistDistributionNotNormalized(double x, double mean, double k) {
+    public double taxiDistDistributionNotNormalized(double x, double mean, double k) {
         double z = x / mean;
         return Math.exp(-1. / z) * Math.pow(z, -k);
     }

@@ -22,9 +22,6 @@ import java.util.stream.Collectors;
 
 public class TransitScheduleConstructor implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(TransitScheduleConstructor.class.getName());
-    private final int pt_interval;
-    private final int n_xy;
-    private final double delta_xy;
     private final double stop_length;
     private final double departure_delay;
     private final double transitStartTime;
@@ -36,28 +33,27 @@ public class TransitScheduleConstructor implements UtilComponent {
     private Vehicles vehicles;
     private TransitSchedule schedule;
     private int route_counter = 0;
-    private int stop_counter = 0;
     private int currRouteStopCount;
+    private double freeSpeedTrainForSchedule;
+    private double departureIntervalTime;
 
     public TransitScheduleConstructor(TransitScheduleFactory tsf,
                                       PopulationFactory pf, Network net, TransitSchedule ts, Vehicles vehicles,
-                                      int pt_interval,
-                                      double delta_xy,
                                       double departure_delay, double stop_length, double transitStartTime,
-                                      double transitEndTime, double transitIntervalTime) {
+                                      double transitEndTime, double transitIntervalTime,
+                                      double freeSpeedTrainForSchedule, double departureIntervalTime) {
         this.transitScheduleFactory = tsf;
         this.transitEndTime = transitEndTime;
         this.transitIntervalTime = transitIntervalTime;
         this.schedule = ts;
         this.populationFactory = pf;
         this.network = net;
-        this.pt_interval = pt_interval;
-        this.delta_xy = delta_xy;
         this.stop_length = stop_length;
         this.departure_delay = departure_delay;
         this.transitStartTime = transitStartTime;
-        this.n_xy = (int) Math.sqrt(network.getNodes().size());
         this.vehicles = vehicles;
+        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.departureIntervalTime = departureIntervalTime;
         createVehicles();
     }
 
@@ -256,7 +252,6 @@ public class TransitScheduleConstructor implements UtilComponent {
         transitrouteStop.setAwaitDepartureTime(true);
         transitRouteStopList.add(transitrouteStop);
         currRouteStopCount++;
-        stop_counter++;
     }
 
     private void createDepartures(TransitRoute transitRoute) {

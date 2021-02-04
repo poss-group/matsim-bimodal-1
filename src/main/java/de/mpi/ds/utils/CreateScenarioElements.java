@@ -26,10 +26,10 @@ public class CreateScenarioElements {
             String nameDrtVehiclesFile = "drtvehicles_" + String.valueOf(i) + ".xml";
 //            createPopulation(outPath + namePopulationFileDrt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
 //            createPopulation(outPath + namePopulationFilePt, "./output/" + SUBFOLDER + "network.xml", i, 0, seed);
-            new DrtFleetVehiclesCreator()
-                    .run( "./output/network_diag.xml.gz", "output/" + SUBFOLDER + nameDrtVehiclesFile,
-                            i);
-//                            (int) (0.01 * i));
+//            new DrtFleetVehiclesCreator()
+//                    .run( "./output/network_diag.xml.gz", "output/" + SUBFOLDER + nameDrtVehiclesFile,
+//                            i);
+////                            (int) (0.01 * i));
 
 //            compressGzipFile(outPath + namePopulationFilePt, outPath + namePopulationFilePt + ".gz");
 //            deleteFile(outPath + namePopulationFilePt);

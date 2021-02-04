@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.util.*;
 import java.util.function.Function;
 
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+
 public class InverseTransformSampler {
     Function<Double, Double> function;
     double[] domain;
@@ -31,7 +33,7 @@ public class InverseTransformSampler {
         cummulative_values = new double[N];
 
         for (int i = 0; i < N; i++) {
-            arg = x0 + (double) (i+1) / N * (x1 - x0);
+            arg = x0 + (double) i / (N-1) * (x1 - x0);
             double value = function.apply(arg);
             cumsum += (arg - last_arg) * value;
             domain[i] = arg;
@@ -40,8 +42,7 @@ public class InverseTransformSampler {
             last_arg = arg;
         }
         if (isNormalized) {
-            assert cumsum > 1 - EPSILON &&
-                    cumsum < 1 + EPSILON : "distribution is not normalized (on given domain), integral: "
+            assert doubleCloseToZero(cumsum) : "distribution is not normalized (on given domain), integral: "
                     .concat(String.valueOf(cumsum));
         } else {
             double finalCumsum = cumsum;

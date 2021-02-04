@@ -3,7 +3,7 @@
 
 <config>
     <module name="drtPlanModifier">
-        <param name="modifyPlans" value="false"/>
+        <param name="modifyPlans" value="true"/>
         <param name="zetaCut" value="1"/>
         <param name="privateCarMode" value="false"/>
     </module>
@@ -30,7 +30,7 @@
         <param name="lastIteration" value="0"/>
         <param name="mobsim" value="qsim"/>
         <param name="routingAlgorithmType" value="FastAStarLandmarks"/>
-        <param name="overwriteFiles" value="deleteDirectoryIfExists"/>
+        <param name="overwriteFiles" value="overwriteExistingFiles"/>
     </module>
 
     <module name="planCalcScore">
@@ -148,7 +148,7 @@
     <module name="multiModeDrt">
         <parameterset type="drt">
             <parameterset type="SelectiveInsertionSearch"/>
-            <!--            <parameterset type="ExtensiveInsertionSearch"/>-->
+<!--                        <parameterset type="ExtensiveInsertionSearch"/>-->
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>

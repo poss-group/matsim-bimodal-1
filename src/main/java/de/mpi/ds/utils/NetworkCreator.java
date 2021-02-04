@@ -60,12 +60,21 @@ public class NetworkCreator implements UtilComponent {
     private int gridLengthInCells;
     private int ptInterval;
     private double linkLength;
+    private double linkCapacity;
+    private double freeSpeedTrainForSchedule;
+    private double freeSpeedCar;
+    private double numberOfLanes;
 
-    public NetworkCreator(double cellLength, int gridLengthInCells, int ptInterval) {
+    public NetworkCreator(double cellLength, int gridLengthInCells, int ptInterval, double linkCapacity,
+                          double freeSpeedTrainForSchedule, double numberOfLanes, double freeSpeedCar) {
         this.cellLength = cellLength;
         this.gridLengthInCells = gridLengthInCells;
         this.ptInterval = ptInterval;
-        this.linkLength = cellLength/ptInterval;
+        this.linkLength = cellLength / ptInterval;
+        this.linkCapacity = linkCapacity;
+        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.numberOfLanes = numberOfLanes;
+        this.freeSpeedCar = freeSpeedCar;
     }
 
     public static void main(String... args) {
@@ -73,7 +82,12 @@ public class NetworkCreator implements UtilComponent {
         double cellLength = 1000;
         int gridLengthInCells = 10;
         int ptInterval = 4; // L/l
-        new NetworkCreator(cellLength, gridLengthInCells, ptInterval).createGridNetwork(path, true);
+        int linkCapacity = 1000;
+        double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
+        double numberOfLanes = 4;
+        double freeSpeedCar = 30/3.6;
+        new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity, freeSpeedTrainForSchedule,
+                numberOfLanes, freeSpeedCar).createGridNetwork(path, true);
     }
 
     public void createGridNetwork(String path, boolean createTrainLanes) {
@@ -112,7 +126,7 @@ public class NetworkCreator implements UtilComponent {
                 int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
                 int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
                 double periodicLength = 0.00001;
-                if (i-1 >= 0) {
+                if (i - 1 >= 0) {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], linkLength, false);
                 } else {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
@@ -125,13 +139,15 @@ public class NetworkCreator implements UtilComponent {
                 if ((i % ptInterval == 0) &&
                         (j % ptInterval == 0) && createTrainLanes) {
                     if (i - ptInterval >= 0) {
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength, false);
+                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength,
+                                false);
                     } else {
                         //i_minus1_periodic is right because point is identified with last point
                         insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
                     }
                     if (j - ptInterval >= 0) {
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic], cellLength, false);
+                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic], cellLength,
+                                false);
                     } else {
                         insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
                     }
@@ -153,7 +169,8 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
-    private void insertTrainLinks(Network net, NetworkFactory fac, Node a, Node b, double length, boolean periodicConnection) {
+    private void insertTrainLinks(Network net, NetworkFactory fac, Node a, Node b, double length,
+                                  boolean periodicConnection) {
         Link l3 = fac.createLink(Id.createLinkId(String.valueOf(a.getId()).concat("-")
                         .concat(String.valueOf(b.getId()).concat("_pt"))),
                 a, b);
@@ -175,7 +192,8 @@ public class NetworkCreator implements UtilComponent {
         net.addLink(l4);
     }
 
-    private void insertCarLinks(Network net, NetworkFactory fac, Node a, Node b, double length, boolean periodicConnection) {
+    private void insertCarLinks(Network net, NetworkFactory fac, Node a, Node b, double length,
+                                boolean periodicConnection) {
         Link l1 = fac.createLink(Id.createLinkId(String.valueOf(a.getId()).concat("-")
                         .concat(String.valueOf(b.getId()))),
                 a, b);
@@ -238,7 +256,7 @@ public class NetworkCreator implements UtilComponent {
                     .flatMap(n -> n.getOutLinks().values().stream().map(Link::getToNode))
                     .filter(n -> {
                         double dist = DistanceUtils.calculateDistance(n.getCoord(), temp.getCoord());
-                        return doubleCloseToZero(dist-diag_length);
+                        return doubleCloseToZero(dist - diag_length);
                     })
                     .distinct()
                     .collect(Collectors.toList());
@@ -265,7 +283,7 @@ public class NetworkCreator implements UtilComponent {
      * @param createTrainLanes
      */
     private void putNodesCloseToStations(Network net, NetworkFactory fac,
-                                                boolean createTrainLanes) {
+                                         boolean createTrainLanes) {
         List<Node> stations = net.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(true)).collect(Collectors.toList());
         for (Node n : stations) {
@@ -279,7 +297,7 @@ public class NetworkCreator implements UtilComponent {
     }
 
     private void divide(Network net, NetworkFactory fac, Link link, String inOut,
-                               boolean createTrainLanes) {
+                        boolean createTrainLanes) {
 
         // Do nothing if link length is zero
         if (link.getAttributes().getAttribute(PERIODIC_LINK).equals(true)) {
@@ -335,13 +353,13 @@ public class NetworkCreator implements UtilComponent {
         toCopyLink.setFreespeed(link.getFreespeed());
         toCopyLink.setNumberOfLanes(link.getNumberOfLanes());
         Set<Map.Entry<String, Object>> entries = link.getAttributes().getAsMap().entrySet();
-        for (Map.Entry<String, Object> entry: entries) {
+        for (Map.Entry<String, Object> entry : entries) {
             toCopyLink.getAttributes().putAttribute(entry.getKey(), entry.getValue());
         }
     }
 
     private void addNewConnection(Network net, NetworkFactory fac, Node node, List<Node> neighbourNodes,
-                                         boolean createTrainLanes) {
+                                  boolean createTrainLanes) {
         for (String dir : directions.keySet()) {
             int[] xy_deltas = directions.get(dir);
             Node newNode = fac.createNode(Id.createNodeId(node.getId().toString() + dir),
@@ -407,7 +425,7 @@ public class NetworkCreator implements UtilComponent {
     }
 
     private void removeOrigLinks(Network net, List<Link> inLinks,
-                                        List<Link> outLinks) {
+                                 List<Link> outLinks) {
         for (Id<Link> linkId : outLinks.stream().map(Identifiable::getId).collect(Collectors.toList())) {
             net.removeLink(linkId);
         }
@@ -416,8 +434,7 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
-    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed,
-                                          double numberLanes) {
+    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes) {
         link.setCapacity(capacity);
         link.setLength(length);
         link.setFreespeed(freeSpeed);
