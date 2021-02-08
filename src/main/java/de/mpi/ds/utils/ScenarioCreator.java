@@ -15,11 +15,12 @@ public class ScenarioCreator {
                            double freeSpeedCar, double freeSpeedTrain, double freeSpeedTrainForSchedule,
                            double numberOfLanes, int requestEndTime, int nRequests, double transitEndTime,
                            double departureIntervalTime, double transitStopLength, int nDrtVehicles, int drtCapacity,
-                           double drtOperationStartTime, double drtOperationEndTime, long seed) {
+                           double drtOperationStartTime, double drtOperationEndTime, long seed, String transportMode,
+                           boolean isGridNetwork) {
 
         this.networkCreator = new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity,
                 freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar);
-        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, seed);
+        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, seed, transportMode, isGridNetwork);
         this.transitScheduleCreator = new TransitScheduleCreator(cellLength, gridLengthInCells, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,

@@ -3,8 +3,8 @@ package de.mpi.ds.custom_routing;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.controler.AbstractModule;
-import org.matsim.core.router.AStarEuclideanFactory;
-import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.controler.corelisteners.PlansReplanning;
+import org.matsim.withinday.replanning.replanners.InitialReplanner;
 
 public class CustomRoutingModule extends AbstractModule {
 
@@ -14,6 +14,10 @@ public class CustomRoutingModule extends AbstractModule {
     public void install() {
         LOG.info("Initiating");
         this.addTravelDisutilityFactoryBinding(TransportMode.car).toInstance(new DistanceAsTravelDisutilityFactory());
+
+//        HandleRejectedDrtRequestedEvent handleRejectedDrtRequestedEvent = new HandleRejectedDrtRequestedEvent();
+//        this.addMobsimListenerBinding().toInstance(handleRejectedDrtRequestedEvent);
+//        this.addEventHandlerBinding().toInstance(handleRejectedDrtRequestedEvent);
 //        this.bind(LeastCostPathCalculatorFactory.class).to(AStarEuclideanFactory.class);
         LOG.info("Finalizing");
     }

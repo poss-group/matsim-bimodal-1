@@ -1,5 +1,8 @@
 package de.mpi.ds.drt_plan_modification;
 
+import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ReflectiveConfigGroup;
 
 import java.util.Map;
@@ -24,6 +27,19 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
     public DrtPlanModifierConfigGroup(String name, boolean storeUnknownParametersAsStrings) {
         super(name, storeUnknownParametersAsStrings);
     }
+
+    public static DrtPlanModifierConfigGroup get(Config config) {
+        return (DrtPlanModifierConfigGroup) config.getModules().get(NAME);
+    }
+
+//    public static Map<String, String> getParamMap(Config config) {
+//        return config.getModules().get(NAME).getParams();
+//    }
+//
+//    public static void setParamter(Config config, String parameter, String value) {
+//        getParamMap(config).remove(parameter);
+//        getParamMap(config).put(parameter, value);
+//    }
 
     @Override
     public Map<String, String> getComments() {

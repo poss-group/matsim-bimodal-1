@@ -20,16 +20,21 @@ public class PopulationCreator implements UtilComponent {
     private int nRequests;
     private int requestEndTime;
     private long seed;
+    private String transportMode;
+    private boolean isGridNetwork;
 
-    public PopulationCreator(int nRequests, int requestEndTime, long seed) {
+    public PopulationCreator(int nRequests, int requestEndTime, long seed, String transportMode,
+                             boolean isGridNetwork) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.seed = seed;
+        this.transportMode = transportMode;
+        this.isGridNetwork = isGridNetwork;
     }
 
     public static void main(String... args) {
         String networkPath = "./output/network_diag.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(100000, 24*3600, 1234);
+        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, 1234, TransportMode.pt, true);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -40,7 +45,7 @@ public class PopulationCreator implements UtilComponent {
 
     public void createPopulation(String outputPopulationPath, Network net) {
 
-        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, isGridNetwork);
         double xy_0 = netDimsMinMax[0];
         double xy_1 = netDimsMinMax[1];
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
@@ -72,9 +77,15 @@ public class PopulationCreator implements UtilComponent {
 //                .collect(Collectors.toList());
         Coord orig_coord;
         Coord dest_coord;
-        List<Node> nonStationNodeList = net.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute("isStation").equals(false)).collect(
-                        Collectors.toList());
+        List<Node> nonStationNodeList = null;
+        if (isGridNetwork) {
+            nonStationNodeList = net.getNodes().values().stream()
+                    .filter(n -> n.getAttributes().getAttribute("isStation").equals(false)).collect(
+                            Collectors.toList());
+        } else {
+            nonStationNodeList = new ArrayList<>(net.getNodes().values());
+
+        }
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
@@ -115,7 +126,7 @@ public class PopulationCreator implements UtilComponent {
         Coord sinkLocation = shoot(sink);
 
         plan.addActivity(createFirst(sourceLocation, population));
-        plan.addLeg(createDriveLeg(population, TransportMode.pt));
+        plan.addLeg(population.getFactory().createLeg(transportMode));
 //        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
 //            plan.addLeg(createDriveLeg(population, TransportMode.pt));
 //        } else {
@@ -124,11 +135,6 @@ public class PopulationCreator implements UtilComponent {
         plan.addActivity(createSecond(sinkLocation, population));
         person.addPlan(plan);
         population.addPerson(person);
-    }
-
-    private Leg createDriveLeg(Population population, String mode) {
-        Leg leg = population.getFactory().createLeg(mode);
-        return leg;
     }
 
     private Coord shoot(Coord source) {

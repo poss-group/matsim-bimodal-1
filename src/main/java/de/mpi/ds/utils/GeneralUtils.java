@@ -33,30 +33,31 @@ public class GeneralUtils {
         return Math.abs(deltaXPeriodic) + Math.abs(deltaYPeriodic);
     }
 
-    public static double[] getNetworkDimensionsMinMax(Network net) {
+    public static double[] getNetworkDimensionsMinMax(Network net, boolean isGridNetwork) {
         // This method calculates the network dimensions in terms of link lengths; this is neccessary because of
         // Periodic BC, otherwise it would suffice to take the distance btw. nodes
-        // TODO check what has to be used distance based on coordinates or max link distance?
-        double maxLinkDist = net.getNodes().values().stream()
-                .filter(n -> n.getCoord().getY() == 0)
-                .flatMap(n -> n.getInLinks().values().stream())
-                .filter(l -> l.getFromNode().getCoord().getY() == 0)
-                .filter(l -> l.getAllowedModes().contains(TransportMode.train))
-                .reduce( 0., (subtotal, l) -> (subtotal + l.getLength()), Double::sum) / 2;
+        if (isGridNetwork) {
+            double maxLinkDist = net.getNodes().values().stream()
+                    .filter(n -> n.getCoord().getY() == 0)
+                    .flatMap(n -> n.getInLinks().values().stream())
+                    .filter(l -> l.getFromNode().getCoord().getY() == 0)
+                    .filter(l -> l.getAllowedModes().contains(TransportMode.train))
+                    .reduce(0., (subtotal, l) -> (subtotal + l.getLength()), Double::sum) / 2;
 
-        return new double[]{0, maxLinkDist};
+            return new double[]{0, maxLinkDist};
+        } else {
+            // Standard method
+            List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
+                    .collect(Collectors.toList());
+            List<Double> yCoords = net.getNodes().values().stream().map(n -> n.getCoord().getY())
+                    .collect(Collectors.toList());
+            double xmin = Collections.min(xCoords);
+            double xmax = Collections.max(xCoords);
+            double ymin = Collections.min(yCoords);
+            double ymax = Collections.max(yCoords);
 
-        // Standard method
-//        List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
-//                .collect(Collectors.toList());
-//        List<Double> yCoords = net.getNodes().values().stream().map(n -> n.getCoord().getY())
-//                .collect(Collectors.toList());
-//        double xmin = Collections.min(xCoords);
-//        double xmax = Collections.max(xCoords);
-//        double ymin = Collections.min(yCoords);
-//        double ymax = Collections.max(yCoords);
-//
-//        return new double[]{Math.min(xmin,ymin), Math.max(xmax, ymax)};
+            return new double[]{Math.min(xmin, ymin), Math.max(xmax, ymax)};
+        }
     }
 
     public static boolean doubleCloseToZero(double x) {

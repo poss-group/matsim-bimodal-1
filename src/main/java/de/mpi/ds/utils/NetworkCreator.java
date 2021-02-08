@@ -85,7 +85,7 @@ public class NetworkCreator implements UtilComponent {
         int linkCapacity = 1000;
         double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
         double numberOfLanes = 4;
-        double freeSpeedCar = 30/3.6;
+        double freeSpeedCar = 30 / 3.6;
         new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity, freeSpeedTrainForSchedule,
                 numberOfLanes, freeSpeedCar).createGridNetwork(path, true);
     }

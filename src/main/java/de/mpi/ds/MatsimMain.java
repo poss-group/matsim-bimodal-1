@@ -10,6 +10,7 @@ import de.mpi.ds.utils.NetworkCreator;
 import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -18,6 +19,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
+import org.matsim.withinday.controller.WithinDayModule;
+import org.matsim.withinday.mobsim.WithinDayQSimModule;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -34,13 +37,14 @@ import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
     //TODO check routing algorithm for pt routing
+    //TODO look into within day replanning
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
     public static void main(String[] args) {
         LOG.info("Reading config");
-        Config config = ConfigUtils
-                .loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(), new OTFVisConfigGroup());
+        Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+                        new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
 //      Config config = ConfigUtils.loadConfig(args[0], new OTFVisConfigGroup());
 //        config.global().setNumberOfThreads(1);
 
@@ -49,6 +53,7 @@ public class MatsimMain {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
             runMultipleNetworks(config);
+//            runRealWorldScenario(config);
 //            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,38 +61,57 @@ public class MatsimMain {
         LOG.info("Simulation finished");
     }
 
+    private static void runRealWorldScenario(Config config) throws Exception {
+        ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setnDrtVehicles(20).setnRequests(10000)
+                .setDrtOperationEndTime(3600).setTransportMode(TransportMode.drt).setGridNetwork(false).build();
+        scenarioCreator.createPopulation("population.xml.gz", "network.xml");
+        scenarioCreator.createDrtFleet("network.xml", "drtVehicles.xml");
+
+        config.qsim().setEndTime(3600);
+
+        run(config, false);
+    }
+
     private static void runMultipleNetworks(Config config) throws Exception {
-        String outPath = config.controler().getOutputDirectory();
+        String basicOutPath = config.controler().getOutputDirectory();
         for (int L_l : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
-            String newOutPath = Paths.get(outPath, "L_l_" + L_l).toString();
-            String inputPath = Paths.get(newOutPath, "tmp").toString();
-            String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
-            String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
-            String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
-            String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
-            String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
+            for (String bim : new String[]{"bimodal", "car"}) {
+                String L_lSpecificPath = Paths.get(basicOutPath, "L_l_" + L_l).toString();
+                String outPath = Paths.get(L_lSpecificPath, bim).toString();
+                String inputPath = Paths.get(L_lSpecificPath, "input").toString();
+                String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
+                String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
+                String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
+                String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
+                String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
 
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setPtInterval(L_l).build();
-            LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath, true);
-            LOG.info("Finished creating network\nCreating population for network");
-            scenarioCreator.createPopulation(populationPath, networkPath);
-            LOG.info("Finished creating population\nCreating transit Schedule");
-            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
-            LOG.info("Finished creating transit schedule\nCreating drt fleet");
-            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
-            LOG.info("Finished creating drt fleet");
+                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setPtInterval(L_l).build();
+                LOG.info("Creating network");
+                scenarioCreator.createNetwork(networkPath, true);
+                LOG.info("Finished creating network\nCreating population for network");
+                scenarioCreator.createPopulation(populationPath, networkPath);
+                LOG.info("Finished creating population\nCreating transit Schedule");
+                scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+                LOG.info("Finished creating transit schedule\nCreating drt fleet");
+                scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
+                LOG.info("Finished creating drt fleet");
 
-            config.controler().setOutputDirectory(newOutPath);
-            config.network().setInputFile(networkPath);
-            config.plans().setInputFile(populationPath);
-            config.transit().setTransitScheduleFile(transitSchedulePath);
-            config.transit().setVehiclesFile(transitVehiclesPath);
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setVehiclesFile(drtFleetPath);
-            LOG.info("Running simulation");
-            run(config, false);
-            LOG.info("Finished simulation with L/l = " + L_l);
+                if (bim.equals("bimodal"))
+                    DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
+                else if (bim.equals("car"))
+                    DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
+
+                config.controler().setOutputDirectory(outPath);
+                config.network().setInputFile(networkPath);
+                config.plans().setInputFile(populationPath);
+                config.transit().setTransitScheduleFile(transitSchedulePath);
+                config.transit().setVehiclesFile(transitVehiclesPath);
+                MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+                        .setVehiclesFile(drtFleetPath);
+                LOG.info("Running simulation");
+                run(config, false);
+                LOG.info("Finished simulation with L/l = " + L_l);
+            }
         }
     }
 
@@ -119,7 +143,7 @@ public class MatsimMain {
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         controler.addOverridingModule(new CustomRoutingModule());
 
-        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork());
+        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), true);
         assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
                 "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
                         "org/matsim/core/router/util/LandmarkerPieSlices.java; " +

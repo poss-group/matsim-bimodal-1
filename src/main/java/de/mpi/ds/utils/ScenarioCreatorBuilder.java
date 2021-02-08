@@ -1,27 +1,32 @@
 package de.mpi.ds.utils;
 
+import org.matsim.api.core.v01.TransportMode;
+
 public class ScenarioCreatorBuilder {
     private double cellLength = 1000;
     private int gridLengthInCells = 10;
     private int ptInterval = 4;
     private long linkCapacity = 1000;
-    private double freeSpeedCar= 30/3.6;
-    private double freeSpeedTrain = 60/3.6;
-    private double freeSpeedTrainForSchedule = 60/3.6*1.4;
+    private double freeSpeedCar = 30 / 3.6;
+    private double freeSpeedTrain = 60 / 3.6;
+    private double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
     private double numberOfLanes = 4;
 
-    private int requestEndTime = 24*3600;
+    private int requestEndTime = 24 * 3600;
     private int nRequests = (int) 1e5;
+    private String transportMode = TransportMode.pt;
 
-    private double transitEndTime = 26*3600;
-    private double departureIntervalTime = 15*60;
+    private double transitEndTime = 26 * 3600;
+    private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
 
     private int nDrtVehicles = 200;
     private int drtCapacity = 4;
     private double drtOperationStartTime = 0;
-    private double drtOperationEndTime = 26*3600;
+    private double drtOperationEndTime = 26 * 3600;
     private long seed = 42;
+
+    private boolean isGridNetwork = true;
 
     public ScenarioCreatorBuilder setCellLength(double cellLength) {
         this.cellLength = cellLength;
@@ -113,10 +118,20 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setTransportMode(String transportMode) {
+        this.transportMode = transportMode;
+        return this;
+    }
+
+    public ScenarioCreatorBuilder setGridNetwork(boolean gridNetwork) {
+        isGridNetwork = gridNetwork;
+        return this;
+    }
+
     public ScenarioCreator build() {
         return new ScenarioCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, seed);
+                drtOperationEndTime, seed, transportMode, isGridNetwork);
     }
 }
