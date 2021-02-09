@@ -32,6 +32,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkWriter;
+import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -103,23 +104,29 @@ public class NetworkCreator implements UtilComponent {
         NetworkFactory fac = net.getFactory();
 
         // create nodes and add to network
-        int n_x = (int) (systemSizeOverGridSize + 1); // So that there are L_l_fraction*gridLengthInCells links per
+        int n_x = systemSizeOverGridSize + 1; // So that there are L_l_fraction*gridLengthInCells links per
         // direction
-        int n_y = (int) (systemSizeOverGridSize + 1);
+        int n_y = systemSizeOverGridSize + 1;
         Node[][] nodes = new Node[n_x][n_y];
+        int[] stationNodesX = new int[systemSizeOverPtGridSize];
+        int[] stationNodesY = new int[systemSizeOverPtGridSize];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
                 boolean newStationAtrribute = false;
                 if (createTrainLanes) {
-                    if ((i % ptInterval == 0) && (j % ptInterval == 0)) {
+                    if ((i % ptInterval == 0) && (j % ptInterval == 0) && (
+                            (i + ptInterval) * systemSizeOverGridSize < systemSize &&
+                                    (j + ptInterval) * systemSizeOverGridSize < systemSize)) {
                         newNodeId = "PT_" + i / ptInterval + "_" + j / ptInterval;
                         newStationAtrribute = true;
+                        stationNodesX[i / ptInterval] = i;
+                        stationNodesY[j / ptInterval] = j;
                     }
                 }
 
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
-                        new Coord(i * systemSize/systemSizeOverGridSize, j * systemSize / systemSizeOverGridSize));
+                        new Coord(i * systemSize / systemSizeOverGridSize, j * systemSize / systemSizeOverGridSize));
                 n.getAttributes().putAttribute("isStation", newStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
@@ -130,8 +137,8 @@ public class NetworkCreator implements UtilComponent {
             for (int j = 0; j < n_x; j++) {
                 int i_minus1_periodic = (((i - 1) % n_y) + n_y) % n_y;
                 int j_minus1_periodic = (((j - 1) % n_x) + n_x) % n_x;
-                int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
-                int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
+//                int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
+//                int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
                 double periodicLength = 0.00001;
                 if (i - 1 >= 0) {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], linkLength, false);
@@ -143,22 +150,40 @@ public class NetworkCreator implements UtilComponent {
                 } else {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
                 }
-                if ((i % ptInterval == 0) &&
-                        (j % ptInterval == 0) && createTrainLanes) {
-                    if (i - ptInterval >= 0) {
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength,
-                                false);
-                    } else {
-                        //i_minus1_periodic is right because point is identified with last point
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
-                    }
-                    if (j - ptInterval >= 0) {
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic], cellLength,
-                                false);
-                    } else {
-                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
-                    }
+            }
+        }
+        if (createTrainLanes) {
+            for (int i = 0; i < systemSizeOverPtGridSize; i++) {
+                for (int j = 0; j < systemSizeOverPtGridSize; j++) {
+                    int i_minus1_periodic = (((i - 1) % systemSizeOverPtGridSize) + systemSizeOverPtGridSize) %
+                            systemSizeOverPtGridSize;
+                    int j_minus1_periodic = (((j - 1) % systemSizeOverPtGridSize) + systemSizeOverPtGridSize) %
+                            systemSizeOverPtGridSize;
+
+                    Node to = nodes[stationNodesX[i]][stationNodesY[j]];
+
+                    Node from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
+                    double length = calculateDistancePeriodicBC(from, to, systemSize);
+                    insertTrainLinks(net, fac, from, to, length, i == 0);
+
+                    from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
+                    length = calculateDistancePeriodicBC(from, to, systemSize);
+                    insertTrainLinks(net, fac, from, to, length, j == 0);
+//                    if (i - ptInterval >= 0) {
+//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength,
+//                                false);
+//                    } else {
+//                        //i_minus1_periodic is right because point is identified with last point
+//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
+//                    }
+//                    if (j - ptInterval >= 0) {
+//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic], cellLength,
+//                                false);
+//                    } else {
+//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
+//                    }
                 }
+
             }
         }
         if (diagonalConnections) {

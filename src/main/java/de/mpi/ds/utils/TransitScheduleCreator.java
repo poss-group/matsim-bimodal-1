@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 
 public class TransitScheduleCreator implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
@@ -102,18 +103,24 @@ public class TransitScheduleCreator implements UtilComponent {
         List<Node> stationNodes = net.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute("isStation").equals(true)).collect(Collectors.toList());
 
+        // !doubleCloseToZeroCondition for Periodic BC, otherwise two trains would share one line effectively at the
+        // borders or just delete last element of each list
         List<Node> startNodesXDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getX() == 0)
+//                .filter(n -> !doubleCloseToZero(n.getCoord().getY() - systemSize))
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
         List<Node> startNodesXDecDir = (List<Node>) stationNodes.stream()
+//                .filter(n -> !doubleCloseToZero(n.getCoord().getY() - systemSize))
                 .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
 
         List<Node> startNodesYDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getY() == 0)
+//                .filter(n -> doubleCloseToZero(n.getCoord().getX() - systemSize))
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
         List<Node> startNodesYDecDir = stationNodes.stream()
+//                .filter(n -> !doubleCloseToZero(n.getCoord().getX() - systemSize))
                 .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());

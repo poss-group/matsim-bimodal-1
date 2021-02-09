@@ -10,6 +10,10 @@ public class MyAnalysisModule extends AbstractModule {
     public void install() {
         LOG.info("Initiating");
         this.addControlerListenerBinding().to(ServabilityListener.class);
+
+        PtVehicleDistanceTracker ptVehicleDistanceTracker = new PtVehicleDistanceTracker();
+        this.addEventHandlerBinding().toInstance(ptVehicleDistanceTracker);
+        this.addControlerListenerBinding().toInstance(ptVehicleDistanceTracker);
         LOG.info("Finalizing");
     }
 }

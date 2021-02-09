@@ -21,8 +21,8 @@ public class ScenarioCreator {
 
         assert systemSizeOverGridSize > systemSizeOverGridPtSize :
                 "Pt grid spacing must be bigger than drt grid spacing";
-        assert systemSizeOverGridSize % systemSizeOverGridPtSize == 0 :
-                "Pt grid spacing mus be integer multiple of drt grid spacing";
+//        assert systemSizeOverGridSize % systemSizeOverGridPtSize == 0 :
+//                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
         this.networkCreator = new NetworkCreator(systemSize, systemSizeOverGridSize, systemSizeOverGridPtSize,
                 linkCapacity,

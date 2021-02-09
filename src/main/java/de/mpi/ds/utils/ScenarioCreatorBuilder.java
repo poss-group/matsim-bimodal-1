@@ -12,18 +12,18 @@ public class ScenarioCreatorBuilder {
     private double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
     private double numberOfLanes = 4;
 
-    private int requestEndTime = 24 * 3600;
+    private int requestEndTime = 23 * 3600;
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
 
-    private double transitEndTime = 26 * 3600;
+    private double transitEndTime = 24 * 3600;
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
 
     private int nDrtVehicles = 200;
     private int drtCapacity = 4;
     private double drtOperationStartTime = 0;
-    private double drtOperationEndTime = 26 * 3600;
+    private double drtOperationEndTime = 24 * 3600;
     private long seed = 42;
 
     private boolean diagonalConnetions = true;

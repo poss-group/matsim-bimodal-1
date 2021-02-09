@@ -5,11 +5,13 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
@@ -148,19 +150,28 @@ public class TransitScheduleConstructor implements UtilComponent {
             minMax = BinaryOperator::maxBy;
         else
             minMax = BinaryOperator::minBy;
+        //TODO fix this
 
         if (direction.equals("x")) {
+            Coord startNodePlusDirection = new Coord(startNode.getCoord().getX() + forwardBackwardDetermination,
+                    startNode.getCoord().getY());
             return startNode.getOutLinks().values().stream()
+                    .filter(l -> l.getAllowedModes().contains(TransportMode.train))
                     .map(Link::getToNode)
                     .filter(n -> n.getCoord().getY() == startNode.getCoord().getY())
-                    .reduce(Objects.requireNonNull(minMax.apply(Comparator.comparing(n -> n.getCoord().getX()))))
+                    .reduce(Objects.requireNonNull(minMax.apply(Comparator.comparing(n -> CoordUtils
+                            .calcEuclideanDistance(n.getCoord(), startNodePlusDirection)))))
                     .orElseThrow();
         }
         if (direction.equals("y")) {
+            Coord startNodePlusDirection = new Coord(startNode.getCoord().getX(),
+                    startNode.getCoord().getY() + forwardBackwardDetermination);
             return startNode.getOutLinks().values().stream()
+                    .filter(l -> l.getAllowedModes().contains(TransportMode.train))
                     .map(Link::getToNode)
                     .filter(n -> n.getCoord().getX() == startNode.getCoord().getX())
-                    .reduce(Objects.requireNonNull(minMax.apply(Comparator.comparing(n -> n.getCoord().getY()))))
+                    .reduce(Objects.requireNonNull(minMax.apply(Comparator
+                            .comparing(n -> CoordUtils.calcEuclideanDistance(n.getCoord(), startNodePlusDirection)))))
                     .orElseThrow();
         }
         return null;
