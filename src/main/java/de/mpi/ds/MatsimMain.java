@@ -6,7 +6,6 @@ import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifier;
 import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
-import de.mpi.ds.utils.NetworkCreator;
 import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
 import org.apache.log4j.Logger;
@@ -19,8 +18,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
-import org.matsim.withinday.controller.WithinDayModule;
-import org.matsim.withinday.mobsim.WithinDayQSimModule;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -44,7 +41,7 @@ public class MatsimMain {
     public static void main(String[] args) {
         LOG.info("Reading config");
         Config config = ConfigUtils.loadConfig(args[0], new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
-                        new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+                new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
 //      Config config = ConfigUtils.loadConfig(args[0], new OTFVisConfigGroup());
 //        config.global().setNumberOfThreads(1);
 
@@ -74,18 +71,20 @@ public class MatsimMain {
 
     private static void runMultipleNetworks(Config config) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
-        for (int L_l : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
+        for (int l_lp : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
             for (String bim : new String[]{"bimodal", "car"}) {
-                String L_lSpecificPath = Paths.get(basicOutPath, "L_l_" + L_l).toString();
-                String outPath = Paths.get(L_lSpecificPath, bim).toString();
-                String inputPath = Paths.get(L_lSpecificPath, "input").toString();
+                String l_lpSpecificPath = Paths.get(basicOutPath, "l_lp_" + l_lp).toString();
+                String outPath = Paths.get(l_lpSpecificPath, bim).toString();
+                String inputPath = Paths.get(l_lpSpecificPath, "input").toString();
                 String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
                 String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
                 String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
                 String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
                 String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
 
-                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setPtInterval(L_l).build();
+                int SysOvPt = 10;
+                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(l_lp*SysOvPt)
+                        .setSystemSizeOverPtGridSize(SysOvPt).build();
                 LOG.info("Creating network");
                 scenarioCreator.createNetwork(networkPath, true);
                 LOG.info("Finished creating network\nCreating population for network");
@@ -96,10 +95,11 @@ public class MatsimMain {
                 scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
                 LOG.info("Finished creating drt fleet");
 
-                if (bim.equals("bimodal"))
+                if (bim.equals("bimodal")) {
                     DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
-                else if (bim.equals("car"))
+                } else if (bim.equals("car")) {
                     DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
+                }
 
                 config.controler().setOutputDirectory(outPath);
                 config.network().setInputFile(networkPath);
@@ -110,7 +110,7 @@ public class MatsimMain {
                         .setVehiclesFile(drtFleetPath);
                 LOG.info("Running simulation");
                 run(config, false);
-                LOG.info("Finished simulation with L/l = " + L_l);
+                LOG.info("Finished simulation with l/lp = " + l_lp);
             }
         }
     }
@@ -148,7 +148,8 @@ public class MatsimMain {
                 "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
                         "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
                         "org/matsim/core/utils/geometry/CoordUtils.java; " +
-                        "org/matsim/core/utils/collections/QuadTree.java";
+                        "org/matsim/core/utils/collections/QuadTree.java" +
+                        "org/matsim/contrib/util/distance/DistanceUtils.java";
 
         controler.run();
     }

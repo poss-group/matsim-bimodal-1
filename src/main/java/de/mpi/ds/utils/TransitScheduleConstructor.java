@@ -37,10 +37,9 @@ public class TransitScheduleConstructor implements UtilComponent {
     private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
 
-    public TransitScheduleConstructor(TransitScheduleFactory tsf,
-                                      PopulationFactory pf, Network net, TransitSchedule ts, Vehicles vehicles,
-                                      double departure_delay, double stop_length, double transitStartTime,
-                                      double transitEndTime, double transitIntervalTime,
+    public TransitScheduleConstructor(TransitScheduleFactory tsf, PopulationFactory pf, Network net, TransitSchedule ts,
+                                      Vehicles vehicles, double departure_delay, double stop_length,
+                                      double transitStartTime, double transitEndTime, double transitIntervalTime,
                                       double freeSpeedTrainForSchedule, double departureIntervalTime) {
         this.transitScheduleFactory = tsf;
         this.transitEndTime = transitEndTime;
@@ -140,15 +139,15 @@ public class TransitScheduleConstructor implements UtilComponent {
             addAsTransitStop = true;
         }
         while (currNode != startNode);
-        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1));
+//        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1));
     }
 
     private Node getPredecessor(Node startNode, String direction, int forwardBackwardDetermination) {
         Function<Comparator<Node>, BinaryOperator<Node>> minMax = null;
         if (forwardBackwardDetermination == 1)
-            minMax = BinaryOperator::minBy;
-        else
             minMax = BinaryOperator::maxBy;
+        else
+            minMax = BinaryOperator::minBy;
 
         if (direction.equals("x")) {
             return startNode.getOutLinks().values().stream()

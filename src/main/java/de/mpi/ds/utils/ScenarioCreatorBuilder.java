@@ -3,9 +3,9 @@ package de.mpi.ds.utils;
 import org.matsim.api.core.v01.TransportMode;
 
 public class ScenarioCreatorBuilder {
-    private double cellLength = 1000;
-    private int gridLengthInCells = 10;
-    private int ptInterval = 4;
+    private double systemSize = 10000;
+    private int systemSizeOverPtGridSize = 10;
+    private int systemSizeOverGridSize = 40;
     private long linkCapacity = 1000;
     private double freeSpeedCar = 30 / 3.6;
     private double freeSpeedTrain = 60 / 3.6;
@@ -26,20 +26,21 @@ public class ScenarioCreatorBuilder {
     private double drtOperationEndTime = 26 * 3600;
     private long seed = 42;
 
+    private boolean diagonalConnetions = true;
     private boolean isGridNetwork = true;
 
-    public ScenarioCreatorBuilder setCellLength(double cellLength) {
-        this.cellLength = cellLength;
+    public ScenarioCreatorBuilder setSystemSizeOverPtGridSize(int systemSizeOverPtGridSize) {
+        this.systemSizeOverPtGridSize = systemSizeOverPtGridSize;
         return this;
     }
 
-    public ScenarioCreatorBuilder gridLengthInCells(int gridLengthInCells) {
-        this.gridLengthInCells = gridLengthInCells;
+    public ScenarioCreatorBuilder setSystemSize(double systemSize) {
+        this.systemSize = systemSize;
         return this;
     }
 
-    public ScenarioCreatorBuilder setPtInterval(int ptInterval) {
-        this.ptInterval = ptInterval;
+    public ScenarioCreatorBuilder setSystemSizeOverGridSize(int systemSizeOverGridSize) {
+        this.systemSizeOverGridSize = systemSizeOverGridSize;
         return this;
     }
 
@@ -128,10 +129,15 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setDiagonalConnetions(boolean diagonalConnetions) {
+        this.diagonalConnetions = diagonalConnetions;
+        return this;
+    }
+
     public ScenarioCreator build() {
-        return new ScenarioCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity, freeSpeedCar,
+        return new ScenarioCreator(systemSize, systemSizeOverPtGridSize, systemSizeOverGridSize, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, seed, transportMode, isGridNetwork);
+                drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions);
     }
 }

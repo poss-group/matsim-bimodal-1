@@ -94,7 +94,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .limit(2)
                 .collect(Collectors.toList());
         double trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
-        assert trainDelta == 1000 : "Did not find predefined length L=1000, instead found: " + trainDelta;
+//        assert trainDelta == 1000 : "Did not find predefined length L=1000, instead found: " + trainDelta;
 
         //TODO change this
         double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network, true);

@@ -49,19 +49,21 @@ public class TransitScheduleCreator implements UtilComponent {
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleCreator.class.getName());
 
+    private int systemSizeOverPtGridSize;
     private double freeSpeedTrain;
-    private double gridLengthInCells;
+    private double systemSize;
     private double transitEndTime;
     private double cellLength;
     private double transitStopLength;
     private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
 
-    public TransitScheduleCreator(double cellLength, double gridLengthInCells, double freeSpeedTrain,
+    public TransitScheduleCreator(double systemSize, int systemSizeOverPtGridSize, double freeSpeedTrain,
                                   double transitEndTime, double transitStopLength, double freeSpeedTrainForSchedule,
                                   double departureIntervalTime) {
-        this.cellLength = cellLength;
-        this.gridLengthInCells = gridLengthInCells;
+        this.systemSizeOverPtGridSize = systemSizeOverPtGridSize;
+        this.cellLength = systemSize / systemSizeOverPtGridSize;
+        this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
         this.transitEndTime = transitEndTime;
         this.transitStopLength = transitStopLength;
@@ -117,11 +119,8 @@ public class TransitScheduleCreator implements UtilComponent {
                 .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles,
-                cellLength / freeSpeedTrain,
-                transitStopLength, 0,
-                transitEndTime, cellLength * gridLengthInCells / freeSpeedTrain, freeSpeedTrainForSchedule,
-                departureIntervalTime);
+                populationFactory, net, schedule, vehicles, cellLength / freeSpeedTrain, transitStopLength, 0,
+                transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule, departureIntervalTime);
 
 //        LOG.info(
 //                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +

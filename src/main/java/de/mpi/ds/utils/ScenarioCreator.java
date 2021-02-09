@@ -11,17 +11,24 @@ public class ScenarioCreator {
     private TransitScheduleCreator transitScheduleCreator;
     private DrtFleetVehiclesCreator drtFleetVehiclesCreator;
 
-    public ScenarioCreator(double cellLength, int gridLengthInCells, int ptInterval, long linkCapacity,
+    public ScenarioCreator(double systemSize, int systemSizeOverGridPtSize, int systemSizeOverGridSize,
+                           long linkCapacity,
                            double freeSpeedCar, double freeSpeedTrain, double freeSpeedTrainForSchedule,
                            double numberOfLanes, int requestEndTime, int nRequests, double transitEndTime,
                            double departureIntervalTime, double transitStopLength, int nDrtVehicles, int drtCapacity,
                            double drtOperationStartTime, double drtOperationEndTime, long seed, String transportMode,
-                           boolean isGridNetwork) {
+                           boolean isGridNetwork, boolean diagonalConnections) {
 
-        this.networkCreator = new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity,
-                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar);
+        assert systemSizeOverGridSize > systemSizeOverGridPtSize :
+                "Pt grid spacing must be bigger than drt grid spacing";
+        assert systemSizeOverGridSize % systemSizeOverGridPtSize == 0 :
+                "Pt grid spacing mus be integer multiple of drt grid spacing";
+
+        this.networkCreator = new NetworkCreator(systemSize, systemSizeOverGridSize, systemSizeOverGridPtSize,
+                linkCapacity,
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, seed, transportMode, isGridNetwork);
-        this.transitScheduleCreator = new TransitScheduleCreator(cellLength, gridLengthInCells, freeSpeedTrain,
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, systemSizeOverGridPtSize, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, nDrtVehicles);

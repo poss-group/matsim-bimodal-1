@@ -57,37 +57,44 @@ public class NetworkCreator implements UtilComponent {
     );
 
     private double cellLength;
-    private int gridLengthInCells;
+    private double systemSize;
+    private int systemSizeOverGridSize;
+    private int systemSizeOverPtGridSize;
     private int ptInterval;
     private double linkLength;
     private double linkCapacity;
     private double freeSpeedTrainForSchedule;
     private double freeSpeedCar;
     private double numberOfLanes;
+    private boolean diagonalConnections;
 
-    public NetworkCreator(double cellLength, int gridLengthInCells, int ptInterval, double linkCapacity,
-                          double freeSpeedTrainForSchedule, double numberOfLanes, double freeSpeedCar) {
-        this.cellLength = cellLength;
-        this.gridLengthInCells = gridLengthInCells;
-        this.ptInterval = ptInterval;
-        this.linkLength = cellLength / ptInterval;
+    public NetworkCreator(double systemSize, int systemSizeOverGridSize, int systemSizeOverPtGridSize,
+                          double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
+                          double freeSpeedCar, boolean diagonalConnections) {
+        this.systemSizeOverPtGridSize = systemSizeOverPtGridSize;
+        this.cellLength = systemSize / systemSizeOverPtGridSize;
+        this.systemSize = systemSize;
+        this.systemSizeOverGridSize = systemSizeOverGridSize;
+        this.linkLength = systemSize / systemSizeOverGridSize;
         this.linkCapacity = linkCapacity;
         this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
+        this.diagonalConnections = diagonalConnections;
+        this.ptInterval = systemSizeOverGridSize / systemSizeOverPtGridSize;
     }
 
     public static void main(String... args) {
         String path = "./output/network_diag.xml.gz";
         double cellLength = 1000;
-        int gridLengthInCells = 10;
+        double systemSize = 10000;
         int ptInterval = 4; // L/l
         int linkCapacity = 1000;
         double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
         double numberOfLanes = 4;
         double freeSpeedCar = 30 / 3.6;
-        new NetworkCreator(cellLength, gridLengthInCells, ptInterval, linkCapacity, freeSpeedTrainForSchedule,
-                numberOfLanes, freeSpeedCar).createGridNetwork(path, true);
+//        new NetworkCreator(cellLength, systemSize, ptInterval, linkCapacity, freeSpeedTrainForSchedule,
+//                numberOfLanes, freeSpeedCar, true).createGridNetwork(path, true);
     }
 
     public void createGridNetwork(String path, boolean createTrainLanes) {
@@ -96,9 +103,9 @@ public class NetworkCreator implements UtilComponent {
         NetworkFactory fac = net.getFactory();
 
         // create nodes and add to network
-        int n_x = ptInterval * gridLengthInCells + 1; // So that there are L_l_fraction*gridLengthInCells links per
+        int n_x = (int) (systemSizeOverGridSize + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
-        int n_y = ptInterval * gridLengthInCells + 1;
+        int n_y = (int) (systemSizeOverGridSize + 1);
         Node[][] nodes = new Node[n_x][n_y];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
@@ -112,7 +119,7 @@ public class NetworkCreator implements UtilComponent {
                 }
 
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
-                        new Coord(i * cellLength / ptInterval, j * cellLength / ptInterval));
+                        new Coord(i * systemSize/systemSizeOverGridSize, j * systemSize / systemSizeOverGridSize));
                 n.getAttributes().putAttribute("isStation", newStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
@@ -154,7 +161,9 @@ public class NetworkCreator implements UtilComponent {
                 }
             }
         }
-        makeDiagConnections(net, fac);
+        if (diagonalConnections) {
+            makeDiagConnections(net, fac);
+        }
         // this has to be done second because diagonal connections where also introduced before
         putNodesCloseToStations(net, fac, createTrainLanes);
         try {
@@ -338,10 +347,8 @@ public class NetworkCreator implements UtilComponent {
 
         copyLinkProperties(link, fstLink);
         copyLinkProperties(link, scndLink);
-        fstLink.setLength(calculateDistancePeriodicBC(fstLink.getFromNode(), fstLink.getToNode(),
-                cellLength * gridLengthInCells));
-        scndLink.setLength(calculateDistancePeriodicBC(scndLink.getFromNode(), scndLink.getToNode(),
-                cellLength * gridLengthInCells));
+        fstLink.setLength(calculateDistancePeriodicBC(fstLink.getFromNode(), fstLink.getToNode(), systemSize));
+        scndLink.setLength(calculateDistancePeriodicBC(scndLink.getFromNode(), scndLink.getToNode(), systemSize));
         net.addLink(fstLink);
         net.addLink(scndLink);
         net.removeLink(link.getId());
