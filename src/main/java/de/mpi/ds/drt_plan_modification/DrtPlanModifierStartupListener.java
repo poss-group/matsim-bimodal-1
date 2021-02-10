@@ -32,10 +32,8 @@ class DrtPlanModifierStartupListener implements StartupListener {
         this.privateCarMode = configGroup.getPrivateCarMode();
     }
 
-    private static Node searchTransferNode(Node fromNode, Node toNode,
-                                           List<Coord> transitStopCoords,
-                                           Map<Coord, Node> coordToNode,
-                                           String mode) {
+    private static Node searchTransferNode(Node fromNode, Node toNode, List<Coord> transitStopCoords,
+                                           Map<Coord, Node> coordToNode, String mode, double L) {
         if (mode.equals("wide_search")) {
             Queue<Node> queue = new LinkedList<>();
             List<Node> visited = new ArrayList<>();
@@ -52,13 +50,15 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 queue.addAll(outLinks.stream().map(Link::getToNode)
                         .filter(e -> !visited.contains((e)))
                         .sorted(Comparator
-                                .comparingDouble(n -> DistanceUtils.calculateDistance(n.getCoord(), toNode.getCoord())))
+                                .comparingDouble(n -> GeneralUtils
+                                        .calculateDistancePeriodicBC(n.getCoord(), toNode.getCoord(), L)))
                         .collect(Collectors.toList()));
             }
         } else if (mode.equals("shortest_dist")) {
             Coord min = transitStopCoords.stream()
                     .min(Comparator
-                            .comparingDouble(coord -> DistanceUtils.calculateDistance(coord, fromNode.getCoord())))
+                            .comparingDouble(coord -> GeneralUtils
+                                    .calculateDistancePeriodicBC(coord, fromNode.getCoord(), L)))
                     .orElseThrow();
             return coordToNode.get(min);
         }
@@ -146,7 +146,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         if (!isPtStation(firstNode)) {
                             Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords,
                                     coordToNode,
-                                    "shortest_dist");
+                                    "shortest_dist", netDimsMinMax[1]);
                             assert dummyFirstNode != null;
                             Activity finalFirstAct = firstAct;
                             dummyFirstLink = dummyFirstNode.getInLinks().values().stream()
@@ -158,9 +158,10 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         }
                         if (!isPtStation(lastNode)) {
                             Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
-                                    "shortest_dist");
+                                    "shortest_dist", netDimsMinMax[1]);
                             assert dummyLastNode != null;
                             Activity finalLastAct = firstAct;
+//                            DistanceUtils.calculateDistance(dummyFirstCoord, dummyLastCoord);
                             dummyLastLink = dummyLastNode.getInLinks().values().stream()
                                     .min(Comparator.comparingDouble(l ->
                                             GeneralUtils
@@ -179,7 +180,8 @@ class DrtPlanModifierStartupListener implements StartupListener {
         }
         // To get resulting plans in output directory
         PopulationWriter populationWriter = new PopulationWriter(sc.getPopulation(), sc.getNetwork());
-        String outputPath = event.getServices().getControlerIO().getOutputPath().concat("/drt_plan_modified_plans.xml.gz");
+        String outputPath = event.getServices().getControlerIO().getOutputPath()
+                .concat("/drt_plan_modified_plans.xml.gz");
         populationWriter.write(outputPath);
     }
 

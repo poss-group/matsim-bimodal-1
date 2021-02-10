@@ -54,7 +54,8 @@ public class PopulationCreator implements UtilComponent {
                 false,
                 xy_0,
                 xy_1,
-                10000);
+                10000,
+                seed+1);
 
         rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());

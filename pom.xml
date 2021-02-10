@@ -90,7 +90,7 @@
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
-            <artifactId>dvrp</artifactId>
+            <artifactId>dvrp_periodicBC</artifactId>
             <version>${matsim.version}</version>
         </dependency>
         <dependency>

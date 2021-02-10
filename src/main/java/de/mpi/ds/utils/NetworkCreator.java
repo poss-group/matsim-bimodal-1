@@ -116,8 +116,7 @@ public class NetworkCreator implements UtilComponent {
                 boolean newStationAtrribute = false;
                 if (createTrainLanes) {
                     if ((i % ptInterval == 0) && (j % ptInterval == 0) && (
-                            (i + ptInterval) * systemSizeOverGridSize < systemSize &&
-                                    (j + ptInterval) * systemSizeOverGridSize < systemSize)) {
+                            i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
                         newNodeId = "PT_" + i / ptInterval + "_" + j / ptInterval;
                         newStationAtrribute = true;
                         stationNodesX[i / ptInterval] = i;

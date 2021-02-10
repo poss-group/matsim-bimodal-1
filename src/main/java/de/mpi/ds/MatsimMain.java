@@ -71,9 +71,9 @@ public class MatsimMain {
 
     private static void runMultipleNetworks(Config config) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
-        for (int L_l : new int[]{3}){//, 3, 4, 5, 6, 7, 8, 9, 10}) {
-            for (String bim : new String[]{"car"}){//, "car"}) {
-                String iterationSpecificPath = Paths.get(basicOutPath, "L_l_" + L_l).toString();
+        for (int l_lp : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
+            for (String bim : new String[]{"bimodal", "car"}) {
+                String iterationSpecificPath = Paths.get(basicOutPath, "l_lp_" + l_lp).toString();
                 String outPath = Paths.get(iterationSpecificPath, bim).toString();
                 String inputPath = Paths.get(iterationSpecificPath, "input").toString();
                 String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
@@ -83,12 +83,12 @@ public class MatsimMain {
                 String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
 
                 // Varying drt grid size w.r.t. pt grid size
-//                int SysOvPt = 10;
-//                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(l_lp*SysOvPt)
-//                        .setSystemSizeOverPtGridSize(SysOvPt).build();
+                int SysOvPt = 10;
+                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(l_lp*SysOvPt)
+                        .setSystemSizeOverPtGridSize(SysOvPt).build();
                 // Varying pt grid size w.r.t. system grid size
-                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setnRequests(10).setnDrtVehicles(1).setSystemSizeOverGridSize(100)
-                        .setSystemSizeOverPtGridSize(L_l).build();
+//                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setnRequests(10).setnDrtVehicles(1)
+//                        .setSystemSizeOverGridSize(100).setSystemSizeOverPtGridSize(L_l).build();
                 LOG.info("Creating network");
                 scenarioCreator.createNetwork(networkPath, true);
                 LOG.info("Finished creating network\nCreating population for network");
@@ -114,7 +114,7 @@ public class MatsimMain {
                         .setVehiclesFile(drtFleetPath);
                 LOG.info("Running simulation");
                 run(config, false);
-                LOG.info("Finished simulation with l/lp = " + L_l);
+                LOG.info("Finished simulation with l/lp = " + l_lp);
             }
         }
     }

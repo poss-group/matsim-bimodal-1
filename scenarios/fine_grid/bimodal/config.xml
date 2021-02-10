@@ -148,7 +148,7 @@
     <module name="multiModeDrt">
         <parameterset type="drt">
             <parameterset type="SelectiveInsertionSearch"/>
-<!--                        <parameterset type="ExtensiveInsertionSearch"/>-->
+            <!--            <parameterset type="ExtensiveInsertionSearch"/>-->
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
@@ -157,7 +157,7 @@
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
-<!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
+            <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
 
             <!--			<parameterset type="rebalancing">-->
             <!--				<parameterset type="minCostFlowRebalancingStrategy">-->
@@ -189,7 +189,7 @@
         <param name="mobsimMode" value="car"/>
         <param name="networkModes" value="car"/>
         <parameterset type="travelTimeMatrix">
-            <param name="cellSize" value="400"/>
+            <param name="cellSize" value="100"/>
         </parameterset>
     </module>
 

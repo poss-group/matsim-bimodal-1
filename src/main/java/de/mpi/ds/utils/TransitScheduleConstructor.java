@@ -130,8 +130,9 @@ public class TransitScheduleConstructor implements UtilComponent {
                               List<TransitRouteStop> transitRouteStopList,
                               String direction, boolean addFirstAsTransitStop) throws Exception {
         boolean addAsTransitStop = addFirstAsTransitStop;
-        int forwardBackwardDetermination = getDirection(startNode, forwardBackwardIndicatorNode, direction);
-        Node lastNode = getPredecessor(startNode, direction, forwardBackwardDetermination);
+//        int forwardBackwardDetermination = getDirection(startNode, forwardBackwardIndicatorNode, direction);
+//        Node lastNode = getPredecessor(startNode, direction, forwardBackwardDetermination);
+        Node lastNode = forwardBackwardIndicatorNode; // Because Periodic BC
         Node currNode = startNode;
         do {
             List<Node> lastCurrNodes = moveToNextLinkPeriodic(linkList, startNode, currNode, lastNode,
@@ -147,9 +148,9 @@ public class TransitScheduleConstructor implements UtilComponent {
     private Node getPredecessor(Node startNode, String direction, int forwardBackwardDetermination) {
         Function<Comparator<Node>, BinaryOperator<Node>> minMax = null;
         if (forwardBackwardDetermination == 1)
-            minMax = BinaryOperator::maxBy;
-        else
             minMax = BinaryOperator::minBy;
+        else
+            minMax = BinaryOperator::maxBy;
         //TODO fix this
 
         if (direction.equals("x")) {

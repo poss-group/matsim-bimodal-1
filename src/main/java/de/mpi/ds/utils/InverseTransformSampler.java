@@ -19,7 +19,7 @@ public class InverseTransformSampler {
     double EPSILON = 0.00001;
 
     InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
-                            int integrationSteps) {
+                            int integrationSteps, long seed) {
         this.function = function;
         this.x0 = x0;
         this.x0 = x1;
@@ -27,6 +27,7 @@ public class InverseTransformSampler {
         double arg = 0;
         double last_arg = x0;
         double cumsum = 0;
+        rand.setSeed(seed);
         N = integrationSteps;
         domain = new double[N];
         probs_values = new double[N];
@@ -61,7 +62,7 @@ public class InverseTransformSampler {
     public static void main(String[] args) {
         try {
             InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
-                    100000);
+                    100000, 42);
 //            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
 //                    10000,
 //                    10000);
