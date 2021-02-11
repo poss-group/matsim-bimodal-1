@@ -21,7 +21,7 @@ public class ScenarioCreatorBuilder {
     private double transitStopLength = 0;
 
     private int nDrtVehicles = 200;
-    private int drtCapacity = 4;
+    private int drtCapacity = 8;
     private double drtOperationStartTime = 0;
     private double drtOperationEndTime = 24 * 3600;
     private long seed = 42;

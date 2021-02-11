@@ -1,6 +1,7 @@
 package de.mpi.ds.my_analysis;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Person;
@@ -33,18 +34,31 @@ public class ServabilityListener implements IterationStartsListener, IterationEn
     public void notifyIterationEnds(IterationEndsEvent event) {
         String eol = System.getProperty("line.separator");
         String outPath = event.getServices().getControlerIO().getOutputPath();
-        writeMapCompressed(myActivityStartHandler.getSuccsessfullTrips(), outPath, eol);
+        writeMapsCompressed(myActivityStartHandler.getSuccsessfullTrips(), myActivityStartHandler.getLastCoords(),
+                outPath, eol);
     }
 
-    private void writeMapCompressed(Map<Id<Person>, Boolean> map, String outPath, String eol) {
+    private void writeMapsCompressed(Map<Id<Person>, Boolean> map, Map<Id<Person>, Coord> map2, String outPath,
+                                     String eol) {
         try {
             FileOutputStream outputStream = new FileOutputStream(Paths.get(outPath, "trip_success.csv.gz").toString());
             Writer writer = new OutputStreamWriter(new GZIPOutputStream(outputStream));
             try {
-                for (Map.Entry<Id<Person>, Boolean> entry : map.entrySet()) {
-                    writer.append(entry.getKey().toString())
+                writer.append("personId;tripSuccess;lastCoordX;lastCoordY\n");
+                for (Id<Person> key : map.keySet()) {
+                    String xCoord = "";
+                    String yCoord = "";
+                    if (map2.get(key) != null) {
+                        xCoord = String.valueOf(map2.get(key).getX());
+                        yCoord = String.valueOf(map2.get(key).getY());
+                    }
+                    writer.append(key.toString())
                             .append(';')
-                            .append(entry.getValue().toString())
+                            .append(map.get(key).toString())
+                            .append(';')
+                            .append(xCoord)
+                            .append(';')
+                            .append(yCoord)
                             .append(eol);
                 }
             } catch (Exception e) {

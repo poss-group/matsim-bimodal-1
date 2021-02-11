@@ -41,14 +41,13 @@ import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.TransitScheduleCreator.PERIODIC_LINK;
 
 /**
  * @author tthunig
  */
 public class NetworkCreator implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(NetworkCreator.class.getName());
-
-    private final static String PERIODIC_LINK = "periodicConnection";
 
     private static final Map<String, int[]> directions = Map.of(
             "north", new int[]{0, 1},
@@ -107,16 +106,18 @@ public class NetworkCreator implements UtilComponent {
         int n_x = systemSizeOverGridSize + 1; // So that there are L_l_fraction*gridLengthInCells links per
         // direction
         int n_y = systemSizeOverGridSize + 1;
+        int n_xPt = systemSizeOverPtGridSize + 1;
+        int n_yPt = systemSizeOverPtGridSize + 1;
         Node[][] nodes = new Node[n_x][n_y];
-        int[] stationNodesX = new int[systemSizeOverPtGridSize];
-        int[] stationNodesY = new int[systemSizeOverPtGridSize];
+        int[] stationNodesX = new int[n_xPt];
+        int[] stationNodesY = new int[n_yPt];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
                 boolean newStationAtrribute = false;
                 if (createTrainLanes) {
-                    if ((i % ptInterval == 0) && (j % ptInterval == 0) && (
-                            i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
+                    if ((i % ptInterval == 0) && (j % ptInterval == 0)) {
+//                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
                         newNodeId = "PT_" + i / ptInterval + "_" + j / ptInterval;
                         newStationAtrribute = true;
                         stationNodesX[i / ptInterval] = i;
@@ -131,6 +132,9 @@ public class NetworkCreator implements UtilComponent {
                 net.addNode(n);
             }
         }
+
+        double periodicLength = 0.00001;
+//        double periodicLength = 1;
         // Add links to network
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
@@ -138,7 +142,6 @@ public class NetworkCreator implements UtilComponent {
                 int j_minus1_periodic = (((j - 1) % n_x) + n_x) % n_x;
 //                int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
 //                int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
-                double periodicLength = 0.00001;
                 if (i - 1 >= 0) {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], linkLength, false);
                 } else {
@@ -152,21 +155,21 @@ public class NetworkCreator implements UtilComponent {
             }
         }
         if (createTrainLanes) {
-            for (int i = 0; i < systemSizeOverPtGridSize; i++) {
-                for (int j = 0; j < systemSizeOverPtGridSize; j++) {
-                    int i_minus1_periodic = (((i - 1) % systemSizeOverPtGridSize) + systemSizeOverPtGridSize) %
-                            systemSizeOverPtGridSize;
-                    int j_minus1_periodic = (((j - 1) % systemSizeOverPtGridSize) + systemSizeOverPtGridSize) %
-                            systemSizeOverPtGridSize;
+            for (int i = 0; i < n_xPt; i++) {
+                for (int j = 0; j < n_yPt; j++) {
+                    int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
+                    int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
 
                     Node to = nodes[stationNodesX[i]][stationNodesY[j]];
 
                     Node from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
                     double length = calculateDistancePeriodicBC(from, to, systemSize);
+                    length = doubleCloseToZero(length) ? periodicLength : length;
                     insertTrainLinks(net, fac, from, to, length, i == 0);
 
                     from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
                     length = calculateDistancePeriodicBC(from, to, systemSize);
+                    length = doubleCloseToZero(length) ? periodicLength : length;
                     insertTrainLinks(net, fac, from, to, length, j == 0);
 //                    if (i - ptInterval >= 0) {
 //                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength,

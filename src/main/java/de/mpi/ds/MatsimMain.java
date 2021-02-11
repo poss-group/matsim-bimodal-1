@@ -34,7 +34,6 @@ import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
     //TODO check routing algorithm for pt routing
-    //TODO look into within day replanning
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 

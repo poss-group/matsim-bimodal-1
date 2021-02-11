@@ -1,6 +1,7 @@
 package de.mpi.ds.my_analysis;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -11,9 +12,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -22,6 +21,7 @@ public class MyActivityStartHandler implements ActivityStartEventHandler {
 
     private Map<Id<Person>, Boolean> succsessfullTrips;
     private Map<Id<Person>, Activity> lastActs;
+    private Map<Id<Person>, Coord> lastCoords;
 
     public MyActivityStartHandler(Scenario sc) {
         lastActs = sc.getPopulation().getPersons().entrySet().stream()
@@ -30,6 +30,9 @@ public class MyActivityStartHandler implements ActivityStartEventHandler {
         succsessfullTrips = sc.getPopulation().getPersons().keySet().stream()
                 .map(e -> new AbstractMap.SimpleEntry<>(e, Boolean.FALSE))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//        lastCoords = new HashMap<>();
+        lastCoords = sc.getPopulation().getPersons().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, p -> getFirstActivityCoord(p.getValue())));
     }
 
     private Activity getLastAct(Person person) {
@@ -50,10 +53,21 @@ public class MyActivityStartHandler implements ActivityStartEventHandler {
             if (eventLink.equals(finalLink)) {
                 succsessfullTrips.replace(event.getPersonId(), Boolean.TRUE);
             }
+            lastCoords.put(event.getPersonId(), event.getCoord());
         }
     }
 
     public Map<Id<Person>, Boolean> getSuccsessfullTrips() {
         return succsessfullTrips;
+    }
+
+    public Map<Id<Person>, Coord> getLastCoords() {
+        return lastCoords;
+    }
+
+    private Coord getFirstActivityCoord(Person person) {
+        Coord firstCoord = ((Activity) person.getSelectedPlan().getPlanElements().stream()
+                .filter(el -> el instanceof Activity).findFirst().orElseThrow()).getCoord();
+        return firstCoord;
     }
 }

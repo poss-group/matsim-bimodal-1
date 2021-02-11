@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import static de.mpi.ds.utils.TransitScheduleCreator.PERIODIC_LINK;
+
 public class TransitScheduleConstructor implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(TransitScheduleConstructor.class.getName());
     private final double stop_length;
@@ -142,7 +144,9 @@ public class TransitScheduleConstructor implements UtilComponent {
             addAsTransitStop = true;
         }
         while (currNode != startNode);
-//        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1));
+        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1),
+                (currRouteStopCount - 1) * departure_delay - stop_length + 5,
+                (currRouteStopCount - 1) * departure_delay + 5);
     }
 
     private Node getPredecessor(Node startNode, String direction, int forwardBackwardDetermination) {
@@ -151,7 +155,6 @@ public class TransitScheduleConstructor implements UtilComponent {
             minMax = BinaryOperator::minBy;
         else
             minMax = BinaryOperator::maxBy;
-        //TODO fix this
 
         if (direction.equals("x")) {
             Coord startNodePlusDirection = new Coord(startNode.getCoord().getX() + forwardBackwardDetermination,
@@ -202,11 +205,17 @@ public class TransitScheduleConstructor implements UtilComponent {
                         && finalGetOtherCoordComp.apply(l.getToNode().getCoord())
                         .equals(finalGetOtherCoordComp.apply(startNode.getCoord())))
                 .findFirst().orElseThrow();
-        linkList.add(newLink);
 //        if ((finalGetSameCoordComp.apply(currNode.getCoord()) / delta_xy + pt_interval / 2) % pt_interval == 0 && addAsTransitStop) {
         if (currNode.getAttributes().getAttribute("isStation").equals(true) && addAsTransitStop) {
-            createStop(transitRouteStopList, currNode, newLink);
+            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
+                createStop(transitRouteStopList, currNode, newLink,
+                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
+            } else {
+                createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1),
+                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
+            }
         }
+        linkList.add(newLink);
         lastNode = currNode;
         currNode = newLink.getToNode();
         return Arrays.asList(lastNode, currNode);
@@ -246,7 +255,8 @@ public class TransitScheduleConstructor implements UtilComponent {
 //        return currNode;
 //    }
 
-    private void createStop(List<TransitRouteStop> transitRouteStopList, Node currNode, Link link) {
+    private void createStop(List<TransitRouteStop> transitRouteStopList, Node currNode, Link link, double arrivalDelay,
+                            double departureDelay) {
         Id<TransitStopFacility> stopId = Id.create(String.valueOf(link.getId()) + "_trStop", TransitStopFacility.class);
         TransitStopFacility transitStopFacility = null;
         if (!schedule.getFacilities().containsKey(stopId)) {
@@ -258,8 +268,7 @@ public class TransitScheduleConstructor implements UtilComponent {
             transitStopFacility = schedule.getFacilities().get(stopId);
         }
         TransitRouteStop transitrouteStop = transitScheduleFactory
-                .createTransitRouteStop(transitStopFacility, currRouteStopCount * departure_delay - stop_length,
-                        currRouteStopCount * departure_delay);
+                .createTransitRouteStop(transitStopFacility, arrivalDelay, departureDelay);
         transitrouteStop.setAwaitDepartureTime(true);
         transitRouteStopList.add(transitrouteStop);
         currRouteStopCount++;

@@ -55,7 +55,7 @@ public class PopulationCreator implements UtilComponent {
                 xy_0,
                 xy_1,
                 10000,
-                seed+1);
+                seed + 1);
 
         rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -87,10 +87,14 @@ public class PopulationCreator implements UtilComponent {
             nonStationNodeList = new ArrayList<>(net.getNodes().values());
 
         }
+//        List<Node> borderNonStationNodeList = nonStationNodeList.stream()
+//                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
+//                        n.getCoord().getY() != 10000).collect(Collectors.toList());
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
                 orig_coord = nonStationNodeList.get(rand.nextInt(nonStationNodeList.size())).getCoord();
+//                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
                     try {

@@ -50,6 +50,8 @@ public class TransitScheduleCreator implements UtilComponent {
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleCreator.class.getName());
 
+    final static String PERIODIC_LINK = "periodicConnection";
+
     private int systemSizeOverPtGridSize;
     private double freeSpeedTrain;
     private double systemSize;
@@ -136,11 +138,11 @@ public class TransitScheduleCreator implements UtilComponent {
 //                        .getX() - startNodesX
 //                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
-        for (int i = 0; i < startNodesXDir.size(); i++) {
+        for (int i = 0; i < startNodesXDir.size() - 1; i++) {
             transitScheduleConstructor.createLine(startNodesXDir.get(i), startNodesXDecDir.get(i), "x");
             transitScheduleConstructor.createLine(startNodesXDecDir.get(i), startNodesXDir.get(i), "x");
         }
-        for (int i = 0; i < startNodesYDir.size(); i++) {
+        for (int i = 0; i < startNodesYDir.size() - 1; i++) {
             transitScheduleConstructor.createLine(startNodesYDir.get(i), startNodesYDecDir.get(i), "y");
             transitScheduleConstructor.createLine(startNodesYDecDir.get(i), startNodesYDir.get(i), "y");
         }
