@@ -37,6 +37,7 @@ def getAverageTimeSeries(series):
 
 
 def getPtOccupancies(path, transit_interval):
+    # transit_interval: how long does it take the pt vehicle to cross the system
     file_data = open(path)
     data = ""
     pattern = re.compile("^time.*\t(\d+\.\d+) veh.*(tr_\d+_\d+).*Passenger.*?(\d+).*")
