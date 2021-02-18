@@ -15,26 +15,25 @@ import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class PopulationCreator implements UtilComponent {
-    private static Random rand = new Random();
 
     private int nRequests;
     private int requestEndTime;
-    private long seed;
+    private Random random;
     private String transportMode;
     private boolean isGridNetwork;
 
-    public PopulationCreator(int nRequests, int requestEndTime, long seed, String transportMode,
+    public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
                              boolean isGridNetwork) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
-        this.seed = seed;
+        this.random = random;
         this.transportMode = transportMode;
         this.isGridNetwork = isGridNetwork;
     }
 
     public static void main(String... args) {
         String networkPath = "./output/network_diag.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, 1234, TransportMode.pt, true);
+        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt, true);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -55,9 +54,8 @@ public class PopulationCreator implements UtilComponent {
                 xy_0,
                 xy_1,
                 10000,
-                seed + 1);
+                random);
 
-        rand.setSeed(seed);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
         generatePopulation(population, net, nRequests, sampler, xy_1);
@@ -93,7 +91,7 @@ public class PopulationCreator implements UtilComponent {
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                orig_coord = nonStationNodeList.get(rand.nextInt(nonStationNodeList.size())).getCoord();
+                orig_coord = nonStationNodeList.get(random.nextInt(nonStationNodeList.size())).getCoord();
 //                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
@@ -102,7 +100,7 @@ public class PopulationCreator implements UtilComponent {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    double angle = rand.nextDouble() * 2 * Math.PI;
+                    double angle = random.nextDouble() * 2 * Math.PI;
 
                     double newX = ((orig_coord.getX() + dist * Math.cos(angle)) % L + L) % L;
                     double newY = ((orig_coord.getY() + dist * Math.sin(angle)) % L + L) % L;
@@ -110,7 +108,7 @@ public class PopulationCreator implements UtilComponent {
                     dest_coord = getClosestNode(pre_target, nonStationNodeList, L).getCoord();
                 } else {
 //                    dest_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_coord = nonStationNodeList.get(rand.nextInt(nonStationNodeList.size())).getCoord();
+                    dest_coord = nonStationNodeList.get(random.nextInt(nonStationNodeList.size())).getCoord();
                 }
             } while (orig_coord.equals(dest_coord));
             generateTrip(orig_coord, dest_coord, j, population);
@@ -118,7 +116,7 @@ public class PopulationCreator implements UtilComponent {
     }
 
     private Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
-        return collection.stream().skip(rand.nextInt(collection.size())).findFirst().orElseThrow();
+        return collection.stream().skip(random.nextInt(collection.size())).findFirst().orElseThrow();
     }
 
     private void generateTrip(Coord source, Coord sink, int passenger_id, Population population) {
@@ -156,7 +154,7 @@ public class PopulationCreator implements UtilComponent {
 
     private Activity createFirst(Coord homeLocation, Population population) {
         Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
-        activity.setEndTime(rand.nextInt(requestEndTime)); // [s]
+        activity.setEndTime(random.nextInt(requestEndTime)); // [s]
         return activity;
     }
 

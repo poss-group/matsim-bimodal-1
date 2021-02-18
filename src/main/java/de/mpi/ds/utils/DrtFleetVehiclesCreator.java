@@ -52,24 +52,24 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     /**
      * Adjust these variables and paths to your need.
      */
-    private static final Random random = MatsimRandom.getRandom();
-
     private int seatsPerDrtVehicle;
     private double operationStartTime;
     private double operationEndTime;
     private int nDrtVehicles;
+    private Random random;
 
     public DrtFleetVehiclesCreator(int seatsPerDrtVehicle, double operationStartTime, double operationEndTime,
-                                   int nDrtVehicles) {
+                                   int nDrtVehicles, Random random) {
         this.seatsPerDrtVehicle = seatsPerDrtVehicle;
         this.operationStartTime = operationStartTime;
         this.operationEndTime = operationEndTime;
         this.nDrtVehicles = nDrtVehicles;
+        this.random = random;
     }
 
     public static void main(String[] args) {
 
-        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 200)
+        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 200, new Random())
                 .run("./output/network_diag.xml", "output/drtvehicles.xml");
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
@@ -77,7 +77,6 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
 
     public void run(String networkPath, String outputDrtVehiclesPath) {
 
-//	    random.setSeed(42);
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
         final int[] i = {0};
@@ -87,8 +86,7 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
                         .contains(TransportMode.car)) // drt can only start on links with Transport mode 'car'
                 .collect(Collectors.toList());
 
-        Collections.shuffle(linkList);
-
+        Collections.shuffle(linkList, random);
 
         Stream<DvrpVehicleSpecification> vehicleSpecificationStream = linkList.stream()
                 .limit(nDrtVehicles) // select the first *numberOfVehicles* links

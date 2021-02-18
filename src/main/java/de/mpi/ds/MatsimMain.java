@@ -111,7 +111,7 @@ public class MatsimMain {
                     DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
 //                    MultiModeDrtConfigGroup.get(config).getModalElements().clear();
                 }
-//                DrtPlanModifierConfigGroup.get(config).setZetaCut(0);
+//                DrtPlanModifierConfigGroup.get(config).setZetaCut(999999);
 
                 config.controler().setOutputDirectory(outPath);
                 LOG.info("Running simulation");

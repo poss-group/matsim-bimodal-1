@@ -8,18 +8,18 @@ import java.util.function.Function;
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 
 public class InverseTransformSampler {
-    Function<Double, Double> function;
-    double[] domain;
-    double[] cummulative_values;
-    double[] probs_values;
-    double x0 = 0;
-    double x1 = 0;
-    int N;
-    Random rand = new Random();
-    double EPSILON = 0.00001;
+    private Function<Double, Double> function;
+    private double[] domain;
+    private double[] cummulative_values;
+    private double[] probs_values;
+    private double x0 = 0;
+    private double x1 = 0;
+    private int N;
+    private Random random;
+    private double EPSILON = 0.00001;
 
     InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
-                            int integrationSteps, long seed) {
+                            int integrationSteps, Random random) {
         this.function = function;
         this.x0 = x0;
         this.x0 = x1;
@@ -27,7 +27,7 @@ public class InverseTransformSampler {
         double arg = 0;
         double last_arg = x0;
         double cumsum = 0;
-        rand.setSeed(seed);
+        this.random = random;
         N = integrationSteps;
         domain = new double[N];
         probs_values = new double[N];
@@ -53,8 +53,8 @@ public class InverseTransformSampler {
     }
 
     public double getSample() throws Exception {
-        double random = rand.nextDouble();
-        int idx = search(random, cummulative_values);
+        double randDouble = random.nextDouble();
+        int idx = search(randDouble, cummulative_values);
         return domain[idx];
     }
 
@@ -62,7 +62,7 @@ public class InverseTransformSampler {
     public static void main(String[] args) {
         try {
             InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
-                    100000, 42);
+                    100000, new Random());
 //            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
 //                    10000,
 //                    10000);

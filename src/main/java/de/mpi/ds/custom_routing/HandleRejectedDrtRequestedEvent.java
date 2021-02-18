@@ -36,49 +36,50 @@ public class HandleRejectedDrtRequestedEvent implements PassengerRequestRejected
 
     @Override
     public void handleEvent(PassengerRequestRejectedEvent event) {
-        Id<Person> personId = Id.createPersonId(event.getAttributes().get("person"));
-        MobsimAgent mobsimAgent = agents.get(personId);
-        Plan modifiablePlan = WithinDayAgentUtils.getModifiablePlan(mobsimAgent);
-        List<PlanElement> planElements = modifiablePlan.getPlanElements();
-//        Activity firstActivity = (Activity) planElements.get(0);
-        Activity lastActivity = (Activity) planElements.get(planElements.size() - 1);
-        Integer planElementsIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(mobsimAgent);
-        for (int i=planElements.size()-1; i > planElementsIndex; i--) {
-            planElements.remove(i);
-        }
-
-//        firstActivity.setEndTime(event.getTime()+1);
-//        modifiablePlan.addActivity(firstActivity);
-//        planElements.add(planElementsIndex+1, firstActivity);
-//        Leg newLeg = populationFactory.createLeg(TransportMode.walk);
-//        newLeg.setRoute(route);
+        System.out.println(event.getCause());
+//        Id<Person> personId = Id.createPersonId(event.getAttributes().get("person"));
+//        MobsimAgent mobsimAgent = agents.get(personId);
+//        Plan modifiablePlan = WithinDayAgentUtils.getModifiablePlan(mobsimAgent);
+//        List<PlanElement> planElements = modifiablePlan.getPlanElements();
+////        Activity firstActivity = (Activity) planElements.get(0);
+//        Activity lastActivity = (Activity) planElements.get(planElements.size() - 1);
+//        Integer planElementsIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(mobsimAgent);
+//        for (int i=planElements.size()-1; i > planElementsIndex; i--) {
+//            planElements.remove(i);
+//        }
+//
+////        firstActivity.setEndTime(event.getTime()+1);
+////        modifiablePlan.addActivity(firstActivity);
+////        planElements.add(planElementsIndex+1, firstActivity);
+////        Leg newLeg = populationFactory.createLeg(TransportMode.walk);
+////        newLeg.setRoute(route);
+////        planElements.add(planElementsIndex, lastActivity);
+////        planElements.add(planElementsIndex, newLeg);
+////
+////        firstActivity.setLinkId(mobsimAgent.getCurrentLinkId());
+////        firstActivity.setEndTime(event.getTime()+1);
+////        planElements.add(planElementsIndex, firstActivity);
+//
+////        modifiablePlan.addActivity(lastActivity);
+//
+////        while (!planElements.isEmpty()) {
+////            planElements.remove(0);
+////        }
+//        Activity newActivity = populationFactory.createActivityFromLinkId("dummy", mobsimAgent.getCurrentLinkId());
+//        newActivity.setEndTime(event.getTime()+10);
+//        newActivity.setStartTime(event.getTime());
+//        Leg newLeg = populationFactory.createLeg(TransportMode.drt);
+////        Route route = new GenericRouteImpl(mobsimAgent.getCurrentLinkId(), lastActivity.getLinkId());
+////        route.setDistance(42);
+////        newLeg.setRoute(route);
 //        planElements.add(planElementsIndex, lastActivity);
 //        planElements.add(planElementsIndex, newLeg);
+//        planElements.add(planElementsIndex, newActivity);
 //
-//        firstActivity.setLinkId(mobsimAgent.getCurrentLinkId());
-//        firstActivity.setEndTime(event.getTime()+1);
-//        planElements.add(planElementsIndex, firstActivity);
-
-//        modifiablePlan.addActivity(lastActivity);
-
-//        while (!planElements.isEmpty()) {
-//            planElements.remove(0);
-//        }
-        Activity newActivity = populationFactory.createActivityFromLinkId("dummy", mobsimAgent.getCurrentLinkId());
-        newActivity.setEndTime(event.getTime()+10);
-        newActivity.setStartTime(event.getTime());
-        Leg newLeg = populationFactory.createLeg(TransportMode.drt);
-//        Route route = new GenericRouteImpl(mobsimAgent.getCurrentLinkId(), lastActivity.getLinkId());
-//        route.setDistance(42);
-//        newLeg.setRoute(route);
-        planElements.add(planElementsIndex, lastActivity);
-        planElements.add(planElementsIndex, newLeg);
-        planElements.add(planElementsIndex, newActivity);
-
-        mobsimAgent.endLegAndComputeNextState(event.getTime());
-//        mobsimAgent.endActivityAndComputeNextState(event.getTime());
-        planElementsIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(mobsimAgent);
-        WithinDayAgentUtils.resetCaches(mobsimAgent);
+//        mobsimAgent.endLegAndComputeNextState(event.getTime());
+////        mobsimAgent.endActivityAndComputeNextState(event.getTime());
+//        planElementsIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(mobsimAgent);
+//        WithinDayAgentUtils.resetCaches(mobsimAgent);
     }
 
     @Override

@@ -3,6 +3,8 @@ package de.mpi.ds.utils;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 
+import java.util.Random;
+
 public class ScenarioCreator {
     private final static Logger LOG = Logger.getLogger(ScenarioCreator.class.getName());
 
@@ -10,6 +12,7 @@ public class ScenarioCreator {
     private PopulationCreator populationCreator;
     private TransitScheduleCreator transitScheduleCreator;
     private DrtFleetVehiclesCreator drtFleetVehiclesCreator;
+    private Random random;
 
     public ScenarioCreator(double systemSize, int systemSizeOverGridPtSize, int systemSizeOverGridSize,
                            long linkCapacity,
@@ -24,14 +27,15 @@ public class ScenarioCreator {
 //        assert systemSizeOverGridSize % systemSizeOverGridPtSize == 0 :
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
+        this.random = new Random(seed);
         this.networkCreator = new NetworkCreator(systemSize, systemSizeOverGridSize, systemSizeOverGridPtSize,
                 linkCapacity,
                 freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections);
-        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, seed, transportMode, isGridNetwork);
+        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork);
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, systemSizeOverGridPtSize, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, nDrtVehicles);
+                drtOperationEndTime, nDrtVehicles, random);
     }
 
     public static void main(String... args) {
