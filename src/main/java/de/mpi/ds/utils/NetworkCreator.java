@@ -29,18 +29,15 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkWriter;
-import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
-import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.GeneralUtils.*;
 import static de.mpi.ds.utils.TransitScheduleCreator.PERIODIC_LINK;
 
 /**
@@ -56,32 +53,28 @@ public class NetworkCreator implements UtilComponent {
             "west", new int[]{-1, 0}
     );
 
-    private double cellLength;
+    private double railGridSpacing;
     private double systemSize;
-    private int systemSizeOverGridSize;
-    private int systemSizeOverPtGridSize;
     private int ptInterval;
-    private double linkLength;
+    private double carGridSpacing;
     private double linkCapacity;
     private double freeSpeedTrainForSchedule;
     private double freeSpeedCar;
     private double numberOfLanes;
     private boolean diagonalConnections;
 
-    public NetworkCreator(double systemSize, int systemSizeOverGridSize, int systemSizeOverPtGridSize,
+    public NetworkCreator(double systemSize, double railGridSpacing, double carGridSpacing,
                           double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections) {
-        this.systemSizeOverPtGridSize = systemSizeOverPtGridSize;
-        this.cellLength = systemSize / systemSizeOverPtGridSize;
         this.systemSize = systemSize;
-        this.systemSizeOverGridSize = systemSizeOverGridSize;
-        this.linkLength = systemSize / systemSizeOverGridSize;
+        this.railGridSpacing = railGridSpacing;
+        this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
         this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
-        this.ptInterval = systemSizeOverGridSize / systemSizeOverPtGridSize;
+        this.ptInterval = (int) (railGridSpacing / carGridSpacing);
     }
 
     public static void main(String... args) {
@@ -103,11 +96,14 @@ public class NetworkCreator implements UtilComponent {
         NetworkFactory fac = net.getFactory();
 
         // create nodes and add to network
-        int n_x = systemSizeOverGridSize + 1; // So that there are L_l_fraction*gridLengthInCells links per
+        int n_x = (int) (systemSize / carGridSpacing + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
-        int n_y = systemSizeOverGridSize + 1;
-        int n_xPt = systemSizeOverPtGridSize + 1;
-        int n_yPt = systemSizeOverPtGridSize + 1;
+        int n_y = (int) (systemSize / carGridSpacing + 1);
+        int n_xPt = (int) (systemSize / railGridSpacing + 1);
+        int n_yPt = (int) (systemSize / railGridSpacing + 1);
+        assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
+        //TODO make possible to have just 2 stations
+        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
         Node[][] nodes = new Node[n_x][n_y];
         int[] stationNodesX = new int[n_xPt];
         int[] stationNodesY = new int[n_yPt];
@@ -126,7 +122,7 @@ public class NetworkCreator implements UtilComponent {
                 }
 
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
-                        new Coord(i * systemSize / systemSizeOverGridSize, j * systemSize / systemSizeOverGridSize));
+                        new Coord(i * carGridSpacing, j * carGridSpacing));
                 n.getAttributes().putAttribute("isStation", newStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
@@ -143,20 +139,22 @@ public class NetworkCreator implements UtilComponent {
 //                int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
 //                int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
                 if (i - 1 >= 0) {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], linkLength, false);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], carGridSpacing, false);
                 } else {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
                 }
                 if ((j - 1) >= 0) {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], linkLength, false);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], carGridSpacing, false);
                 } else {
                     insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
                 }
             }
         }
         if (createTrainLanes) {
-            for (int i = 0; i < n_xPt; i++) {
-                for (int j = 0; j < n_yPt; j++) {
+            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
+            int iterToY = n_yPt > 2 ? n_yPt : 1;
+            for (int i = 0; i < iterToX; i++) {
+                for (int j = 0; j < iterToY; j++) {
                     int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
                     int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
 
@@ -284,14 +282,15 @@ public class NetworkCreator implements UtilComponent {
     }
 
     private void makeDiagConnections(Network net, NetworkFactory fac) {
-        double diag_length = Math.sqrt(linkLength * linkLength + linkLength * linkLength);
+        double diag_length = Math.sqrt(carGridSpacing * carGridSpacing + carGridSpacing * carGridSpacing);
         List<Link> newLinks = new ArrayList<>();
         for (Node temp : net.getNodes().values()) {
             List<Node> diagNeighbours = temp.getOutLinks().values().stream()
                     .map(Link::getToNode)
                     .flatMap(n -> n.getOutLinks().values().stream().map(Link::getToNode))
                     .filter(n -> {
-                        double dist = DistanceUtils.calculateDistance(n.getCoord(), temp.getCoord());
+                        //TODO introduce diag connection also over boundary maybe
+                        double dist = calculateDistanceNonPeriodic(n.getCoord(), temp.getCoord());
                         return doubleCloseToZero(dist - diag_length);
                     })
                     .distinct()
@@ -415,10 +414,10 @@ public class NetworkCreator implements UtilComponent {
             Link node_newNode = fac
                     .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId()), node, newNode);
 
-            setLinkAttributes(neigh_newNode, linkCapacity, linkLength, freeSpeedCar, numberOfLanes);
-            setLinkAttributes(newNode_neigh, linkCapacity, linkLength, freeSpeedCar, numberOfLanes);
-            setLinkAttributes(newNode_node, linkCapacity, linkLength, freeSpeedCar, numberOfLanes);
-            setLinkAttributes(node_newNode, linkCapacity, linkLength, freeSpeedCar, numberOfLanes);
+            setLinkAttributes(neigh_newNode, linkCapacity, carGridSpacing, freeSpeedCar, numberOfLanes);
+            setLinkAttributes(newNode_neigh, linkCapacity, carGridSpacing, freeSpeedCar, numberOfLanes);
+            setLinkAttributes(newNode_node, linkCapacity, carGridSpacing, freeSpeedCar, numberOfLanes);
+            setLinkAttributes(node_newNode, linkCapacity, carGridSpacing, freeSpeedCar, numberOfLanes);
 
             net.addNode(newNode);
             net.addLink(neigh_newNode);
@@ -438,13 +437,13 @@ public class NetworkCreator implements UtilComponent {
                         .createLink(Id.createLinkId(newNode.getId() + "-" + node.getId() + "_pt"), newNode, node);
                 Link node_newNode_pt = fac
                         .createLink(Id.createLinkId(node.getId() + "-" + newNode.getId() + "_pt"), node, newNode);
-                setLinkAttributes(neigh_newNode_pt, linkCapacity, linkLength, freeSpeedTrainForSchedule,
+                setLinkAttributes(neigh_newNode_pt, linkCapacity, carGridSpacing, freeSpeedTrainForSchedule,
                         numberOfLanes);
-                setLinkAttributes(newNode_neigh_pt, linkCapacity, linkLength, freeSpeedTrainForSchedule,
+                setLinkAttributes(newNode_neigh_pt, linkCapacity, carGridSpacing, freeSpeedTrainForSchedule,
                         numberOfLanes);
-                setLinkAttributes(newNode_node_pt, linkCapacity, linkLength, freeSpeedTrainForSchedule,
+                setLinkAttributes(newNode_node_pt, linkCapacity, carGridSpacing, freeSpeedTrainForSchedule,
                         numberOfLanes);
-                setLinkAttributes(node_newNode_pt, linkCapacity, linkLength, freeSpeedTrainForSchedule,
+                setLinkAttributes(node_newNode_pt, linkCapacity, carGridSpacing, freeSpeedTrainForSchedule,
                         numberOfLanes);
                 setLinkModes(neigh_newNode_pt, "train");
                 setLinkModes(newNode_neigh_pt, "train");

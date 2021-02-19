@@ -25,6 +25,12 @@ public class GeneralUtils {
         return Math.sqrt(deltaXPeriodic * deltaXPeriodic + deltaYPeriodic * deltaYPeriodic);
     }
 
+    public static double calculateDistanceNonPeriodic(Coord from, Coord to) {
+        double deltaX = to.getX() - from.getX();
+        double deltaY = to.getY() - from.getY();
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+
     public static double calculateManhattenDistancePeriodicBC(Coord from, Coord to, double L) {
         double deltaX = Math.abs(to.getX() - from.getX());
         double deltaXPeriodic = deltaX < L / 2 ? deltaX : -deltaX + L;

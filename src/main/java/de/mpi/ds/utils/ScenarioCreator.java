@@ -14,7 +14,7 @@ public class ScenarioCreator {
     private DrtFleetVehiclesCreator drtFleetVehiclesCreator;
     private Random random;
 
-    public ScenarioCreator(double systemSize, int systemSizeOverGridPtSize, int systemSizeOverGridSize,
+    public ScenarioCreator(double systemSize, double railGridSpacing, double carGridSpacing,
                            long linkCapacity,
                            double freeSpeedCar, double freeSpeedTrain, double freeSpeedTrainForSchedule,
                            double numberOfLanes, int requestEndTime, int nRequests, double transitEndTime,
@@ -22,17 +22,16 @@ public class ScenarioCreator {
                            double drtOperationStartTime, double drtOperationEndTime, long seed, String transportMode,
                            boolean isGridNetwork, boolean diagonalConnections) {
 
-        assert systemSizeOverGridSize > systemSizeOverGridPtSize :
+        assert railGridSpacing > carGridSpacing :
                 "Pt grid spacing must be bigger than drt grid spacing";
 //        assert systemSizeOverGridSize % systemSizeOverGridPtSize == 0 :
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
         this.random = new Random(seed);
-        this.networkCreator = new NetworkCreator(systemSize, systemSizeOverGridSize, systemSizeOverGridPtSize,
-                linkCapacity,
+        this.networkCreator = new NetworkCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity,
                 freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork);
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, systemSizeOverGridPtSize, freeSpeedTrain,
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railGridSpacing, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, nDrtVehicles, random);

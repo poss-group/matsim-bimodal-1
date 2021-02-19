@@ -201,11 +201,12 @@ public class TransitScheduleConstructor implements UtilComponent {
         Node finalLastNode = lastNode;
         newLink = currNode.getOutLinks().values().stream()
                 .filter(l -> l.getAllowedModes().contains("train"))
-                .filter(l -> l.getToNode() != finalLastNode
-                        && finalGetOtherCoordComp.apply(l.getToNode().getCoord())
+//                .filter(l -> !finalCurrNode.equals(startNode) ||
+//                        l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> finalGetOtherCoordComp.apply(l.getToNode().getCoord())
                         .equals(finalGetOtherCoordComp.apply(startNode.getCoord())))
+                .sorted(Comparator.comparingInt(l -> l.getToNode() == finalLastNode ? 1 : 0))
                 .findFirst().orElseThrow();
-//        if ((finalGetSameCoordComp.apply(currNode.getCoord()) / delta_xy + pt_interval / 2) % pt_interval == 0 && addAsTransitStop) {
         if (currNode.getAttributes().getAttribute("isStation").equals(true) && addAsTransitStop) {
             if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
                 createStop(transitRouteStopList, currNode, newLink,

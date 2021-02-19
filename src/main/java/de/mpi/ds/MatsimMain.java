@@ -69,9 +69,9 @@ public class MatsimMain {
 
     private static void runMultipleNetworks(Config config) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
-        String mode = "L_l_";
-        for (int x : new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10}) {
-            String iterationSpecificPath = Paths.get(basicOutPath, mode + x).toString();
+        String mode = "l_";
+        for (double x = 2000; x <= 2000; x += 500) {
+            String iterationSpecificPath = Paths.get(basicOutPath, mode + (int) x).toString();
             String inputPath = Paths.get(iterationSpecificPath, "input").toString();
             String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
             String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
@@ -84,8 +84,8 @@ public class MatsimMain {
 //                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(x*SysOvPt)
 //                        .setSystemSizeOverPtGridSize(SysOvPt).build();
             // Varying pt grid size w.r.t. system grid size
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(100)
-                    .setSystemSizeOverPtGridSize(x).build();
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
+                    .setRailGridSpacing(x).setnDrtVehicles(1000).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
@@ -103,7 +103,7 @@ public class MatsimMain {
             MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
                     .setVehiclesFile(drtFleetPath);
 
-            for (String bim : new String[]{"bimodal", "car"}) {
+            for (String bim : new String[]{"bimodal"}) {//, "car"}) {
                 String outPath = Paths.get(iterationSpecificPath, bim).toString();
                 if (bim.equals("bimodal")) {
                     DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);

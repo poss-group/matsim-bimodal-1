@@ -152,12 +152,12 @@
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
-            <param name="maxTravelTimeBeta" value="1200.0"/>
-            <param name="maxWaitTime" value="2400.0"/>
+            <param name="maxTravelTimeBeta" value="999999.0"/>
+            <param name="maxWaitTime" value="999999.0"/>
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
-            <param name="maxDetour" value="1.5" />
+            <param name="maxDetour" value="999999" />
             <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
 
             <!--			<parameterset type="rebalancing">-->

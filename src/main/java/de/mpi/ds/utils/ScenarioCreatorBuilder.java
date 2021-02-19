@@ -4,13 +4,13 @@ import org.matsim.api.core.v01.TransportMode;
 
 public class ScenarioCreatorBuilder {
     private double systemSize = 10000;
-    private int systemSizeOverPtGridSize = 10;
-    private int systemSizeOverGridSize = 40;
-    private long linkCapacity = 1000;
+    private double railGridSpacing = 1000;
+    private double carGridSpacing = 100;
+    private long linkCapacity = 1000000;
     private double freeSpeedCar = 30 / 3.6;
     private double freeSpeedTrain = 60 / 3.6;
     private double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
-    private double numberOfLanes = 4;
+    private double numberOfLanes = 100;
 
     private int requestEndTime = 23 * 3600;
     private int nRequests = (int) 1e5;
@@ -29,8 +29,8 @@ public class ScenarioCreatorBuilder {
     private boolean diagonalConnetions = true;
     private boolean isGridNetwork = true;
 
-    public ScenarioCreatorBuilder setSystemSizeOverPtGridSize(int systemSizeOverPtGridSize) {
-        this.systemSizeOverPtGridSize = systemSizeOverPtGridSize;
+    public ScenarioCreatorBuilder setRailGridSpacing(double railGridSpacing) {
+        this.railGridSpacing = railGridSpacing;
         return this;
     }
 
@@ -39,8 +39,8 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
-    public ScenarioCreatorBuilder setSystemSizeOverGridSize(int systemSizeOverGridSize) {
-        this.systemSizeOverGridSize = systemSizeOverGridSize;
+    public ScenarioCreatorBuilder setCarGridSpacing(double carGridSpacing) {
+        this.carGridSpacing = carGridSpacing;
         return this;
     }
 
@@ -135,7 +135,7 @@ public class ScenarioCreatorBuilder {
     }
 
     public ScenarioCreator build() {
-        return new ScenarioCreator(systemSize, systemSizeOverPtGridSize, systemSizeOverGridSize, linkCapacity, freeSpeedCar,
+        return new ScenarioCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions);
