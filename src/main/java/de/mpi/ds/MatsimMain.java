@@ -47,7 +47,7 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2]);
+            runMultipleNetworks(config, args[1], args[2], args[3]);
 //            runRealWorldScenario(config);
 //            run(config, false);
         } catch (Exception e) {
@@ -67,14 +67,14 @@ public class MatsimMain {
         run(config, false);
     }
 
-    private static void runMultipleNetworks(Config config, String ell, String N_drt) throws Exception {
+    private static void runMultipleNetworks(Config config, String ell, String N_drt, String mode) throws Exception {
         double configuredZetaCut = DrtPlanModifierConfigGroup.get(config).getZetaCut();
 
-        String basicOutPath = config.controler().getOutputDirectory();
-        String mode = "l_";
+        String basicOutPath = config.controler().getOutputDirectory().concat(N_drt).concat("drt");
+        String varyParameter = "l_";
 //        for (double x = 500; x <= 5000; x += 500) {
         double x = Double.parseDouble(ell);
-        String iterationSpecificPath = Paths.get(basicOutPath, mode + (int) x).toString();
+        String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + (int) x).toString();
         String inputPath = Paths.get(iterationSpecificPath, "input").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
@@ -87,17 +87,6 @@ public class MatsimMain {
 //                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(x*SysOvPt)
 //                        .setSystemSizeOverPtGridSize(SysOvPt).build();
         // Varying pt grid size w.r.t. system grid size
-        ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
-                .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).build();
-        LOG.info("Creating network");
-        scenarioCreator.createNetwork(networkPath, true);
-        LOG.info("Finished creating network\nCreating population for network");
-        scenarioCreator.createPopulation(populationPath, networkPath);
-        LOG.info("Finished creating population\nCreating transit Schedule");
-        scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
-        LOG.info("Finished creating transit schedule\nCreating drt fleet");
-        scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
-        LOG.info("Finished creating drt fleet");
 
         config.network().setInputFile(networkPath);
         config.plans().setInputFile(populationPath);
@@ -106,25 +95,38 @@ public class MatsimMain {
         MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
                 .setVehiclesFile(drtFleetPath);
 
-        for (String bim : new String[]{"bimodal", "unimodal", "car"}) {
-            String outPath = Paths.get(iterationSpecificPath, bim).toString();
-            if (bim.equals("bimodal")) {
-                DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
-                //Only necessary for executing this in a loop, not for cluster:
+//        for (String mode : new String[]{"bimodal", "unimodal", "car"}) {
+        String outPath = Paths.get(iterationSpecificPath, mode).toString();
+        if (mode.equals("create-input")) {
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
+                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).build();
+            LOG.info("Creating network");
+            scenarioCreator.createNetwork(networkPath, true);
+            LOG.info("Finished creating network\nCreating population for network");
+            scenarioCreator.createPopulation(populationPath, networkPath);
+            LOG.info("Finished creating population\nCreating transit Schedule");
+            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+            LOG.info("Finished creating transit schedule\nCreating drt fleet");
+            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
+            LOG.info("Finished creating drt fleet");
+            return;
+        } else if (mode.equals("bimodal")) {
+            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
+            //Only necessary for executing this in a loop, not for cluster:
 //                DrtPlanModifierConfigGroup.get(config).setZetaCut(configuredZetaCut);
-            } else if (bim.equals("unimodal")) {
-                DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
-                DrtPlanModifierConfigGroup.get(config).setZetaCut(9999999);
-            } else if (bim.equals("car")) {
-                DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
+        } else if (mode.equals("unimodal")) {
+            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
+            DrtPlanModifierConfigGroup.get(config).setZetaCut(9999999);
+        } else if (mode.equals("car")) {
+            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
 //                    MultiModeDrtConfigGroup.get(config).getModalElements().clear();
-            }
+//            }
+        }
 
             config.controler().setOutputDirectory(outPath);
             LOG.info("Running simulation");
             run(config, false);
-            LOG.info("Finished simulation with " + mode + " = " + x);
-        }
+            LOG.info("Finished simulation with " + varyParameter + " = " + x);
 //        }
     }
 

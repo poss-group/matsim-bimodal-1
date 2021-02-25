@@ -11,8 +11,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
-import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
+import static de.mpi.ds.utils.GeneralUtils.*;
 
 public class PopulationCreator implements UtilComponent {
 
@@ -21,19 +20,22 @@ public class PopulationCreator implements UtilComponent {
     private Random random;
     private String transportMode;
     private boolean isGridNetwork;
+    private double carGridSpacing;
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
-                             boolean isGridNetwork) {
+                             boolean isGridNetwork, double carGridSpacing) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
         this.transportMode = transportMode;
         this.isGridNetwork = isGridNetwork;
+        this.carGridSpacing = carGridSpacing;
     }
 
     public static void main(String... args) {
         String networkPath = "./output/network_diag.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt, true);
+        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt,
+                true, 100);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -52,7 +54,7 @@ public class PopulationCreator implements UtilComponent {
                 a -> 1 / (xy_1 - xy_0),
                 false,
                 xy_0,
-                xy_1,
+                xy_1/2, // Because Periodic BC
                 10000,
                 random);
 
@@ -110,7 +112,7 @@ public class PopulationCreator implements UtilComponent {
 //                    dest_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
                     dest_coord = nonStationNodeList.get(random.nextInt(nonStationNodeList.size())).getCoord();
                 }
-            } while (orig_coord.equals(dest_coord));
+            } while (calculateDistancePeriodicBC(orig_coord, dest_coord, L) < carGridSpacing);
             generateTrip(orig_coord, dest_coord, j, population);
         }
     }

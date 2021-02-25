@@ -15,12 +15,11 @@ public class ScenarioCreator {
     private Random random;
 
     public ScenarioCreator(double systemSize, double railGridSpacing, double carGridSpacing,
-                           long linkCapacity,
-                           double freeSpeedCar, double freeSpeedTrain, double freeSpeedTrainForSchedule,
-                           double numberOfLanes, int requestEndTime, int nRequests, double transitEndTime,
-                           double departureIntervalTime, double transitStopLength, int nDrtVehicles, int drtCapacity,
-                           double drtOperationStartTime, double drtOperationEndTime, long seed, String transportMode,
-                           boolean isGridNetwork, boolean diagonalConnections) {
+                           long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
+                           double freeSpeedTrainForSchedule, double numberOfLanes, int requestEndTime, int nRequests,
+                           double transitEndTime, double departureIntervalTime, double transitStopLength,
+                           int nDrtVehicles, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
+                           long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections) {
 
         assert railGridSpacing > carGridSpacing :
                 "Pt grid spacing must be bigger than drt grid spacing";
@@ -30,7 +29,8 @@ public class ScenarioCreator {
         this.random = new Random(seed);
         this.networkCreator = new NetworkCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity,
                 freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections);
-        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork);
+        this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
+                carGridSpacing);
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railGridSpacing, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,

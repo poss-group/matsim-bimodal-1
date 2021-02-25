@@ -153,7 +153,7 @@
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
             <param name="maxTravelTimeAlpha" value="1.5"/>
             <param name="maxTravelTimeBeta" value="1200.0"/>
-            <param name="maxWaitTime" value="2400.0"/>
+            <param name="maxWaitTime" value="1200.0"/>
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
