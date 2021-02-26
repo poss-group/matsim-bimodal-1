@@ -13,6 +13,10 @@ import java.util.stream.Collectors;
 public class GeneralUtils {
     private static final double EPSILON = 1e-4;
 
+    public static double calculateDistancePeriodicBC(Link from, Link to, double L) {
+        return calculateDistancePeriodicBC(from.getCoord(), to.getCoord(), L);
+    }
+
     public static double calculateDistancePeriodicBC(Node from, Node to, double L) {
         return calculateDistancePeriodicBC(from.getCoord(), to.getCoord(), L);
     }

@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.TransitScheduleCreator.PERIODIC_LINK;
+import static de.mpi.ds.utils.ScenarioCreator.PERIODIC_LINK;
 
 public class TransitScheduleConstructor implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(TransitScheduleConstructor.class.getName());

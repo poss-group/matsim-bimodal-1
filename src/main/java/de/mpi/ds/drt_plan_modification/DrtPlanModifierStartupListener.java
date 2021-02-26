@@ -22,6 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.mpi.ds.utils.ScenarioCreator.IS_STATION;
+
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
     private double zetaCut;
@@ -83,10 +85,10 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .collect(Collectors.toList());
 
         Node randomNode = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
+                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(true))
                 .findAny().orElseThrow();
         List<Double> trainDeltas = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true))
+                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(true))
                 .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
                 .map(n -> n.getCoord().getX())
                 .distinct()
@@ -103,7 +105,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
         int multiConfSize = multiModeConfGroup.getModalElements().size();
         boolean splittedFleet = false;
         if (multiConfSize == 1)
-            LOG.warn("Working with only drt legs");
+            LOG.warn("Working with only drt legs (single fleet)");
         else if (multiConfSize == 2) {
             splittedFleet = true;
             LOG.warn("Working with \"drt\" and \"acc_egr_drt\" legs");
@@ -137,8 +139,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     if (GeneralUtils
                             .calculateDistancePeriodicBC(firstAct.getCoord(), lastAct.getCoord(), netDimsMinMax[1]) >
                             zetaCut * trainDelta) {
-                        Coord dummyFirstCoord = null;
-                        Coord dummyLastCoord = null;
                         Node firstNode = coordToNode.get(firstAct.getCoord());
                         Node lastNode = coordToNode.get(lastAct.getCoord());
                         Link dummyFirstLink = null;

@@ -46,7 +46,6 @@ public class TransitScheduleCreator implements UtilComponent {
             VehicleType.class));
     private static final Logger LOG = Logger.getLogger(TransitScheduleCreator.class.getName());
 
-    final static String PERIODIC_LINK = "periodicConnection";
 
     private double freeSpeedTrain;
     private double systemSize;

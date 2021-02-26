@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
@@ -32,7 +33,7 @@ public class MyActivityStartHandler implements ActivityStartEventHandler {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 //        lastCoords = new HashMap<>();
         lastCoords = sc.getPopulation().getPersons().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, p -> getFirstActivityCoord(p.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, p -> getFirstActivityCoord(p.getValue(), sc.getNetwork())));
     }
 
     private Activity getLastAct(Person person) {
@@ -65,9 +66,9 @@ public class MyActivityStartHandler implements ActivityStartEventHandler {
         return lastCoords;
     }
 
-    private Coord getFirstActivityCoord(Person person) {
-        Coord firstCoord = ((Activity) person.getSelectedPlan().getPlanElements().stream()
-                .filter(el -> el instanceof Activity).findFirst().orElseThrow()).getCoord();
+    private Coord getFirstActivityCoord(Person person, Network net) {
+        Coord firstCoord = net.getLinks().get(((Activity) person.getSelectedPlan().getPlanElements().stream()
+                .filter(el -> el instanceof Activity).findFirst().orElseThrow()).getLinkId()).getCoord();
         return firstCoord;
     }
 }

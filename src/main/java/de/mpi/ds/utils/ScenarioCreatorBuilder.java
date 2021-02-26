@@ -6,7 +6,7 @@ public class ScenarioCreatorBuilder {
     private double systemSize = 10000;
     private double railGridSpacing = 1000;
     private double carGridSpacing = 100;
-    private long linkCapacity = 1000000;
+    private long linkCapacity = 9999999;
     private double freeSpeedCar = 30 / 3.6;
     private double freeSpeedTrain = 60 / 3.6;
     private double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;

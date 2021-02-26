@@ -1,6 +1,7 @@
 package de.mpi.ds.utils;
 
 import org.matsim.api.core.v01.*;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
@@ -12,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
+import static de.mpi.ds.utils.ScenarioCreator.IS_FACILITY;
 
 public class PopulationCreator implements UtilComponent {
 
@@ -76,24 +78,31 @@ public class PopulationCreator implements UtilComponent {
 //                .filter(n -> n.getCoord().getY() % delta_xy == 0)
 //                .map(Identifiable::getId)
 //                .collect(Collectors.toList());
-        Coord orig_coord;
-        Coord dest_coord;
-        List<Node> nonStationNodeList = null;
+        Link orig_link;
+        Link dest_link;
+        List<Link> facilityLinks = null;
+        List<Link> facilityInLinks = null;
+        List<Link> facilityOutLinks = null;
         if (isGridNetwork) {
-            nonStationNodeList = net.getNodes().values().stream()
-                    .filter(n -> n.getAttributes().getAttribute("isStation").equals(false)).collect(
+            facilityLinks = net.getLinks().values().stream()
+                    .filter(n -> n.getAttributes().getAttribute(IS_FACILITY).equals(true)).collect(
                             Collectors.toList());
+            facilityInLinks = facilityLinks.stream()
+                    .filter(l -> isNeighbourNode(l.getFromNode())).collect(Collectors.toList());
+            facilityOutLinks = facilityLinks.stream()
+                    .filter(l -> isNeighbourNode(l.getToNode())).collect(Collectors.toList());
         } else {
-            nonStationNodeList = new ArrayList<>(net.getNodes().values());
-
+            facilityLinks = new ArrayList<>(net.getLinks().values());
+            facilityInLinks = facilityLinks;
+            facilityOutLinks = facilityLinks;
         }
-//        List<Node> borderNonStationNodeList = nonStationNodeList.stream()
+//        List<Node> borderNonStationNodeList = facilityNodes.stream()
 //                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
 //                        n.getCoord().getY() != 10000).collect(Collectors.toList());
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                orig_coord = nonStationNodeList.get(random.nextInt(nonStationNodeList.size())).getCoord();
+                orig_link = facilityInLinks.get(random.nextInt(facilityInLinks.size()));
 //                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
@@ -104,16 +113,16 @@ public class PopulationCreator implements UtilComponent {
                     }
                     double angle = random.nextDouble() * 2 * Math.PI;
 
-                    double newX = ((orig_coord.getX() + dist * Math.cos(angle)) % L + L) % L;
-                    double newY = ((orig_coord.getY() + dist * Math.sin(angle)) % L + L) % L;
+                    double newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
+                    double newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     Coord pre_target = new Coord(newX, newY);
-                    dest_coord = getClosestNode(pre_target, nonStationNodeList, L).getCoord();
+                    dest_link = getClosestDestLink(pre_target, facilityOutLinks, L);
                 } else {
-//                    dest_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_coord = nonStationNodeList.get(random.nextInt(nonStationNodeList.size())).getCoord();
+//                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
+                    dest_link = facilityOutLinks.get(random.nextInt(facilityOutLinks.size()));
                 }
-            } while (calculateDistancePeriodicBC(orig_coord, dest_coord, L) < carGridSpacing);
-            generateTrip(orig_coord, dest_coord, j, population);
+            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
+            generateTrip(orig_link, dest_link, j, population);
         }
     }
 
@@ -121,41 +130,35 @@ public class PopulationCreator implements UtilComponent {
         return collection.stream().skip(random.nextInt(collection.size())).findFirst().orElseThrow();
     }
 
-    private void generateTrip(Coord source, Coord sink, int passenger_id, Population population) {
+    private void generateTrip(Link source, Link sink, int passenger_id, Population population) {
         Person person = population.getFactory()
                 .createPerson(Id.createPersonId(String.valueOf(passenger_id)));
         // person.getCustomAttributes().put("hasLicense", "false");
         person.getAttributes().putAttribute("hasLicense", "false");
         Plan plan = population.getFactory().createPlan();
-        Coord sourceLocation = shoot(source);
-        Coord sinkLocation = shoot(sink);
 
-        plan.addActivity(createFirst(sourceLocation, population));
+        plan.addActivity(createFirst(source, population));
         plan.addLeg(population.getFactory().createLeg(transportMode));
 //        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
 //            plan.addLeg(createDriveLeg(population, TransportMode.pt));
 //        } else {
 //            plan.addLeg(createDriveLeg(population, TransportMode.drt));
 //        }
-        plan.addActivity(createSecond(sinkLocation, population));
+        plan.addActivity(createSecond(sink, population));
         person.addPlan(plan);
         population.addPerson(person);
     }
 
-    private Coord shoot(Coord source) {
-        // Insert code here to blur the input coordinate.
-        // For example, add a random number to the x and y coordinates.
-        return source;
-    }
-
-    private Activity createSecond(Coord workLocation, Population population) {
-        Activity activity = population.getFactory().createActivityFromCoord("dummy", workLocation);
+    private Activity createSecond(Link link, Population population) {
+        Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
+//        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
 //        activity.setEndTime(24 * 60 * 60); // [s]
         return activity;
     }
 
-    private Activity createFirst(Coord homeLocation, Population population) {
-        Activity activity = population.getFactory().createActivityFromCoord("dummy", homeLocation);
+    private Activity createFirst(Link link, Population population) {
+        Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
+//        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
         activity.setEndTime(random.nextInt(requestEndTime)); // [s]
         return activity;
     }
@@ -188,8 +191,8 @@ public class PopulationCreator implements UtilComponent {
     }
 
 
-    private Node getClosestNode(Coord coord, List<Node> nodes, double L) {
-        return nodes.stream()
+    private Link getClosestDestLink(Coord coord, List<Link> outLinks, double L) {
+        return outLinks.stream()
 //                        .allMatch(l -> l.getAllowedModes().stream().map(s -> s.contains("train"))))
                 .min(Comparator
                         .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
@@ -200,5 +203,10 @@ public class PopulationCreator implements UtilComponent {
     public double taxiDistDistributionNotNormalized(double x, double mean, double k) {
         double z = x / mean;
         return Math.exp(-1. / z) * Math.pow(z, -k);
+    }
+
+    boolean isNeighbourNode(Node node) {
+        String nodeId = node.getId().toString();
+        return (nodeId.contains("north") || nodeId.contains("west") ||nodeId.contains("south") ||nodeId.contains("east"));
     }
 }

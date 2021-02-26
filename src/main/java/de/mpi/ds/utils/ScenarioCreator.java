@@ -8,6 +8,11 @@ import java.util.Random;
 public class ScenarioCreator {
     private final static Logger LOG = Logger.getLogger(ScenarioCreator.class.getName());
 
+    public final static String IS_FACILITY = "isFacility";
+    public final static String IS_STATION = "isStation";
+    public final static String PERIODIC_LINK = "periodicConnection";
+    public final static String NETWORK_MODE_TRAIN = "train";
+
     private NetworkCreator networkCreator;
     private PopulationCreator populationCreator;
     private TransitScheduleCreator transitScheduleCreator;
@@ -28,7 +33,7 @@ public class ScenarioCreator {
 
         this.random = new Random(seed);
         this.networkCreator = new NetworkCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity,
-                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections);
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
                 carGridSpacing);
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railGridSpacing, freeSpeedTrain,

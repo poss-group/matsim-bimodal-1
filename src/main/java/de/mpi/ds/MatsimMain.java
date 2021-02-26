@@ -33,6 +33,7 @@ import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
+    //TODO check transit schedule util, slow later in schedule?
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -99,7 +100,7 @@ public class MatsimMain {
         String outPath = Paths.get(iterationSpecificPath, mode).toString();
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
-                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).build();
+                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).setnRequests(10000).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
@@ -121,6 +122,8 @@ public class MatsimMain {
             DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
 //                    MultiModeDrtConfigGroup.get(config).getModalElements().clear();
 //            }
+        } else {
+            throw new Exception("mode has to be create-input/bimodal/unimodal/car");
         }
 
             config.controler().setOutputDirectory(outPath);
