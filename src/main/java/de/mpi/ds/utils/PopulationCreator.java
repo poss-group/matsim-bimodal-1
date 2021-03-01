@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
-import static de.mpi.ds.utils.ScenarioCreator.IS_FACILITY;
+import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
 
 public class PopulationCreator implements UtilComponent {
 
@@ -80,21 +80,21 @@ public class PopulationCreator implements UtilComponent {
 //                .collect(Collectors.toList());
         Link orig_link;
         Link dest_link;
-        List<Link> facilityLinks = null;
-        List<Link> facilityInLinks = null;
-        List<Link> facilityOutLinks = null;
+        List<Link> startLinks = null;
+        List<Link> startInLinks = null;
+        List<Link> startOutLinks = null;
         if (isGridNetwork) {
-            facilityLinks = net.getLinks().values().stream()
-                    .filter(n -> n.getAttributes().getAttribute(IS_FACILITY).equals(true)).collect(
+            startLinks = net.getLinks().values().stream()
+                    .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true)).collect(
                             Collectors.toList());
-            facilityInLinks = facilityLinks.stream()
+            startInLinks = startLinks.stream()
                     .filter(l -> isNeighbourNode(l.getFromNode())).collect(Collectors.toList());
-            facilityOutLinks = facilityLinks.stream()
+            startOutLinks = startLinks.stream()
                     .filter(l -> isNeighbourNode(l.getToNode())).collect(Collectors.toList());
         } else {
-            facilityLinks = new ArrayList<>(net.getLinks().values());
-            facilityInLinks = facilityLinks;
-            facilityOutLinks = facilityLinks;
+            startLinks = new ArrayList<>(net.getLinks().values());
+            startInLinks = startLinks;
+            startOutLinks = startLinks;
         }
 //        List<Node> borderNonStationNodeList = facilityNodes.stream()
 //                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
@@ -102,7 +102,7 @@ public class PopulationCreator implements UtilComponent {
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                orig_link = facilityInLinks.get(random.nextInt(facilityInLinks.size()));
+                orig_link = startInLinks.get(random.nextInt(startInLinks.size()));
 //                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
@@ -116,10 +116,10 @@ public class PopulationCreator implements UtilComponent {
                     double newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
                     double newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     Coord pre_target = new Coord(newX, newY);
-                    dest_link = getClosestDestLink(pre_target, facilityOutLinks, L);
+                    dest_link = getClosestDestLink(pre_target, startOutLinks, L);
                 } else {
 //                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_link = facilityOutLinks.get(random.nextInt(facilityOutLinks.size()));
+                    dest_link = startOutLinks.get(random.nextInt(startOutLinks.size()));
                 }
             } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             generateTrip(orig_link, dest_link, j, population);
@@ -151,13 +151,14 @@ public class PopulationCreator implements UtilComponent {
 
     private Activity createSecond(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
-//        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
-//        activity.setEndTime(24 * 60 * 60); // [s]
+        // Apparently Transit router needs Coordinates to work
+        activity.setCoord(link.getCoord());
         return activity;
     }
 
     private Activity createFirst(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
+        activity.setCoord(link.getCoord());
 //        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
         activity.setEndTime(random.nextInt(requestEndTime)); // [s]
         return activity;

@@ -100,7 +100,8 @@ public class MatsimMain {
         String outPath = Paths.get(iterationSpecificPath, mode).toString();
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
-                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).setnRequests(10000).build();
+                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).setnRequests(100000)
+                    .build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
@@ -126,10 +127,10 @@ public class MatsimMain {
             throw new Exception("mode has to be create-input/bimodal/unimodal/car");
         }
 
-            config.controler().setOutputDirectory(outPath);
-            LOG.info("Running simulation");
-            run(config, false);
-            LOG.info("Finished simulation with " + varyParameter + " = " + x);
+        config.controler().setOutputDirectory(outPath);
+        LOG.info("Running simulation");
+        run(config, false);
+        LOG.info("Finished simulation with " + varyParameter + " = " + x);
 //        }
     }
 

@@ -22,6 +22,7 @@ package de.mpi.ds.utils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
@@ -40,6 +41,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import static de.mpi.ds.utils.ScenarioCreator.NETWORK_MODE_TRAIN;
+import static de.mpi.ds.utils.ScenarioCreator.PERIODIC_LINK;
 
 public class TransitScheduleCreator implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
@@ -100,25 +104,38 @@ public class TransitScheduleCreator implements UtilComponent {
 
         // !doubleCloseToZeroCondition for Periodic BC, otherwise two trains would share one line effectively at the
         // borders or just delete last element of each list
-        List<Node> startNodesXDir = stationNodes.stream()
+//        List<Link> startLinksXDir =
+        List<Link> startLinksXDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getX() == 0)
-//                .filter(n -> !doubleCloseToZero(n.getCoord().getY() - systemSize))
-                .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
-        List<Node> startNodesXDecDir = (List<Node>) stationNodes.stream()
-//                .filter(n -> !doubleCloseToZero(n.getCoord().getY() - systemSize))
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> l.getToNode().getCoord().getX() > l.getFromNode().getCoord().getX())
+                .collect(Collectors.toList());
+        List<Link> startLinksXDecDir = stationNodes.stream()
                 .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
-                .sorted(Comparator.comparingDouble(n -> n.getCoord().getY())).collect(Collectors.toList());
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> l.getToNode().getCoord().getX() < l.getFromNode().getCoord().getX())
+                .collect(Collectors.toList());
 
-        List<Node> startNodesYDir = stationNodes.stream()
+        List<Link> startLinksYDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getY() == 0)
-//                .filter(n -> doubleCloseToZero(n.getCoord().getX() - systemSize))
-                .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
-        List<Node> startNodesYDecDir = stationNodes.stream()
-//                .filter(n -> !doubleCloseToZero(n.getCoord().getX() - systemSize))
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> l.getToNode().getCoord().getY() > l.getFromNode().getCoord().getY())
+                .collect(Collectors.toList());
+        List<Link> startLinkYDecDir = stationNodes.stream()
                 .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
-                .sorted(Comparator.comparingDouble(n -> n.getCoord().getX())).collect(Collectors.toList());
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> l.getToNode().getCoord().getY() < l.getFromNode().getCoord().getY())
+                .collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, railGridSpacing / freeSpeedTrain, transitStopLength, 0,
@@ -131,13 +148,11 @@ public class TransitScheduleCreator implements UtilComponent {
 //                        .getX() - startNodesX
 //                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
-        for (int i = 0; i < startNodesXDir.size() - 1; i++) {
-            transitScheduleConstructor.createLine(startNodesXDir.get(i), startNodesXDecDir.get(i), "x");
-            transitScheduleConstructor.createLine(startNodesXDecDir.get(i), startNodesXDir.get(i), "x");
-        }
-        for (int i = 0; i < startNodesYDir.size() - 1; i++) {
-            transitScheduleConstructor.createLine(startNodesYDir.get(i), startNodesYDecDir.get(i), "y");
-            transitScheduleConstructor.createLine(startNodesYDecDir.get(i), startNodesYDir.get(i), "y");
+        for (int i = 0; i < startLinksXDir.size(); i++) {
+            transitScheduleConstructor.createLine(startLinksXDir.get(i));
+            transitScheduleConstructor.createLine(startLinksXDecDir.get(i));
+            transitScheduleConstructor.createLine(startLinksYDir.get(i));
+            transitScheduleConstructor.createLine(startLinkYDecDir.get(i));
         }
     }
 }

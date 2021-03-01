@@ -22,7 +22,9 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.ScenarioCreator.PERIODIC_LINK;
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.GeneralUtils.getDirectionOfLink;
+import static de.mpi.ds.utils.ScenarioCreator.*;
 
 public class TransitScheduleConstructor implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(TransitScheduleConstructor.class.getName());
@@ -71,7 +73,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         vehicles.addVehicleType(vehicleType);
     }
 
-    public void createLine(Node startNode, Node endNode, String direction) {
+    public void createLine(Link startLink) {
         ArrayList<Link> linkList = new ArrayList<>();
         TransitLine transitLine = transitScheduleFactory
                 .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
@@ -81,7 +83,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         try {
 //        moveFromTo(linkList, startNode, endNode, transitRouteStopList, direction, true);
 //        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
-            movePeriodic(linkList, startNode, endNode, transitRouteStopList, direction, true);
+            movePeriodic(linkList, startLink, transitRouteStopList, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,21 +104,6 @@ public class TransitScheduleConstructor implements UtilComponent {
         route_counter++;
     }
 
-//    private void moveFromTo(ArrayList<Link> linkList, Node startNode, Node endNode,
-//                            List<TransitRouteStop> transitRouteStopList, String direction,
-//                            boolean addFirstAsTransitStop) throws Exception {
-//        boolean addAsTransitStop = addFirstAsTransitStop;
-//        int forwardBackwardDetermination = getDirection(startNode, endNode, direction);
-//        Node currNode = startNode;
-//        do {
-//            currNode = moveToNextLink(linkList, startNode, currNode, transitRouteStopList, direction,
-//                    forwardBackwardDetermination,
-//                    addAsTransitStop);
-//            addAsTransitStop = true;
-//        }
-//        while (currNode != endNode);
-//        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1));
-//    }
 
     private int getDirection(Node startNode, Node endNode, String direction) throws Exception {
         if (direction.equals("x")) {
@@ -128,25 +115,19 @@ public class TransitScheduleConstructor implements UtilComponent {
         }
     }
 
-    private void movePeriodic(ArrayList<Link> linkList, Node startNode, Node forwardBackwardIndicatorNode,
-                              List<TransitRouteStop> transitRouteStopList,
-                              String direction, boolean addFirstAsTransitStop) throws Exception {
+    private void movePeriodic(ArrayList<Link> linkList, Link startLink, List<TransitRouteStop> transitRouteStopList,
+                              boolean addFirstAsTransitStop) throws Exception {
         boolean addAsTransitStop = addFirstAsTransitStop;
 //        int forwardBackwardDetermination = getDirection(startNode, forwardBackwardIndicatorNode, direction);
 //        Node lastNode = getPredecessor(startNode, direction, forwardBackwardDetermination);
-        Node lastNode = forwardBackwardIndicatorNode; // Because Periodic BC
-        Node currNode = startNode;
+//        Node lastNode = forwardBackwardIndicatorNode; // Because Periodic BC
+        Link currLink = startLink;
         do {
-            List<Node> lastCurrNodes = moveToNextLinkPeriodic(linkList, startNode, currNode, lastNode,
-                    transitRouteStopList, direction, addAsTransitStop);
-            lastNode = lastCurrNodes.get(0);
-            currNode = lastCurrNodes.get(1);
+            currLink = moveToNextLinkPeriodic(linkList, startLink, currLink, transitRouteStopList,
+                    addAsTransitStop);
             addAsTransitStop = true;
         }
-        while (currNode != startNode);
-        createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1),
-                (currRouteStopCount - 1) * departure_delay - stop_length + 5,
-                (currRouteStopCount - 1) * departure_delay + 5);
+        while (!currLink.equals(startLink));
     }
 
     private Node getPredecessor(Node startNode, String direction, int forwardBackwardDetermination) {
@@ -181,89 +162,64 @@ public class TransitScheduleConstructor implements UtilComponent {
         return null;
     }
 
-    private List<Node> moveToNextLinkPeriodic(ArrayList<Link> linkList, Node startNode,
-                                              Node currNode, Node lastNode,
-                                              List<TransitRouteStop> transitRouteStopList,
-                                              String direction, boolean addAsTransitStop) {
+    private Link moveToNextLinkPeriodic(ArrayList<Link> linkList, Link startLink, Link currLink,
+                                        List<TransitRouteStop> transitRouteStopList,
+                                        boolean addAsTransitStop) throws Exception {
         Link newLink = null;
-        Function<Coord, Double> getSameCoordComp = coord -> coord != null ? coord.getX() : 0;
-        Function<Coord, Double> getOtherCoordComp = coord -> coord != null ? coord.getY() : 0;
-        if (direction.equals("x")) {
-            getSameCoordComp = Coord::getX;
-            getOtherCoordComp = Coord::getY;
-        } else if (direction.equals("y")) {
-            getSameCoordComp = Coord::getY;
-            getOtherCoordComp = Coord::getX;
-        }
-
-        Function<Coord, Double> finalGetSameCoordComp = getSameCoordComp;
-        Function<Coord, Double> finalGetOtherCoordComp = getOtherCoordComp;
-        Node finalLastNode = lastNode;
-        newLink = currNode.getOutLinks().values().stream()
-                .filter(l -> l.getAllowedModes().contains("train"))
-//                .filter(l -> !finalCurrNode.equals(startNode) ||
-//                        l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> finalGetOtherCoordComp.apply(l.getToNode().getCoord())
-                        .equals(finalGetOtherCoordComp.apply(startNode.getCoord())))
-                .sorted(Comparator.comparingInt(l -> l.getToNode() == finalLastNode ? 1 : 0))
-                .findFirst().orElseThrow();
-        if (currNode.getAttributes().getAttribute("isStation").equals(true) && addAsTransitStop) {
-            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
-                createStop(transitRouteStopList, currNode, newLink,
+        Node toNode = currLink.getToNode();
+        Node fromNode = currLink.getFromNode();
+        if (fromNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true) && addAsTransitStop) {
+            if (currLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
+                createStop(transitRouteStopList, currLink,
                         currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
             } else {
-                createStop(transitRouteStopList, currNode, linkList.get(linkList.size() - 1),
+                createStop(transitRouteStopList, linkList.get(linkList.size() - 1),
                         currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
             }
         }
-        linkList.add(newLink);
-        lastNode = currNode;
-        currNode = newLink.getToNode();
-        return Arrays.asList(lastNode, currNode);
+
+        List<Link> newLinkCandidates = toNode.getOutLinks().values().stream()
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .filter(l -> doubleCloseToZero(getDirectionOfLink(startLink) - getDirectionOfLink(l)))
+                .collect(Collectors.toList());
+//        assert (newLinkCandidates.size() == 1) : "Expected to encounter only one link in same direction!";
+        if (newLinkCandidates.isEmpty()) {
+            try {
+                newLinkCandidates.add(toNode.getOutLinks().values().stream()
+                        .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                        // Filter so that they have to be periodic
+                        .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(true))
+                        // Filter so that only links are relevant which do have the same direction modulo 180°
+                        .filter(l -> doubleCloseToZero(
+                                (getDirectionOfLink(l) - getDirectionOfLink(startLink) + Math.PI) %
+                                        (2 * Math.PI)))
+                        .findAny().orElseThrow());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        newLink = newLinkCandidates.get(0);
+        // Add last node so connection becomes periodic if start link is reached
+        linkList.add(currLink);
+        if (newLink.equals(startLink) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+            linkList.add(newLink);
+            createStop(transitRouteStopList, newLink,
+                    (currRouteStopCount - 1) * departure_delay - stop_length + 5,
+                    (currRouteStopCount - 1) * departure_delay + 5);
+        }
+        return newLink;
     }
 
-//    private Node moveToNextLink(ArrayList<Link> linkList, Node startNode,
-//                                Node currNode,
-//                                List<TransitRouteStop> transitRouteStopList,
-//                                String direction, int forwardBackwardDetermination, boolean addAsTransitStop) {
-//        Link newLink = null;
-//        Node tempNode = currNode;
-//
-//        Function<Coord, Double> getSameCoordComp = coord -> coord != null ? coord.getX() : 0;
-//        Function<Coord, Double> getOtherCoordComp = coord -> coord != null ? coord.getY() : 0;
-//        if (direction.equals("x")) {
-//            getSameCoordComp = Coord::getX;
-//            getOtherCoordComp = Coord::getY;
-//        } else if (direction.equals("y")) {
-//            getSameCoordComp = Coord::getY;
-//            getOtherCoordComp = Coord::getX;
-//        }
-//        Function<Coord, Double> finalGetSameCoordComp = getSameCoordComp;
-//        Function<Coord, Double> finalGetOtherCoordComp = getOtherCoordComp;
-//        newLink = currNode.getOutLinks().values().stream()
-//                .filter(l -> l.getAllowedModes().contains("train"))
-//                .filter(l -> finalGetOtherCoordComp.apply(l.getToNode().getCoord())
-//                        .equals(finalGetOtherCoordComp.apply(l.getCoord())) && Math
-//                        .signum(finalGetSameCoordComp.apply(l.getToNode().getCoord()) -
-//                                finalGetSameCoordComp.apply(tempNode.getCoord()))
-//                        == forwardBackwardDetermination).findFirst().orElseThrow();
-//        linkList.add(newLink);
-//        if (currNode.getAttributes().getAttribute("isStation").equals(true) && addAsTransitStop) {
-//            createStop(transitRouteStopList, currNode, newLink);
-//        }
-//        currNode = newLink.getToNode();
-//
-//        return currNode;
-//    }
-
-    private void createStop(List<TransitRouteStop> transitRouteStopList, Node currNode, Link link, double arrivalDelay,
-                            double departureDelay) {
-        Id<TransitStopFacility> stopId = Id.create(String.valueOf(link.getId()) + "_trStop", TransitStopFacility.class);
+    private void createStop(List<TransitRouteStop> transitRouteStopList, Link currLink,
+                            double arrivalDelay, double departureDelay) {
+        Id<TransitStopFacility> stopId = Id
+                .create(String.valueOf(currLink.getId()) + "_trStop", TransitStopFacility.class);
         TransitStopFacility transitStopFacility = null;
         if (!schedule.getFacilities().containsKey(stopId)) {
             transitStopFacility = transitScheduleFactory.createTransitStopFacility(
-                    stopId, currNode.getCoord(), false);
-            transitStopFacility.setLinkId(link.getId());
+                    stopId, currLink.getCoord(), false);
+            transitStopFacility.setLinkId(currLink.getId());
             schedule.addStopFacility(transitStopFacility);
         } else {
             transitStopFacility = schedule.getFacilities().get(stopId);

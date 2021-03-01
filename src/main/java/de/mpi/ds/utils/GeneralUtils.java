@@ -73,4 +73,13 @@ public class GeneralUtils {
     public static boolean doubleCloseToZero(double x) {
         return Math.abs(x) < EPSILON;
     }
+
+    public static double getDirectionOfLink(Link link) {
+        Coord from = link.getFromNode().getCoord();
+        Coord to = link.getToNode().getCoord();
+        double deltaX = to.getX() - from.getX();
+        double deltaY = to.getY() - from.getY();
+
+        return Math.atan2(deltaY, deltaX);
+    }
 }

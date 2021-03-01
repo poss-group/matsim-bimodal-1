@@ -8,10 +8,11 @@ import java.util.Random;
 public class ScenarioCreator {
     private final static Logger LOG = Logger.getLogger(ScenarioCreator.class.getName());
 
-    public final static String IS_FACILITY = "isFacility";
-    public final static String IS_STATION = "isStation";
+    public final static String IS_START_LINK = "isStartLink";
+    public final static String IS_STATION_NODE = "isStation";
     public final static String PERIODIC_LINK = "periodicConnection";
     public final static String NETWORK_MODE_TRAIN = "train";
+    public final static String NETWORK_MODE_CAR = "car";
 
     private NetworkCreator networkCreator;
     private PopulationCreator populationCreator;

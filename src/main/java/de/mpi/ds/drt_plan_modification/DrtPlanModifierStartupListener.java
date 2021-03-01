@@ -3,7 +3,6 @@ package de.mpi.ds.drt_plan_modification;
 import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -11,18 +10,16 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import org.matsim.contrib.util.distance.DistanceUtils;
-import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
-import org.matsim.core.utils.io.IOUtils;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.mpi.ds.utils.ScenarioCreator.IS_STATION;
+import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
+import static de.mpi.ds.utils.ScenarioCreator.IS_STATION_NODE;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
@@ -34,35 +31,34 @@ class DrtPlanModifierStartupListener implements StartupListener {
         this.privateCarMode = configGroup.getPrivateCarMode();
     }
 
-    private static Node searchTransferNode(Node fromNode, Node toNode, List<Coord> transitStopCoords,
-                                           Map<Coord, Node> coordToNode, String mode, double L) {
+    private static Link searchTransferLink(Link fromLink, Link toLink, List<Link> transitStopLinks,
+                                           String mode, double L) {
         if (mode.equals("wide_search")) {
-            Queue<Node> queue = new LinkedList<>();
-            List<Node> visited = new ArrayList<>();
-            queue.add(fromNode);
+            Queue<Link> queue = new LinkedList<>();
+            List<Link> visited = new ArrayList<>();
+            queue.add(fromLink);
             while (!queue.isEmpty()) {
-                Node current = queue.remove();
+                Link current = queue.remove();
                 visited.add(current);
-                Collection<? extends Link> outLinks = current.getOutLinks().values();
-                if (isPtStation(outLinks.stream())) {
+                if (current.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
                     return current;
                 }
-                // TODO check if this makes the method slow
+                // TODO check if this makes the method slow and makes sense for port on link routing
                 // Add closest connected nodes to queue (sorted by their distance to the toNode)
-                queue.addAll(outLinks.stream().map(Link::getToNode)
-                        .filter(e -> !visited.contains((e)))
+                queue.addAll(current.getToNode().getOutLinks().values().stream()
+                        .filter(e -> !visited.contains(e))
                         .sorted(Comparator
-                                .comparingDouble(n -> GeneralUtils
-                                        .calculateDistancePeriodicBC(n.getCoord(), toNode.getCoord(), L)))
+                                .comparingDouble(l -> GeneralUtils
+                                        .calculateDistancePeriodicBC(l, toLink, L)))
                         .collect(Collectors.toList()));
             }
         } else if (mode.equals("shortest_dist")) {
-            Coord min = transitStopCoords.stream()
+            Link result = transitStopLinks.stream()
                     .min(Comparator
-                            .comparingDouble(coord -> GeneralUtils
-                                    .calculateDistancePeriodicBC(coord, fromNode.getCoord(), L)))
+                            .comparingDouble(link -> GeneralUtils
+                                    .calculateDistancePeriodicBC(link, fromLink, L)))
                     .orElseThrow();
-            return coordToNode.get(min);
+            return result;
         }
         return null;
     }
@@ -74,21 +70,30 @@ class DrtPlanModifierStartupListener implements StartupListener {
 
         Scenario sc = event.getServices().getScenario();
         Network network = sc.getNetwork();
-        Map<Coord, Node> coordToNode = network.getNodes().entrySet().stream().collect(
-                Collectors.toMap(e -> e.getValue().getCoord(),
-                        e -> network.getNodes().get(e.getKey())));
 
-        List<Coord> transitStopCoords = sc.getTransitSchedule().getTransitLines().values().stream()
-                .flatMap(tl -> tl.getRoutes().values().stream()
-                        .map(tr -> tr.getStops().stream().map(stop -> stop.getStopFacility().getCoord())))
-                .flatMap(Function.identity())
+//        List<Link> transitStopLinks = sc.getTransitSchedule().getTransitLines().values().stream()
+//                .flatMap(tl -> tl.getRoutes().values().stream()
+//                        .map(tr -> tr.getStops().stream()
+//                                .map(stop -> network.getLinks().get(stop.getStopFacility().getLinkId()))))
+//                .flatMap(Function.identity())
+//                .collect(Collectors.toList());
+        List<Node> transitStopNodes = network.getNodes().values().stream()
+                .filter(node -> node.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+                .collect(Collectors.toList());
+        List<Link> transitStopInLinks = transitStopNodes.stream()
+                .flatMap(n -> n.getInLinks().values().stream())
+                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                .collect(Collectors.toList());
+        List<Link> transitStopOutLinks = transitStopNodes.stream()
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
 
         Node randomNode = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(true))
+                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
                 .findAny().orElseThrow();
         List<Double> trainDeltas = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(true))
+                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
                 .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
                 .map(n -> n.getCoord().getX())
                 .distinct()
@@ -136,40 +141,24 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 assert middleLeg != null;
                 // Only insert transit activities if leg mode is pt
                 if (middleLeg.getMode().equals(TransportMode.pt) && !privateCarMode) {
+                    Link firstLink = network.getLinks().get(firstAct.getLinkId());
+                    Link lastLink = network.getLinks().get(lastAct.getLinkId());
                     if (GeneralUtils
-                            .calculateDistancePeriodicBC(firstAct.getCoord(), lastAct.getCoord(), netDimsMinMax[1]) >
+                            .calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
                             zetaCut * trainDelta) {
-                        Node firstNode = coordToNode.get(firstAct.getCoord());
-                        Node lastNode = coordToNode.get(lastAct.getCoord());
                         Link dummyFirstLink = null;
                         Link dummyLastLink = null;
-                        if (!isPtStation(firstNode)) {
-                            Node dummyFirstNode = searchTransferNode(firstNode, lastNode, transitStopCoords,
-                                    coordToNode,
+                        if (!firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+                            dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopOutLinks,
                                     "shortest_dist", netDimsMinMax[1]);
-                            assert dummyFirstNode != null;
-                            Activity finalFirstAct = firstAct;
-                            dummyFirstLink = dummyFirstNode.getInLinks().values().stream()
-                                    .min(Comparator.comparingDouble(l ->
-                                            GeneralUtils
-                                                    .calculateDistancePeriodicBC(l.getCoord(),
-                                                            finalFirstAct.getCoord(),
-                                                            netDimsMinMax[1]))).orElseThrow();
                         }
-                        if (!isPtStation(lastNode)) {
-                            Node dummyLastNode = searchTransferNode(lastNode, firstNode, transitStopCoords, coordToNode,
+                        if (!lastLink.getFromNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+                            dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
                                     "shortest_dist", netDimsMinMax[1]);
-                            assert dummyLastNode != null;
-                            Activity finalLastAct = firstAct;
-//                            DistanceUtils.calculateDistance(dummyFirstCoord, dummyLastCoord);
-                            dummyLastLink = dummyLastNode.getInLinks().values().stream()
-                                    .min(Comparator.comparingDouble(l ->
-                                            GeneralUtils
-                                                    .calculateDistancePeriodicBC(l.getCoord(), finalLastAct.getCoord(),
-                                                            netDimsMinMax[1]))).orElseThrow();
                         }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
                         insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
+//                        middleLeg.setMode(TransportMode.car);
                     } else {
                         middleLeg.setMode(TransportMode.drt);
                     }
@@ -222,8 +211,9 @@ class DrtPlanModifierStartupListener implements StartupListener {
     private void insertTransferStops(Plan plan, Population population, Link dummy_first_link,
                                      Link dummy_last_link, boolean splittedFleet) {
         if (dummy_last_link != null) {
-            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
-            activity.setCoord(dummy_last_link.getToNode().getCoord());
+//            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
+//            activity.setCoord(dummy_last_link.getCoord());
+            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);
             if (splittedFleet)
@@ -236,10 +226,22 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
             else
                 plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
-            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
-            activity.setCoord(dummy_first_link.getToNode().getCoord());
+//            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
+//            activity.setCoord(dummy_first_link.getCoord());
+            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);
+        }
+    }
+
+    private static Node getPtNode(Link link) {
+        if (link.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+            return link.getToNode();
+        } else if (link.getFromNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+            return link.getFromNode();
+        } else {
+            LOG.error("Neither To no From Node is PT station");
+            return null;
         }
     }
 }

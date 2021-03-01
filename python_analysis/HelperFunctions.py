@@ -26,13 +26,18 @@ def combineModesSeriesStr(modesSeries):
             last = m
     return "-".join(result)
 
-def getAverageOcc(df, exclude_empty_vehicles=False):
-    if exclude_empty_vehicles == True:
+def getAverageOcc(df, exclude_empty_vehicles=False, count_idle_vehicles=False):
+    if exclude_empty_vehicles == True and count_idle_vehicles == False:
         df.drop(columns=["STAY", "0 pax"], inplace=True)
         weights = np.arange(1, len(df.columns) + 1)
-    else:
+    elif count_idle_vehicles == False and exclude_empty_vehicles == False:
+        df.drop(columns=["STAY"], inplace=True)
+        weights = np.arange(0, len(df.columns))
+    elif count_idle_vehicles == True and exclude_empty_vehicles == False:
         weights = np.zeros(len(df.columns))
         weights[1:] = np.arange(0, len(df.columns) - 1)
+    else:
+        raise Exception("Entered combination of modes not possible combination of modes")
 
     pass_sum = df.sum(axis=1)
     mean = (df.dot(weights) / pass_sum).mean()
