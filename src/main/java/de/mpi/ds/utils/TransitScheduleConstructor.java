@@ -184,6 +184,7 @@ public class TransitScheduleConstructor implements UtilComponent {
                 .filter(l -> doubleCloseToZero(getDirectionOfLink(startLink) - getDirectionOfLink(l)))
                 .collect(Collectors.toList());
 //        assert (newLinkCandidates.size() == 1) : "Expected to encounter only one link in same direction!";
+        // I no link is found look for periodic link in opposite direction
         if (newLinkCandidates.isEmpty()) {
             try {
                 newLinkCandidates.add(toNode.getOutLinks().values().stream()

@@ -24,11 +24,11 @@ import static de.mpi.ds.utils.ScenarioCreator.IS_STATION_NODE;
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
     private double zetaCut;
-    private boolean privateCarMode;
+    private String mode;
 
     DrtPlanModifierStartupListener(DrtPlanModifierConfigGroup configGroup) {
         this.zetaCut = configGroup.getZetaCut();
-        this.privateCarMode = configGroup.getPrivateCarMode();
+        this.mode = configGroup.getMode();
     }
 
     private static Link searchTransferLink(Link fromLink, Link toLink, List<Link> transitStopLinks,
@@ -140,30 +140,34 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 }
                 assert middleLeg != null;
                 // Only insert transit activities if leg mode is pt
-                if (middleLeg.getMode().equals(TransportMode.pt) && !privateCarMode) {
-                    Link firstLink = network.getLinks().get(firstAct.getLinkId());
-                    Link lastLink = network.getLinks().get(lastAct.getLinkId());
-                    if (GeneralUtils
-                            .calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
-                            zetaCut * trainDelta) {
-                        Link dummyFirstLink = null;
-                        Link dummyLastLink = null;
-                        if (!firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
-                            dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopOutLinks,
-                                    "shortest_dist", netDimsMinMax[1]);
-                        }
-                        if (!lastLink.getFromNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
-                            dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
-                                    "shortest_dist", netDimsMinMax[1]);
-                        }
+                if (mode.equals("bimodal")) {
+                    if (middleLeg.getMode().equals(TransportMode.pt)) {
+                        Link firstLink = network.getLinks().get(firstAct.getLinkId());
+                        Link lastLink = network.getLinks().get(lastAct.getLinkId());
+                        if (GeneralUtils
+                                .calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
+                                zetaCut * trainDelta) {
+                            Link dummyFirstLink = null;
+                            Link dummyLastLink = null;
+                            if (!firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+                                dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopOutLinks,
+                                        "shortest_dist", netDimsMinMax[1]);
+                            }
+                            if (!lastLink.getFromNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+                                dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
+                                        "shortest_dist", netDimsMinMax[1]);
+                            }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
-                        insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
+                            insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
 //                        middleLeg.setMode(TransportMode.car);
-                    } else {
-                        middleLeg.setMode(TransportMode.drt);
+                        } else {
+                            middleLeg.setMode(TransportMode.drt);
+                        }
                     }
-                } else if (privateCarMode) {
+                } else if (mode.equals("car")) {
                     middleLeg.setMode(TransportMode.car);
+                } else if (mode.equals("unimodal")) {
+                    middleLeg.setMode(TransportMode.drt);
                 }
             }
         }
@@ -211,9 +215,9 @@ class DrtPlanModifierStartupListener implements StartupListener {
     private void insertTransferStops(Plan plan, Population population, Link dummy_first_link,
                                      Link dummy_last_link, boolean splittedFleet) {
         if (dummy_last_link != null) {
-//            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
-//            activity.setCoord(dummy_last_link.getCoord());
-            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_link.getCoord());
+            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
+            activity.setCoord(dummy_last_link.getCoord());
+//            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);
             if (splittedFleet)
@@ -226,9 +230,9 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
             else
                 plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
-//            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
-//            activity.setCoord(dummy_first_link.getCoord());
-            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_link.getCoord());
+            Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
+            activity.setCoord(dummy_first_link.getCoord());
+//            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);
         }

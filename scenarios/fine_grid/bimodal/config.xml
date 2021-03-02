@@ -5,7 +5,7 @@
     <module name="drtPlanModifier">
         <param name="modifyPlans" value="true"/>
         <param name="zetaCut" value="1"/>
-        <param name="privateCarMode" value="false"/>
+        <param name="mode" value="bimodal"/>
     </module>
 
     <module name="global">

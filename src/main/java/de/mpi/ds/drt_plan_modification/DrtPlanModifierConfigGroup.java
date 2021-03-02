@@ -1,8 +1,7 @@
 package de.mpi.ds.drt_plan_modification;
 
-import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import com.google.common.base.Verify;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ReflectiveConfigGroup;
 
 import java.util.Map;
@@ -13,12 +12,12 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
     private final static String MODIFY_PLANS = "modifyPlans";
     //    private final static String DRT_MODE = "drtMode";
     private final static String ZETA_CUT = "zetaCut";
-    private final static String PRIVATE_CAR_MODE = "privateCarMode";
+    private final static String MODE = "mode";
 
     private boolean modifyPlans = true;
     //    private String drtMode = "drt";
     private double zetaCut = 0;
-    private boolean privateCarMode = false;
+    private String mode = "bimodal";
 
     public DrtPlanModifierConfigGroup() {
         super(NAME);
@@ -48,9 +47,16 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
 //        comments.put(DRT_MODE, "Defaults to drt, for multimode scenarios it should be smth. else like acc_egr_drt");
         comments.put(ZETA_CUT,
                 "Trips with distance longer than gammaCut*l where l is the public transport grid distance do get assigned as pt trips");
-        comments.put(PRIVATE_CAR_MODE,
-                "If true all plans gets modified so that legs will have travelmode \"car\". Defaults to false.");
+        comments.put(MODE,
+                "Transport mode (bimodal/unimodal/car)");
         return comments;
+    }
+
+    @Override
+    protected void checkConsistency(Config config) {
+        super.checkConsistency(config);
+        Verify.verify(mode.equals("bimodal") || mode.equals("unimodal") || mode.equals("car"),
+                "Mode must be one of bimodal,unimodal,car");
     }
 
     @StringGetter(MODIFY_PLANS)
@@ -73,13 +79,13 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         this.zetaCut = gammaCut;
     }
 
-    @StringGetter(PRIVATE_CAR_MODE)
-    public boolean getPrivateCarMode() {
-        return privateCarMode;
+    @StringGetter(MODE)
+    public String getMode() {
+        return mode;
     }
 
-    @StringSetter(PRIVATE_CAR_MODE)
-    public void setPrivateCarMode(boolean privateCarMode) {
-        this.privateCarMode = privateCarMode;
+    @StringSetter(MODE)
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 }

@@ -49,12 +49,26 @@ public class MatsimMain {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
             runMultipleNetworks(config, args[1], args[2], args[3]);
+//            manuallyStartMultipleNeworks(args[0]);
 //            runRealWorldScenario(config);
 //            run(config, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
         LOG.info("Simulation finished");
+    }
+
+    private static void manuallyStartMultipleNeworks(String path) throws Exception {
+        String[] modes = new String[]{"create-input", "bimodal"};//, "unimodal", "car"})
+        for (double ell = 500; ell <= 5000; ell += 500) {
+            for (int N_drt = 100; N_drt < 200; N_drt += 100) {
+                for (String mode : modes) {
+                    Config config = ConfigUtils.loadConfig(path, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+                            new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+                    runMultipleNetworks(config, String.valueOf(ell), String.valueOf(N_drt), mode);
+                }
+            }
+        }
     }
 
     private static void runRealWorldScenario(Config config) throws Exception {
@@ -69,11 +83,8 @@ public class MatsimMain {
     }
 
     private static void runMultipleNetworks(Config config, String ell, String N_drt, String mode) throws Exception {
-        double configuredZetaCut = DrtPlanModifierConfigGroup.get(config).getZetaCut();
-
         String basicOutPath = config.controler().getOutputDirectory().concat(N_drt).concat("drt");
         String varyParameter = "l_";
-//        for (double x = 500; x <= 5000; x += 500) {
         double x = Double.parseDouble(ell);
         String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + (int) x).toString();
         String inputPath = Paths.get(iterationSpecificPath, "input").toString();
@@ -96,12 +107,10 @@ public class MatsimMain {
         MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
                 .setVehiclesFile(drtFleetPath);
 
-//        for (String mode : new String[]{"bimodal", "unimodal", "car"}) {
         String outPath = Paths.get(iterationSpecificPath, mode).toString();
         if (mode.equals("create-input")) {
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100)
-                    .setRailGridSpacing(x).setnDrtVehicles(Integer.parseInt(N_drt)).setnRequests(100000)
-                    .build();
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setRailGridSpacing(x)
+                    .setnDrtVehicles(Integer.parseInt(N_drt)).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
@@ -112,19 +121,8 @@ public class MatsimMain {
             scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
             LOG.info("Finished creating drt fleet");
             return;
-        } else if (mode.equals("bimodal")) {
-            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
-            //Only necessary for executing this in a loop, not for cluster:
-//                DrtPlanModifierConfigGroup.get(config).setZetaCut(configuredZetaCut);
-        } else if (mode.equals("unimodal")) {
-            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(false);
-            DrtPlanModifierConfigGroup.get(config).setZetaCut(9999999);
-        } else if (mode.equals("car")) {
-            DrtPlanModifierConfigGroup.get(config).setPrivateCarMode(true);
-//                    MultiModeDrtConfigGroup.get(config).getModalElements().clear();
-//            }
         } else {
-            throw new Exception("mode has to be create-input/bimodal/unimodal/car");
+            DrtPlanModifierConfigGroup.get(config).setMode(mode);
         }
 
         config.controler().setOutputDirectory(outPath);
