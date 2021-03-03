@@ -23,21 +23,23 @@ public class PopulationCreator implements UtilComponent {
     private String transportMode;
     private boolean isGridNetwork;
     private double carGridSpacing;
+    private boolean smallLinksCloseToNodes;
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
-                             boolean isGridNetwork, double carGridSpacing) {
+                             boolean isGridNetwork, double carGridSpacing, boolean smallLinksCloseToNodes) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
         this.transportMode = transportMode;
         this.isGridNetwork = isGridNetwork;
         this.carGridSpacing = carGridSpacing;
+        this.smallLinksCloseToNodes = smallLinksCloseToNodes;
     }
 
     public static void main(String... args) {
         String networkPath = "./output/network_diag.xml.gz";
         PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt,
-                true, 100);
+                true, 100, false);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -87,12 +89,17 @@ public class PopulationCreator implements UtilComponent {
             startLinks = net.getLinks().values().stream()
                     .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true)).collect(
                             Collectors.toList());
+            //TODO maybe make this with an additional node attribute (help node or normal node) but works also likes this
             startInLinks = startLinks.stream()
-                    .filter(l -> isNeighbourNode(l.getFromNode())).collect(Collectors.toList());
+                    .filter(l -> isInsertedNode(l.getFromNode())).collect(Collectors.toList());
             startOutLinks = startLinks.stream()
-                    .filter(l -> isNeighbourNode(l.getToNode())).collect(Collectors.toList());
+                    .filter(l -> isInsertedNode(l.getToNode())).collect(Collectors.toList());
         } else {
             startLinks = new ArrayList<>(net.getLinks().values());
+            startInLinks = startLinks;
+            startOutLinks = startLinks;
+        }
+        if (!smallLinksCloseToNodes) {
             startInLinks = startLinks;
             startOutLinks = startLinks;
         }
@@ -206,7 +213,7 @@ public class PopulationCreator implements UtilComponent {
         return Math.exp(-1. / z) * Math.pow(z, -k);
     }
 
-    boolean isNeighbourNode(Node node) {
+    boolean isInsertedNode(Node node) {
         String nodeId = node.getId().toString();
         return (nodeId.contains("north") || nodeId.contains("west") ||nodeId.contains("south") ||nodeId.contains("east"));
     }

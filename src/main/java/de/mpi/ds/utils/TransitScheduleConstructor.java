@@ -205,9 +205,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         linkList.add(currLink);
         if (newLink.equals(startLink) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
             linkList.add(newLink);
-            createStop(transitRouteStopList, newLink,
-                    (currRouteStopCount - 1) * departure_delay - stop_length + 5,
-                    (currRouteStopCount - 1) * departure_delay + 5);
+            createStop(transitRouteStopList, newLink, transitIntervalTime, transitIntervalTime);
         }
         return newLink;
     }

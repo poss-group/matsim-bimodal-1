@@ -25,7 +25,8 @@ public class ScenarioCreator {
                            double freeSpeedTrainForSchedule, double numberOfLanes, int requestEndTime, int nRequests,
                            double transitEndTime, double departureIntervalTime, double transitStopLength,
                            int nDrtVehicles, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
-                           long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections) {
+                           long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
+                           boolean smallLinksCloseToStations) {
 
         assert railGridSpacing > carGridSpacing :
                 "Pt grid spacing must be bigger than drt grid spacing";
@@ -34,9 +35,9 @@ public class ScenarioCreator {
 
         this.random = new Random(seed);
         this.networkCreator = new NetworkCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity,
-                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random);
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random, smallLinksCloseToStations);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                carGridSpacing);
+                carGridSpacing, smallLinksCloseToStations);
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railGridSpacing, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,

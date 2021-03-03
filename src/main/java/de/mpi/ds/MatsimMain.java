@@ -59,9 +59,9 @@ public class MatsimMain {
     }
 
     private static void manuallyStartMultipleNeworks(String path) throws Exception {
-        String[] modes = new String[]{"create-input", "bimodal"};//, "unimodal", "car"})
+        String[] modes = new String[]{"create-input"};//, "bimodal", "unimodal", "car"};
         for (double ell = 500; ell <= 5000; ell += 500) {
-            for (int N_drt = 100; N_drt < 200; N_drt += 100) {
+            for (int N_drt = 300; N_drt < 400; N_drt += 100) {
                 for (String mode : modes) {
                     Config config = ConfigUtils.loadConfig(path, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                             new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
@@ -109,7 +109,7 @@ public class MatsimMain {
 
         String outPath = Paths.get(iterationSpecificPath, mode).toString();
         if (mode.equals("create-input")) {
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setRailGridSpacing(x)
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setRailGridSpacing(x).setSmallLinksCloseToNodes(true)
                     .setnDrtVehicles(Integer.parseInt(N_drt)).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);

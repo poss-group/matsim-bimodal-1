@@ -28,6 +28,7 @@ public class ScenarioCreatorBuilder {
 
     private boolean diagonalConnetions = true;
     private boolean isGridNetwork = true;
+    private boolean smallLinksCloseToNodes = false;
 
     public ScenarioCreatorBuilder setRailGridSpacing(double railGridSpacing) {
         this.railGridSpacing = railGridSpacing;
@@ -134,10 +135,16 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setSmallLinksCloseToNodes(boolean smallLinksCloseToNodes) {
+        this.smallLinksCloseToNodes = smallLinksCloseToNodes;
+        return this;
+    }
+
     public ScenarioCreator build() {
         return new ScenarioCreator(systemSize, railGridSpacing, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions);
+                drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes);
     }
+
 }

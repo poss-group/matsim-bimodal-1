@@ -42,8 +42,7 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.ScenarioCreator.NETWORK_MODE_TRAIN;
-import static de.mpi.ds.utils.ScenarioCreator.PERIODIC_LINK;
+import static de.mpi.ds.utils.ScenarioCreator.*;
 
 public class TransitScheduleCreator implements UtilComponent {
     private static final VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1",
@@ -100,7 +99,7 @@ public class TransitScheduleCreator implements UtilComponent {
                                       PopulationFactory populationFactory, Network net, Vehicles vehicles) {
 
         List<Node> stationNodes = net.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute("isStation").equals(true)).collect(Collectors.toList());
+                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true)).collect(Collectors.toList());
 
         // !doubleCloseToZeroCondition for Periodic BC, otherwise two trains would share one line effectively at the
         // borders or just delete last element of each list
@@ -111,6 +110,7 @@ public class TransitScheduleCreator implements UtilComponent {
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                 .filter(l -> l.getToNode().getCoord().getX() > l.getFromNode().getCoord().getX())
+                .filter(l -> l.getCoord().getY() != systemSize)
                 .collect(Collectors.toList());
         List<Link> startLinksXDecDir = stationNodes.stream()
                 .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
@@ -119,6 +119,7 @@ public class TransitScheduleCreator implements UtilComponent {
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                 .filter(l -> l.getToNode().getCoord().getX() < l.getFromNode().getCoord().getX())
+                .filter(l -> l.getCoord().getY() != systemSize)
                 .collect(Collectors.toList());
 
         List<Link> startLinksYDir = stationNodes.stream()
@@ -127,14 +128,16 @@ public class TransitScheduleCreator implements UtilComponent {
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                 .filter(l -> l.getToNode().getCoord().getY() > l.getFromNode().getCoord().getY())
+                .filter(l -> l.getCoord().getX() != systemSize)
                 .collect(Collectors.toList());
-        List<Link> startLinkYDecDir = stationNodes.stream()
+        List<Link> startLinksYDecDir = stationNodes.stream()
                 .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
                 .lastEntry().getValue().stream()
                 .flatMap(n -> n.getOutLinks().values().stream())
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                 .filter(l -> l.getToNode().getCoord().getY() < l.getFromNode().getCoord().getY())
+                .filter(l -> l.getCoord().getX() != systemSize)
                 .collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
@@ -148,11 +151,16 @@ public class TransitScheduleCreator implements UtilComponent {
 //                        .getX() - startNodesX
 //                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
+        LOG.info("Rail grid spacing: " + railGridSpacing);
+        LOG.info(startLinksXDir.size());
+        LOG.info(startLinksXDecDir.size());
+        LOG.info(startLinksYDir.size());
+        LOG.info(startLinksYDecDir.size());
         for (int i = 0; i < startLinksXDir.size(); i++) {
             transitScheduleConstructor.createLine(startLinksXDir.get(i));
             transitScheduleConstructor.createLine(startLinksXDecDir.get(i));
             transitScheduleConstructor.createLine(startLinksYDir.get(i));
-            transitScheduleConstructor.createLine(startLinkYDecDir.get(i));
+            transitScheduleConstructor.createLine(startLinksYDecDir.get(i));
         }
     }
 }

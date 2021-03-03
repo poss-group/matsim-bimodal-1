@@ -18,6 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
 import static de.mpi.ds.utils.ScenarioCreator.IS_STATION_NODE;
 
@@ -48,15 +49,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 queue.addAll(current.getToNode().getOutLinks().values().stream()
                         .filter(e -> !visited.contains(e))
                         .sorted(Comparator
-                                .comparingDouble(l -> GeneralUtils
-                                        .calculateDistancePeriodicBC(l, toLink, L)))
+                                .comparingDouble(l -> calculateDistancePeriodicBC(l, toLink, L)))
                         .collect(Collectors.toList()));
             }
         } else if (mode.equals("shortest_dist")) {
             Link result = transitStopLinks.stream()
                     .min(Comparator
-                            .comparingDouble(link -> GeneralUtils
-                                    .calculateDistancePeriodicBC(link, fromLink, L)))
+                            .comparingDouble(link -> calculateDistancePeriodicBC(link, fromLink, L)))
                     .orElseThrow();
             return result;
         }
@@ -88,6 +87,10 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .flatMap(n -> n.getOutLinks().values().stream())
                 .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
+        // TODO change to link attribute also (more general but more memory consumption)
+        if (transitStopInLinks.size() != transitStopOutLinks.size()) {
+            transitStopInLinks = transitStopOutLinks;
+        }
 
         Node randomNode = network.getNodes().values().stream()
                 .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
@@ -144,9 +147,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     if (middleLeg.getMode().equals(TransportMode.pt)) {
                         Link firstLink = network.getLinks().get(firstAct.getLinkId());
                         Link lastLink = network.getLinks().get(lastAct.getLinkId());
-                        if (GeneralUtils
-                                .calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
-                                zetaCut * trainDelta) {
+                        if (calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) > zetaCut * trainDelta) {
                             Link dummyFirstLink = null;
                             Link dummyLastLink = null;
                             if (!firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {

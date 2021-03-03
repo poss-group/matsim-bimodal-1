@@ -63,10 +63,12 @@ public class NetworkCreator implements UtilComponent {
     private double numberOfLanes;
     private boolean diagonalConnections;
     private Random random;
+    private boolean smallLinksCloseToNodes;
 
     public NetworkCreator(double systemSize, double railGridSpacing, double carGridSpacing,
                           double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
-                          double freeSpeedCar, boolean diagonalConnections, Random random) {
+                          double freeSpeedCar, boolean diagonalConnections, Random random,
+                          boolean smallLinksCloseToNodes) {
         this.systemSize = systemSize;
         this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
@@ -77,6 +79,7 @@ public class NetworkCreator implements UtilComponent {
         this.diagonalConnections = diagonalConnections;
         this.ptInterval = (int) (railGridSpacing / carGridSpacing);
         this.random = random;
+        this.smallLinksCloseToNodes = smallLinksCloseToNodes;
     }
 
     public static void main(String... args) {
@@ -192,7 +195,7 @@ public class NetworkCreator implements UtilComponent {
             makeDiagConnections(net, fac);
         }
         // this has to be done second because diagonal connections where also introduced before
-        putNodesCloseToStations(net, fac, createTrainLanes);
+        putNodesCloseToStations(net, fac);
         try {
             File outFile = new File(path);
             // create output folder if necessary
@@ -280,37 +283,14 @@ public class NetworkCreator implements UtilComponent {
     /**
      * This method adds nodes close to the nodes where the stations are going to be to reduce transitwalks of passengers
      *
-     * @param net              the network
-     * @param fac              the network factory
-     * @param createTrainLanes
+     * @param net the network
+     * @param fac the network factory
      */
-    private void putNodesCloseToStations(Network net, NetworkFactory fac,
-                                         boolean createTrainLanes) {
-//        List<Node> stations = net.getNodes().values().stream()
-//                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(true)).collect(Collectors.toList());
-//        List<Node> nonStations = net.getNodes().values().stream()
-//                .filter(n -> n.getAttributes().getAttribute(IS_STATION).equals(false)).collect(Collectors.toList());
-
-//        for (Node n : stations) {
-//            for (Link link : n.getInLinks().values()) {
-//                divide(net, fac, link, "in", createTrainLanes);
-//            }
-//            for (Link link : n.getOutLinks().values()) {
-//                divide(net, fac, link, "out", createTrainLanes);
-//            }
-//        }
-
+    private void putNodesCloseToStations(Network net, NetworkFactory fac) {
         // For each node so that there are no possible "U turns" in simulations (facilities are actually links)
         // Not just like nodes = net.getNodes().values() because then iteration is over the reference (nodes grow in
         // every iteration
         List<Node> nodes = new ArrayList<>(net.getNodes().values());
-//        Comparator<Link> compareModeThenFromName = Comparator
-//                //TODO change to .. ? .. : ..
-//                .comparing((Link l) -> !l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-//                .thenComparing(l -> l.getFromNode().toString());
-//        Comparator<Link> compareModeThenToName = Comparator
-//                .comparing((Link l) -> !l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-//                .thenComparing(l -> l.getToNode().toString());
         double east = 0;
         double north = Math.PI / 2;
         double west = Math.PI;
@@ -325,33 +305,32 @@ public class NetworkCreator implements UtilComponent {
                     .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                     .collect(Collectors.toList());
 
-//            List<Link> outLinksEastNonPt = getLinksWithDirection(outLinksNonPeriodic, east, NETWORK_MODE_CAR);
-//            List<Link> inLinksEastNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, east, NETWORK_MODE_CAR);
-//            List<Link> outLinksNorthNonPt = getLinksWithDirection(outLinksNonPeriodic, north, NETWORK_MODE_CAR);
-//            List<Link> inLinksNorthNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, north, NETWORK_MODE_CAR);
-//            List<Link> outLinksSouthNonPt = getLinksWithDirection(outLinksNonPeriodic, south, NETWORK_MODE_CAR);
-//            List<Link> inLinksSouthNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, south, NETWORK_MODE_CAR);
-//            List<Link> outLinksWestNonPt = getLinksWithDirection(outLinksNonPeriodic, west, NETWORK_MODE_CAR);
-//            List<Link> inLinksWestNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, west, NETWORK_MODE_CAR);
-//
-//            assert (inLinksEastNonPt.size() <= 1 && outLinksEastNonPt.size() <= 1 && inLinksNorthNonPt.size() <= 1 &&
-//                    outLinksNorthNonPt.size() <= 1 && inLinksWestNonPt.size() <= 1 && outLinksWestNonPt.size() <= 1 &&
-//                    inLinksSouthNonPt.size() <= 1 &&
-//                    outLinksSouthNonPt.size() <= 1) : "Expected to find max one in/out link in given direction";
-            for (double dir : neighbourToAddDirections) {
-                List<Link> inLinksNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, dir, NETWORK_MODE_CAR);
-                List<Link> outLinksNonPt = getLinksWithDirection(outLinksNonPeriodic, dir, NETWORK_MODE_CAR);
-                assert (inLinksNonPt.size() <= 1 &&
-                        outLinksNonPt.size() <= 1) : "Expected to find max one in/out link in given direction";
-                if (!inLinksNonPt.isEmpty() && !outLinksNonPt.isEmpty()) {
-                    divide(net, fac, outLinksNonPt.get(0), "out", true);
-                    divide(net, fac, inLinksNonPt.get(0), "in", true);
-                    break;
+            if (smallLinksCloseToNodes) {
+                for (double dir : neighbourToAddDirections) {
+                    List<Link> inLinksNonPt = getLinksWithOppositeDirection(inLinksNonPeriodic, dir, NETWORK_MODE_CAR);
+                    List<Link> outLinksNonPt = getLinksWithDirection(outLinksNonPeriodic, dir, NETWORK_MODE_CAR);
+                    assert (inLinksNonPt.size() <= 1 &&
+                            outLinksNonPt.size() <= 1) : "Expected to find max one in/out link in given direction";
+                    if (!inLinksNonPt.isEmpty() && !outLinksNonPt.isEmpty()) {
+                        divide(net, fac, outLinksNonPt.get(0), "out", true);
+                        divide(net, fac, inLinksNonPt.get(0), "in", true);
+                        break;
+                    }
                 }
+            } else {
+                List<Link> outLinksNonPt = null;
+                int i = 0;
+                do {
+                    double dir = neighbourToAddDirections[i];
+                    outLinksNonPt = getLinksWithDirection(outLinksNonPeriodic, dir, NETWORK_MODE_CAR);
+                    i++;
+                } while (outLinksNonPt.isEmpty());
+                outLinksNonPt.get(0).getAttributes().putAttribute(IS_START_LINK, true);
             }
             if (n.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
                 for (double dir : neighbourToAddDirections) {
-                    List<Link> inLinksPt = getLinksWithOppositeDirection(inLinksNonPeriodic, dir, NETWORK_MODE_TRAIN);
+                    List<Link> inLinksPt = getLinksWithOppositeDirection(inLinksNonPeriodic, dir,
+                            NETWORK_MODE_TRAIN);
                     List<Link> outLinksPt = getLinksWithDirection(outLinksNonPeriodic, dir,
                             NETWORK_MODE_TRAIN);
                     assert (inLinksPt.size() <= 1 &&
@@ -361,7 +340,6 @@ public class NetworkCreator implements UtilComponent {
                         divide(net, fac, inLinksPt.get(0), "in", false);
                     }
                 }
-
             }
         }
     }
