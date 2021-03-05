@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
+import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistributionNotNormalized;
 import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
 
 public class PopulationCreator implements UtilComponent {
@@ -55,11 +56,12 @@ public class PopulationCreator implements UtilComponent {
         double xy_1 = netDimsMinMax[1];
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
         InverseTransformSampler sampler = new InverseTransformSampler(
-                a -> 1 / (xy_1 - xy_0),
+//                x -> taxiDistDistributionNotNormalized(x, 4000, 3.1),
+                x -> 1 / (xy_1 - xy_0),
                 false,
-                xy_0,
+                xy_0+0.0001,
                 xy_1/2, // Because Periodic BC
-                10000,
+                (int) 1e5,
                 random);
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -207,11 +209,6 @@ public class PopulationCreator implements UtilComponent {
                 .orElseThrow();
     }
 
-
-    public double taxiDistDistributionNotNormalized(double x, double mean, double k) {
-        double z = x / mean;
-        return Math.exp(-1. / z) * Math.pow(z, -k);
-    }
 
     boolean isInsertedNode(Node node) {
         String nodeId = node.getId().toString();

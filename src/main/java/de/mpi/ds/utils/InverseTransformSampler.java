@@ -1,8 +1,11 @@
 package de.mpi.ds.utils;
 
+import org.apache.commons.math3.special.Gamma;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.function.Function;
 
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
@@ -34,7 +37,7 @@ public class InverseTransformSampler {
         cummulative_values = new double[N];
 
         for (int i = 0; i < N; i++) {
-            arg = x0 + (double) i / (N-1) * (x1 - x0);
+            arg = x0 + (double) i / (N - 1) * (x1 - x0);
             double value = function.apply(arg);
             cumsum += (arg - last_arg) * value;
             domain[i] = arg;
@@ -43,7 +46,7 @@ public class InverseTransformSampler {
             last_arg = arg;
         }
         if (isNormalized) {
-            assert doubleCloseToZero(cumsum) : "distribution is not normalized (on given domain), integral: "
+            assert doubleCloseToZero(cumsum - 1) : "distribution is not normalized (on given domain), integral: "
                     .concat(String.valueOf(cumsum));
         } else {
             double finalCumsum = cumsum;
@@ -56,30 +59,6 @@ public class InverseTransformSampler {
         double randDouble = random.nextDouble();
         int idx = search(randDouble, cummulative_values);
         return domain[idx];
-    }
-
-
-    public static void main(String[] args) {
-        try {
-            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
-                    100000, new Random());
-//            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
-//                    10000,
-//                    10000);
-//            InverseTransformSampler sampler = new InverseTransformSampler(
-//            x -> taxiDistDistributionNotNormalized(x, 2000, 3), false, 0.001, 10000, (int) 1E5);
-//            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
-            StringBuilder testout = new StringBuilder();
-            for (int i = 0; i < (int) 1E5; i++) {
-                testout.append(String.valueOf(sampler.getSample())).append("\n");
-//                testout.append(String.valueOf(sampler.probs_values[i])).append("\n");
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter("testout.csv"));
-            writer.write(testout.toString());
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public static int search(double value, double[] a) throws Exception {
@@ -109,6 +88,34 @@ public class InverseTransformSampler {
         }
         // lo == hi + 1
         return (a[lo] - value) < (value - a[hi]) ? lo : hi;
+    }
+
+    public static void main(String[] args) {
+        try {
+//            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
+//                    100000, new Random());
+//            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
+//                    10000,
+//                    10000);
+            InverseTransformSampler sampler = new InverseTransformSampler(
+                    x -> taxiDistDistributionNotNormalized(x, 4000, 3.1), false, 0.0001, 10000, (int) 1e5, new Random());
+//            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
+            StringBuilder testout = new StringBuilder();
+            for (int i = 0; i < (int) 1E5; i++) {
+                testout.append(String.valueOf(sampler.getSample())).append("\n");
+//                testout.append(String.valueOf(sampler.probs_values[i])).append("\n");
+            }
+            BufferedWriter writer = new BufferedWriter(new FileWriter("testout.csv"));
+            writer.write(testout.toString());
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static double taxiDistDistributionNotNormalized(double x, double mean, double k) {
+        double z = x / mean;
+        return Math.exp(-(k-2)/z) * Math.pow(z, -k);
     }
 
     public static double normalDist(double x, double mu, double sig) {

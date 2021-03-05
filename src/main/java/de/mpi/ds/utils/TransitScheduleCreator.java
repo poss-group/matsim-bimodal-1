@@ -37,7 +37,6 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -53,21 +52,23 @@ public class TransitScheduleCreator implements UtilComponent {
     private double freeSpeedTrain;
     private double systemSize;
     private double transitEndTime;
-    private double railGridSpacing;
+    private int railInterval;
     private double transitStopLength;
     private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
+    private double carGridSpacing;
 
-    public TransitScheduleCreator(double systemSize, double railGridSpacing, double freeSpeedTrain,
+    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain,
                                   double transitEndTime, double transitStopLength, double freeSpeedTrainForSchedule,
-                                  double departureIntervalTime) {
-        this.railGridSpacing = railGridSpacing;
+                                  double departureIntervalTime, double carGridSpacing) {
+        this.railInterval = railInterval;
         this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
         this.transitEndTime = transitEndTime;
         this.transitStopLength = transitStopLength;
         this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.departureIntervalTime = departureIntervalTime;
+        this.carGridSpacing = carGridSpacing;
     }
 
     public static void main(String[] args) {
@@ -141,7 +142,7 @@ public class TransitScheduleCreator implements UtilComponent {
                 .collect(Collectors.toList());
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, railGridSpacing / freeSpeedTrain, transitStopLength, 0,
+                populationFactory, net, schedule, vehicles, railInterval*carGridSpacing / freeSpeedTrain, transitStopLength, 0,
                 transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule, departureIntervalTime);
 
 //        LOG.info(
@@ -151,7 +152,7 @@ public class TransitScheduleCreator implements UtilComponent {
 //                        .getX() - startNodesX
 //                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
 
-        LOG.info("Rail grid spacing: " + railGridSpacing);
+        LOG.info("Rail grid spacing: " + railInterval*carGridSpacing);
         LOG.info(startLinksXDir.size());
         LOG.info(startLinksXDecDir.size());
         LOG.info(startLinksYDir.size());

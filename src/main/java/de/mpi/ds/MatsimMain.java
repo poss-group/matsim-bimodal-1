@@ -48,7 +48,7 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runRealWorldScenario(config);
 //            run(config, false);
@@ -59,20 +59,22 @@ public class MatsimMain {
     }
 
     private static void manuallyStartMultipleNeworks(String path) throws Exception {
-        String[] modes = new String[]{"create-input"};//, "bimodal", "unimodal", "car"};
-        for (double ell = 500; ell <= 5000; ell += 500) {
+        String[] modes = new String[]{"create-input", "bimodal"};//, "unimodal", "car"};
+        String carGridSpacingString = "200";
+        for (int railInterval = 2; railInterval <= 25; railInterval += 2) {
             for (int N_drt = 300; N_drt < 400; N_drt += 100) {
                 for (String mode : modes) {
                     Config config = ConfigUtils.loadConfig(path, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                             new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-                    runMultipleNetworks(config, String.valueOf(ell), String.valueOf(N_drt), mode);
+                    runMultipleNetworks(config, String.valueOf(railInterval), String.valueOf(N_drt),
+                            carGridSpacingString, mode);
                 }
             }
         }
     }
 
     private static void runRealWorldScenario(Config config) throws Exception {
-        ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setnDrtVehicles(20).setnRequests(10000)
+        ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setNDrtVehicles(20).setNRequests(10000)
                 .setDrtOperationEndTime(3600).setTransportMode(TransportMode.drt).setGridNetwork(false).build();
         scenarioCreator.createPopulation("population.xml.gz", "network.xml");
         scenarioCreator.createDrtFleet("network.xml", "drtVehicles.xml");
@@ -82,11 +84,14 @@ public class MatsimMain {
         run(config, false);
     }
 
-    private static void runMultipleNetworks(Config config, String ell, String N_drt, String mode) throws Exception {
+    private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
+                                            String N_drt, String mode) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory().concat(N_drt).concat("drt");
         String varyParameter = "l_";
-        double x = Double.parseDouble(ell);
-        String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + (int) x).toString();
+        int railInterval = Integer.parseInt(railIntervalString);
+        double carGridSpacing = Double.parseDouble(carGridSpacingString);
+        String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + (int) (railInterval * carGridSpacing))
+                .toString();
         String inputPath = Paths.get(iterationSpecificPath, "input").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
@@ -109,8 +114,9 @@ public class MatsimMain {
 
         String outPath = Paths.get(iterationSpecificPath, mode).toString();
         if (mode.equals("create-input")) {
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setRailGridSpacing(x).setSmallLinksCloseToNodes(true)
-                    .setnDrtVehicles(Integer.parseInt(N_drt)).build();
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
+                    .setRailInterval(railInterval).setSmallLinksCloseToNodes(true)
+                    .setNDrtVehicles(Integer.parseInt(N_drt)).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath, true);
             LOG.info("Finished creating network\nCreating population for network");
@@ -124,19 +130,22 @@ public class MatsimMain {
         } else {
             DrtPlanModifierConfigGroup.get(config).setMode(mode);
         }
+//        if (mode.equals("car")) {
+//            config.removeModule(MultiModeDrtConfigGroup.GROUP_NAME);
+//        }
 
         config.controler().setOutputDirectory(outPath);
         LOG.info("Running simulation");
         run(config, false);
-        LOG.info("Finished simulation with " + varyParameter + " = " + x);
+        LOG.info("Finished simulation with " + varyParameter + " = " + railInterval * carGridSpacing);
 //        }
     }
 
     public static void run(Config config, boolean otfvis) throws Exception {
-        String vehiclesFile = getVehiclesFile(config);
-        LOG.info(
-                "STARTING with\npopulation file: " + config.plans().getInputFile() +
-                        " and\nvehicles file: " + vehiclesFile + "\n---------------------------");
+//        String vehiclesFile = getVehiclesFile(config);
+//        LOG.info(
+//                "STARTING with\npopulation file: " + config.plans().getInputFile() +
+//                        " and\nvehicles file: " + vehiclesFile + "\n---------------------------");
 
         // For dvrp/drt
         Controler controler = DrtControlerCreator.createControler(config, otfvis);

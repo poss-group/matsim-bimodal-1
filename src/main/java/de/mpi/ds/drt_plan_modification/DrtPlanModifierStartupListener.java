@@ -3,6 +3,7 @@ package de.mpi.ds.drt_plan_modification;
 import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -14,7 +15,6 @@ import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,7 +89,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .collect(Collectors.toList());
         // TODO change to link attribute also (more general but more memory consumption)
         if (transitStopInLinks.size() != transitStopOutLinks.size()) {
-            transitStopInLinks = transitStopOutLinks;
+            transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
         }
 
         Node randomNode = network.getNodes().values().stream()
@@ -177,6 +177,18 @@ class DrtPlanModifierStartupListener implements StartupListener {
         String outputPath = event.getServices().getControlerIO().getOutputPath()
                 .concat("/drt_plan_modified_plans.xml.gz");
         populationWriter.write(outputPath);
+    }
+
+    private List<Link> getOppositeDirectionLinks(List<Link> transitStopOutLinks, Network network) {
+        return transitStopOutLinks.stream().map(l -> getLinkConnectingNodes(l.getToNode(), l.getFromNode(), network))
+                .collect(
+                        Collectors.toList());
+    }
+
+    private Link getLinkConnectingNodes(Node n1, Node n2, Network network) {
+        String linkIdString = n1.getId().toString() + "-" + n2.getId().toString();
+        Id<Link> linkId = Id.createLinkId(linkIdString);
+        return network.getLinks().get(linkId);
     }
 
     private static boolean isPtStation(Node node) {

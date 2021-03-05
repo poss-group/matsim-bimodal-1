@@ -24,7 +24,6 @@ package de.mpi.ds.utils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
@@ -53,9 +52,9 @@ public class NetworkCreator implements UtilComponent {
             "west", new int[]{-1, 0}
     );
 
-    private double railGridSpacing;
+//    private double railGridSpacing;
     private double systemSize;
-    private int ptInterval;
+    private int railInterval;
     private double carGridSpacing;
     private double linkCapacity;
     private double freeSpeedTrainForSchedule;
@@ -65,19 +64,19 @@ public class NetworkCreator implements UtilComponent {
     private Random random;
     private boolean smallLinksCloseToNodes;
 
-    public NetworkCreator(double systemSize, double railGridSpacing, double carGridSpacing,
+    public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
                           double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections, Random random,
                           boolean smallLinksCloseToNodes) {
         this.systemSize = systemSize;
-        this.railGridSpacing = railGridSpacing;
+//        this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
         this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
-        this.ptInterval = (int) (railGridSpacing / carGridSpacing);
+        this.railInterval = railInterval;
         this.random = random;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
     }
@@ -104,11 +103,11 @@ public class NetworkCreator implements UtilComponent {
         int n_x = (int) (systemSize / carGridSpacing + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
         int n_y = (int) (systemSize / carGridSpacing + 1);
-        int n_xPt = (int) (systemSize / railGridSpacing + 1);
-        int n_yPt = (int) (systemSize / railGridSpacing + 1);
+        int n_xPt = n_x / railInterval + 1;
+        int n_yPt = n_y / railInterval + 1;
         assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
         //TODO make possible to have just 2 stations
-        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
+//        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
         Node[][] nodes = new Node[n_x][n_y];
         int[] stationNodesX = new int[n_xPt];
         int[] stationNodesY = new int[n_yPt];
@@ -117,12 +116,12 @@ public class NetworkCreator implements UtilComponent {
                 String newNodeId = i + "_" + j;
                 boolean newStationAtrribute = false;
                 if (createTrainLanes) {
-                    if ((i % ptInterval == 0) && (j % ptInterval == 0)) {
+                    if ((i % railInterval == 0) && (j % railInterval == 0)) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
-                        newNodeId = "PT_" + i / ptInterval + "_" + j / ptInterval;
+                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
                         newStationAtrribute = true;
-                        stationNodesX[i / ptInterval] = i;
-                        stationNodesY[j / ptInterval] = j;
+                        stationNodesX[i / railInterval] = i;
+                        stationNodesY[j / railInterval] = j;
                     }
                 }
 
@@ -318,14 +317,14 @@ public class NetworkCreator implements UtilComponent {
                     }
                 }
             } else {
-                List<Link> outLinksNonPt = null;
+                List<Link> inLinksNonPt = null;
                 int i = 0;
                 do {
                     double dir = neighbourToAddDirections[i];
-                    outLinksNonPt = getLinksWithDirection(outLinksNonPeriodic, dir, NETWORK_MODE_CAR);
+                    inLinksNonPt = getLinksWithDirection(inLinksNonPeriodic, dir, NETWORK_MODE_CAR);
                     i++;
-                } while (outLinksNonPt.isEmpty());
-                outLinksNonPt.get(0).getAttributes().putAttribute(IS_START_LINK, true);
+                } while (inLinksNonPt.isEmpty());
+                inLinksNonPt.get(0).getAttributes().putAttribute(IS_START_LINK, true);
             }
             if (n.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
                 for (double dir : neighbourToAddDirections) {
