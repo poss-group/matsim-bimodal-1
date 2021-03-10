@@ -48,3 +48,8 @@ def getAverageOcc(df, exclude_empty_vehicles=False, count_idle_vehicles=False):
     # Equivalent to Variance per timestep across occupancies
     #s = (df.to_numpy() * (weights - mean) ** 2).sum(axis=1) / (pass_sum - 1)
     #return mean, np.sqrt(s).mean()
+
+def getStandingFraction(df):
+    pass_sum = df.sum(axis=1)
+    standing_fraction = (df["STAY"] / pass_sum).mean()
+    return standing_fraction

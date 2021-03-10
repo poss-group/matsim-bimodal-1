@@ -56,12 +56,12 @@ public class PopulationCreator implements UtilComponent {
         double xy_1 = netDimsMinMax[1];
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
         InverseTransformSampler sampler = new InverseTransformSampler(
-//                x -> taxiDistDistributionNotNormalized(x, 4000, 3.1),
-                x -> 1 / (xy_1 - xy_0),
+                x -> taxiDistDistributionNotNormalized(x, 2500, 3.1),
+//                x -> 1 / (xy_1 - xy_0),
                 false,
                 xy_0+0.0001,
-                xy_1/2, // Because Periodic BC
-                (int) 1e5,
+                xy_1, // Because Periodic BC
+                (int) 1e7,
                 random);
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());

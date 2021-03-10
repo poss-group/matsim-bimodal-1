@@ -28,8 +28,8 @@ public class ScenarioCreator {
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations) {
 
-        assert railInterval > 0 :
-                "Pt grid spacing must be bigger than drt grid spacing";
+        assert railInterval > 0 : "Pt grid spacing must be bigger than drt grid spacing";
+        assert carGridSpacing*railInterval < systemSize : "Rail interval bigger than sysem size";
 //        assert railGridSpacing % carGridSpacing == 0 :
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
