@@ -48,9 +48,9 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
 //            manuallyStartMultipleNeworks(args[0]);
-//            runMulitpleDeltaMax(config, args[1], args[2]);
+            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
 //            run(config, false);
