@@ -44,6 +44,7 @@ public class ScenarioCreator {
                 drtOperationEndTime, nDrtVehicles, random);
     }
 
+
     public static void main(String... args) {
         ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().build();
 

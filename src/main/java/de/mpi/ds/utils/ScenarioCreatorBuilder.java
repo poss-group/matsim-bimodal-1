@@ -1,8 +1,11 @@
 package de.mpi.ds.utils;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 public class ScenarioCreatorBuilder {
+    private final static Logger LOG = Logger.getLogger(ScenarioCreatorBuilder.class.getName());
+
     private double systemSize = 10000;
 //    private double railGridSpacing = 1000;
     private int railInterval = 5;
@@ -142,10 +145,39 @@ public class ScenarioCreatorBuilder {
     }
 
     public ScenarioCreator build() {
+        printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes);
+    }
+
+    private void printScenarioInfo() {
+        LOG.info("Building Scenario with Specifications:\n" +
+                "systemSize: " + systemSize +
+                "railInterval: " + railInterval +
+                "carGridSpacing: " + carGridSpacing +
+                "linkCapacity: " + linkCapacity +
+                "freeSpeedCar: " + freeSpeedCar +
+                "freeSpeedTrain: " + freeSpeedTrain +
+                "freeSpeedTrainForSchedule: " + freeSpeedTrainForSchedule +
+                "numberOfLanes: " + numberOfLanes +
+                "requestEndTime: " + requestEndTime +
+                "nRequests: " + nRequests +
+                "transitEndTime: " + transitEndTime +
+                "departureIntervalTime: " + departureIntervalTime +
+                "transitStopLength: " + transitStopLength +
+                "nDrtVehicles: " + nDrtVehicles +
+                "drtCapacity: " + drtCapacity +
+                "drtOperationStartTime: " + drtOperationStartTime +
+                "drtOperationEndTime: " + drtOperationEndTime +
+                "drtOperationStartTime: " + drtOperationStartTime +
+                "seed: " + seed +
+                "transportMode: " + transportMode +
+                "isGridNetwork: " + isGridNetwork +
+                "diagonalConnetions: " + diagonalConnetions +
+                "smallLinksCloseToNodes : " + smallLinksCloseToNodes
+        );
     }
 
 }
