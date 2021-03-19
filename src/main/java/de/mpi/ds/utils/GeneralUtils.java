@@ -43,10 +43,10 @@ public class GeneralUtils {
         return Math.abs(deltaXPeriodic) + Math.abs(deltaYPeriodic);
     }
 
-    public static double[] getNetworkDimensionsMinMax(Network net, boolean isGridNetwork) {
+    public static double[] getNetworkDimensionsMinMax(Network net, boolean isGridAndPt) {
         // This method calculates the network dimensions in terms of link lengths; this is neccessary because of
         // Periodic BC, otherwise it would suffice to take the distance btw. nodes
-        if (isGridNetwork) {
+        if (isGridAndPt) {
             double maxLinkDist = net.getNodes().values().stream()
                     .filter(n -> n.getCoord().getY() == 0)
                     .flatMap(n -> n.getInLinks().values().stream())

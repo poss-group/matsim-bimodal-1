@@ -7,7 +7,7 @@ public class ScenarioCreatorBuilder {
     private final static Logger LOG = Logger.getLogger(ScenarioCreatorBuilder.class.getName());
 
     private double systemSize = 10000;
-//    private double railGridSpacing = 1000;
+    //    private double railGridSpacing = 1000;
     private int railInterval = 5;
     private double carGridSpacing = 100;
     private long linkCapacity = 9999999;
@@ -33,6 +33,10 @@ public class ScenarioCreatorBuilder {
     private boolean diagonalConnetions = true;
     private boolean isGridNetwork = true;
     private boolean smallLinksCloseToNodes = false;
+    private boolean createTrainLines = true;
+
+    private String travelDistanceDistribution = "InverseGamma";
+    private double travelDistanceMeanOverL = 1/4;
 
     public ScenarioCreatorBuilder setRailInterval(int railInterval) {
         this.railInterval = railInterval;
@@ -144,12 +148,28 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setCreateTrainLines(boolean createTrainLines) {
+        this.createTrainLines = createTrainLines;
+        return this;
+    }
+
+    public ScenarioCreatorBuilder setTravelDistanceDistribution(String travelDistanceDistribution) {
+        this.travelDistanceDistribution = travelDistanceDistribution;
+        return this;
+    }
+
+    public ScenarioCreatorBuilder setTravelDistanceMeanOverL(double travelDistanceMeanOverL) {
+        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+        return this;
+    }
+
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes);
+                drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
+                createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL);
     }
 
     private void printScenarioInfo() {
@@ -176,8 +196,10 @@ public class ScenarioCreatorBuilder {
                 "transportMode: " + transportMode +
                 "isGridNetwork: " + isGridNetwork +
                 "diagonalConnetions: " + diagonalConnetions +
-                "smallLinksCloseToNodes : " + smallLinksCloseToNodes
+                "smallLinksCloseToNodes : " + smallLinksCloseToNodes +
+                "createTrainLines : " + createTrainLines +
+                "travelDistanceDistribution : " + travelDistanceDistribution +
+                "travelDistanceMeanOverL : " + travelDistanceMeanOverL
         );
     }
-
 }

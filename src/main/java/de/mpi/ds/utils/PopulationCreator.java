@@ -10,6 +10,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
@@ -25,9 +26,15 @@ public class PopulationCreator implements UtilComponent {
     private boolean isGridNetwork;
     private double carGridSpacing;
     private boolean smallLinksCloseToNodes;
+    private boolean createTrainLines;
+    private String travelDistanceDistribution;
+    private double travelDistanceMeanOverL;
+    private double systemSize;
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
-                             boolean isGridNetwork, double carGridSpacing, boolean smallLinksCloseToNodes) {
+                             boolean isGridNetwork, double carGridSpacing, boolean smallLinksCloseToNodes,
+                             boolean createTrainLines, String travelDistanceDistribution,
+                             double travelDistanceMeanOverL, double systemSize) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
@@ -35,12 +42,16 @@ public class PopulationCreator implements UtilComponent {
         this.isGridNetwork = isGridNetwork;
         this.carGridSpacing = carGridSpacing;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
+        this.createTrainLines = createTrainLines;
+        this.travelDistanceDistribution = travelDistanceDistribution;
+        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+        this.systemSize = systemSize;
     }
 
     public static void main(String... args) {
         String networkPath = "./output/network_diag.xml.gz";
         PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt,
-                true, 100, false);
+                true, 100, false, true, "Uniform", 1 / 4, 10000);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -51,16 +62,23 @@ public class PopulationCreator implements UtilComponent {
 
     public void createPopulation(String outputPopulationPath, Network net) {
 
-        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, isGridNetwork);
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, (isGridNetwork && createTrainLines));
         double xy_0 = netDimsMinMax[0];
         double xy_1 = netDimsMinMax[1];
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
+
+        Function<Double, Double> probabilityDensityDist = null;
+        if (travelDistanceDistribution.equals("InverseGamma")) {
+            probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelDistanceMeanOverL*systemSize, 3.1);
+        } else if (travelDistanceDistribution.equals("Uniform")) {
+            probabilityDensityDist = x -> 1 / (travelDistanceMeanOverL*systemSize*2 - xy_0);
+        }
+
         InverseTransformSampler sampler = new InverseTransformSampler(
-//                x -> taxiDistDistributionNotNormalized(x, 2500, 3.1),
-                x -> 1 / (xy_1/2 - xy_0),
+                probabilityDensityDist,
                 false,
-                xy_0+0.0001,
-                xy_1/2, // Because Periodic BC
+                xy_0 + 0.0001,
+                xy_1, // Because Periodic BC
                 (int) 1e7,
                 random);
 
@@ -212,6 +230,7 @@ public class PopulationCreator implements UtilComponent {
 
     boolean isInsertedNode(Node node) {
         String nodeId = node.getId().toString();
-        return (nodeId.contains("north") || nodeId.contains("west") ||nodeId.contains("south") ||nodeId.contains("east"));
+        return (nodeId.contains("north") || nodeId.contains("west") || nodeId.contains("south") ||
+                nodeId.contains("east"));
     }
 }

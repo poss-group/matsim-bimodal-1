@@ -48,12 +48,12 @@ public class MatsimMain {
         try {
 //            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
 //            manuallyStartMultipleNeworks(args[0]);
-//            runMulitpleDeltaMax(config, args[1], args[2]);
+            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
-//            run(config, false);
+//            run(config, false, true)
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -65,7 +65,7 @@ public class MatsimMain {
         Config config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                 new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
         runMulitpleDeltaMax(config, "1.0", "create-input");
-        for (double deltaMax = 1.1; deltaMax < 2.1; deltaMax += 0.1) {
+        for (double deltaMax = 1.1; deltaMax < 2.1; deltaMax += 1.1) {
             config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
             runMulitpleDeltaMax(config, String.valueOf(Math.round(deltaMax * 10) / 10.), "unimodal");
@@ -95,16 +95,17 @@ public class MatsimMain {
         String outPath = iterationSpecificPath;
         double endTime = 3 * 24 * 3600;
         if (mode.equals("create-input")) {
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(200).setRailInterval(24)
+            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100).setSystemSize(10000)
                     .setSmallLinksCloseToNodes(true).setNDrtVehicles(300).setNRequests((int) (3 * 1e5))
-                    .setRequestEndTime((int) endTime)
-                    .setDrtOperationEndTime(endTime).build();
+                    .setRequestEndTime((int) endTime).setSmallLinksCloseToNodes(true)
+                    .setDrtOperationEndTime(endTime).setCreateTrainLines(false)
+                    .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1./8).build();
             LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath, true);
+            scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
             scenarioCreator.createPopulation(populationPath, networkPath);
             LOG.info("Finished creating population\nCreating transit Schedule");
-            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+//            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
             LOG.info("Finished creating transit schedule\nCreating drt fleet");
             scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
             LOG.info("Finished creating drt fleet");
@@ -112,13 +113,17 @@ public class MatsimMain {
         } else if (mode.equals("unimodal")) {
             MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
                     .setMaxDetour(deltaMax);
+            config.transit().setUseTransit(false);
+            config.transit().setTransitScheduleFile(null);
+            config.transit().setVehiclesFile(null);
+
             config.qsim().setEndTime(endTime);
         }
         DrtPlanModifierConfigGroup.get(config).setMode(mode);
 
         config.controler().setOutputDirectory(outPath);
         LOG.info("Running simulation");
-        run(config, false);
+        run(config, false, false);
         LOG.info("Finished simulation with " + varyParameter + " = " + deltaMaxString);
     }
 
@@ -146,7 +151,7 @@ public class MatsimMain {
 
         config.qsim().setEndTime(3600);
 
-        run(config, false);
+        run(config, false, true);
     }
 
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
@@ -184,7 +189,7 @@ public class MatsimMain {
                     .setRailInterval(railInterval).setSmallLinksCloseToNodes(true)
                     .setNDrtVehicles(Integer.parseInt(N_drt)).build();
             LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath, true);
+            scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
             scenarioCreator.createPopulation(populationPath, networkPath);
             LOG.info("Finished creating population\nCreating transit Schedule");
@@ -207,11 +212,11 @@ public class MatsimMain {
 
         config.controler().setOutputDirectory(outPath);
         LOG.info("Running simulation");
-        run(config, false);
+        run(config, false, true);
         LOG.info("Finished simulation with " + varyParameter + " = " + railInterval * carGridSpacing);
     }
 
-    public static void run(Config config, boolean otfvis) throws Exception {
+    public static void run(Config config, boolean otfvis, boolean isGridAndPt) throws Exception {
 //        String vehiclesFile = getVehiclesFile(config);
 //        LOG.info(
 //                "STARTING with\npopulation file: " + config.plans().getInputFile() +
@@ -239,7 +244,7 @@ public class MatsimMain {
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         controler.addOverridingModule(new CustomRoutingModule());
 
-        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), true);
+        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
         assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
                 "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
                         "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
@@ -305,7 +310,7 @@ public class MatsimMain {
 //                System.out.println(drtVehicleFile2);
 //                System.out.println("./output/" + matcherDrt.group(1));
 
-                run(config, otfvis);
+                run(config, otfvis, true);
             }
         }
 
@@ -334,7 +339,7 @@ public class MatsimMain {
             System.out.println(drtPath);
             System.out.println("Output: " + config.controler().getOutputDirectory());
 
-            run(config, otfvis);
+            run(config, otfvis, true);
         }
 
     }

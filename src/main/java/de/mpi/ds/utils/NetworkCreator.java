@@ -63,11 +63,12 @@ public class NetworkCreator implements UtilComponent {
     private boolean diagonalConnections;
     private Random random;
     private boolean smallLinksCloseToNodes;
+    private boolean createTrainLines;
 
     public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
                           double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections, Random random,
-                          boolean smallLinksCloseToNodes) {
+                          boolean smallLinksCloseToNodes, boolean createTrainLines) {
         this.systemSize = systemSize;
 //        this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
@@ -79,6 +80,7 @@ public class NetworkCreator implements UtilComponent {
         this.railInterval = railInterval;
         this.random = random;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
+        this.createTrainLines = createTrainLines;
     }
 
     public static void main(String... args) {
@@ -94,7 +96,7 @@ public class NetworkCreator implements UtilComponent {
 //                numberOfLanes, freeSpeedCar, true).createGridNetwork(path, true);
     }
 
-    public void createGridNetwork(String path, boolean createTrainLanes) {
+    public void createGridNetwork(String path) {
         // create an empty network
         Network net = NetworkUtils.createNetwork();
         NetworkFactory fac = net.getFactory();
@@ -115,7 +117,7 @@ public class NetworkCreator implements UtilComponent {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
                 boolean newStationAtrribute = false;
-                if (createTrainLanes) {
+                if (createTrainLines) {
                     if ((i % railInterval == 0) && (j % railInterval == 0)) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
                         newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
@@ -154,7 +156,7 @@ public class NetworkCreator implements UtilComponent {
                 }
             }
         }
-        if (createTrainLanes) {
+        if (createTrainLines) {
             int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
             int iterToY = n_yPt > 2 ? n_yPt : 1;
             for (int i = 0; i < iterToX; i++) {

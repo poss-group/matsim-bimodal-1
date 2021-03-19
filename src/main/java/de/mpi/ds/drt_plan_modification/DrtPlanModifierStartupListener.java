@@ -76,34 +76,40 @@ class DrtPlanModifierStartupListener implements StartupListener {
 //                                .map(stop -> network.getLinks().get(stop.getStopFacility().getLinkId()))))
 //                .flatMap(Function.identity())
 //                .collect(Collectors.toList());
-        List<Node> transitStopNodes = network.getNodes().values().stream()
-                .filter(node -> node.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
-                .collect(Collectors.toList());
-        List<Link> transitStopInLinks = transitStopNodes.stream()
-                .flatMap(n -> n.getInLinks().values().stream())
-                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-                .collect(Collectors.toList());
-        List<Link> transitStopOutLinks = transitStopNodes.stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-                .collect(Collectors.toList());
-        // TODO change to link attribute also (more general but more memory consumption)
-        if (transitStopInLinks.size() != transitStopOutLinks.size()) {
-            transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
-        }
+        List<Node> transitStopNodes = null;
+        List<Link> transitStopInLinks = null;
+        List<Link> transitStopOutLinks = null;
+        double trainDelta = Double.MAX_VALUE;
+        if (mode.equals("bimodal")) {
+            transitStopNodes = network.getNodes().values().stream()
+                    .filter(node -> node.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+                    .collect(Collectors.toList());
+            transitStopInLinks = transitStopNodes.stream()
+                    .flatMap(n -> n.getInLinks().values().stream())
+                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                    .collect(Collectors.toList());
+            transitStopOutLinks = transitStopNodes.stream()
+                    .flatMap(n -> n.getOutLinks().values().stream())
+                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                    .collect(Collectors.toList());
+            // TODO change to link attribute also (more general but more memory consumption)
+            if (transitStopInLinks.size() != transitStopOutLinks.size()) {
+                transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
+            }
 
-        Node randomNode = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
-                .findAny().orElseThrow();
-        List<Double> trainDeltas = network.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
-                .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
-                .map(n -> n.getCoord().getX())
-                .distinct()
-                .sorted()
-                .limit(2)
-                .collect(Collectors.toList());
-        double trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+            Node randomNode = network.getNodes().values().stream()
+                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+                    .findAny().orElseThrow();
+            List<Double> trainDeltas = network.getNodes().values().stream()
+                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+                    .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
+                    .map(n -> n.getCoord().getX())
+                    .distinct()
+                    .sorted()
+                    .limit(2)
+                    .collect(Collectors.toList());
+            trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+        }
 //        assert trainDelta == 1000 : "Did not find predefined length L=1000, instead found: " + trainDelta;
 
         //TODO change this

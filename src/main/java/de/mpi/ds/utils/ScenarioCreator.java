@@ -26,18 +26,21 @@ public class ScenarioCreator {
                            double transitEndTime, double departureIntervalTime, double transitStopLength,
                            int nDrtVehicles, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
-                           boolean smallLinksCloseToStations) {
+                           boolean smallLinksCloseToStations, boolean createTrainLines,
+                           String travelDistanceDistribution, double travelDistanceMeanOverL) {
 
         assert railInterval > 0 : "Pt grid spacing must be bigger than drt grid spacing";
-        assert carGridSpacing*railInterval < systemSize : "Rail interval bigger than sysem size";
+        assert carGridSpacing * railInterval < systemSize : "Rail interval bigger than sysem size";
 //        assert railGridSpacing % carGridSpacing == 0 :
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
         this.random = new Random(seed);
         this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
-                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random, smallLinksCloseToStations);
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random,
+                smallLinksCloseToStations, createTrainLines);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                carGridSpacing, smallLinksCloseToStations);
+                carGridSpacing, smallLinksCloseToStations, createTrainLines, travelDistanceDistribution,
+                travelDistanceMeanOverL, systemSize);
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
                 transitEndTime, transitStopLength, freeSpeedTrainForSchedule, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
@@ -53,14 +56,14 @@ public class ScenarioCreator {
         String drtFleetPath = "output/drtvehicles.xml";
         String transitSchedulePath = "output/transitSchedule_15min.xml.gz";
         String transitVehiclesPath = "output/transitVehicles_15min.xml.gz";
-        scenarioCreator.createNetwork(netPath, true);
+        scenarioCreator.createNetwork(netPath);
         scenarioCreator.createPopulation(popPath, netPath);
         scenarioCreator.createDrtFleet(netPath, drtFleetPath);
         scenarioCreator.createTransitSchedule(netPath, transitSchedulePath, transitVehiclesPath);
     }
 
-    public void createNetwork(String outputPath, boolean createTrainLines) {
-        networkCreator.createGridNetwork(outputPath, createTrainLines);
+    public void createNetwork(String outputPath) {
+        networkCreator.createGridNetwork(outputPath);
     }
 
     public void createPopulation(String outputPopulationPath, String networkPath) {
