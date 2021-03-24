@@ -98,7 +98,7 @@ public class InverseTransformSampler {
 //                    10000,
 //                    10000);
             InverseTransformSampler sampler = new InverseTransformSampler(
-                    x -> taxiDistDistributionNotNormalized(x, 2500, 3.1), false, 0.0001, 10000, (int) 1e7, new Random());
+                    x -> taxiDistDistributionNotNormalized(x, 1250, 3.1), false, 0.0001, 10000, (int) 1e7, new Random());
 //            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
             StringBuilder testout = new StringBuilder();
             for (int i = 0; i < (int) 1E5; i++) {

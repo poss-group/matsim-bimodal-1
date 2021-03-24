@@ -96,7 +96,7 @@ public class MatsimMain {
         double endTime = 3 * 24 * 3600;
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100).setSystemSize(10000)
-                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(300).setNRequests((int) (3 * 1e5))
+                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(70).setDrtCapacity(10000).setNRequests((int) (3 * 1e5))
                     .setRequestEndTime((int) endTime).setSmallLinksCloseToNodes(true)
                     .setDrtOperationEndTime(endTime).setCreateTrainLines(false)
                     .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1./8).build();

@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
+import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistributionNotNormalized;
 import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
 
@@ -126,6 +127,8 @@ public class PopulationCreator implements UtilComponent {
 //        List<Node> borderNonStationNodeList = facilityNodes.stream()
 //                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
 //                        n.getCoord().getY() != 10000).collect(Collectors.toList());
+//        double preDistAverage = 0;
+//        double resultingDistAverage = 0;
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
@@ -144,6 +147,9 @@ public class PopulationCreator implements UtilComponent {
                     double newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     Coord pre_target = new Coord(newX, newY);
                     dest_link = getClosestDestLink(pre_target, startOutLinks, L);
+
+//                    preDistAverage += dist;
+//                    resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
                 } else {
 //                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
                     dest_link = startOutLinks.get(random.nextInt(startOutLinks.size()));
@@ -151,6 +157,8 @@ public class PopulationCreator implements UtilComponent {
             } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             generateTrip(orig_link, dest_link, j, population);
         }
+//        System.out.println("preDistAverage" + preDistAverage/nRequests);
+//        System.out.println("resultingDistAverage" + resultingDistAverage/nRequests);
     }
 
     private Node getRandomNodeOfCollection(Collection<? extends Node> collection) {
