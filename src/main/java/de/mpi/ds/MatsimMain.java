@@ -50,10 +50,10 @@ public class MatsimMain {
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
 //            manuallyStartMultipleNeworks(args[0]);
-            runMulitpleDeltaMax(config, args[1], args[2]);
+//            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
-//            run(config, false, true)
+            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -186,8 +186,8 @@ public class MatsimMain {
         String outPath = null;
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setSmallLinksCloseToNodes(true)
-                    .setNDrtVehicles(Integer.parseInt(N_drt)).build();
+                    .setRailInterval(railInterval).setSmallLinksCloseToNodes(true).setTravelDistanceDistribution("InverseGamma")
+                    .setTravelDistanceMeanOverL(1./8).setNDrtVehicles(Integer.parseInt(N_drt)).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
@@ -244,13 +244,13 @@ public class MatsimMain {
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         controler.addOverridingModule(new CustomRoutingModule());
 
-        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
-        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
-                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
-                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
-                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
-                        "org/matsim/core/utils/collections/QuadTree.java" +
-                        "org/matsim/contrib/util/distance/DistanceUtils.java";
+//        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
+//        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
+//                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
+//                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
+//                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
+//                        "org/matsim/core/utils/collections/QuadTree.java" +
+//                        "org/matsim/contrib/util/distance/DistanceUtils.java";
 
         controler.run();
     }

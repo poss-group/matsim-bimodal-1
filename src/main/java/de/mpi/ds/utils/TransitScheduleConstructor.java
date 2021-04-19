@@ -22,8 +22,7 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
-import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
-import static de.mpi.ds.utils.GeneralUtils.getDirectionOfLink;
+import static de.mpi.ds.utils.GeneralUtils.*;
 import static de.mpi.ds.utils.ScenarioCreator.*;
 
 public class TransitScheduleConstructor implements UtilComponent {
@@ -42,11 +41,14 @@ public class TransitScheduleConstructor implements UtilComponent {
     private int currRouteStopCount;
     private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
+    private String mode;
+    private double dirAdd = 0;
+    private double lastDepartureTime = 0;
 
     public TransitScheduleConstructor(TransitScheduleFactory tsf, PopulationFactory pf, Network net, TransitSchedule ts,
                                       Vehicles vehicles, double departure_delay, double stop_length,
                                       double transitStartTime, double transitEndTime, double transitIntervalTime,
-                                      double freeSpeedTrainForSchedule, double departureIntervalTime) {
+                                      double freeSpeedTrainForSchedule, double departureIntervalTime, String mode) {
         this.transitScheduleFactory = tsf;
         this.transitEndTime = transitEndTime;
         this.transitIntervalTime = transitIntervalTime;
@@ -59,6 +61,9 @@ public class TransitScheduleConstructor implements UtilComponent {
         this.vehicles = vehicles;
         this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.departureIntervalTime = departureIntervalTime;
+        assert (mode.equals("Manhatten") ||
+                mode.equals("RadCric")) : "mode has to be either \"Manhatten\" or \"RadCirc\"";
+        this.mode = mode;
         createVehicles();
     }
 
@@ -83,6 +88,8 @@ public class TransitScheduleConstructor implements UtilComponent {
         try {
 //        moveFromTo(linkList, startNode, endNode, transitRouteStopList, direction, true);
 //        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
+            dirAdd = 0;
+            lastDepartureTime = 0;
             movePeriodic(linkList, startLink, transitRouteStopList, true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,18 +123,32 @@ public class TransitScheduleConstructor implements UtilComponent {
     }
 
     private void movePeriodic(ArrayList<Link> linkList, Link startLink, List<TransitRouteStop> transitRouteStopList,
-                              boolean addFirstAsTransitStop) throws Exception {
+                              boolean addFirstAsTransitStop) {
         boolean addAsTransitStop = addFirstAsTransitStop;
 //        int forwardBackwardDetermination = getDirection(startNode, forwardBackwardIndicatorNode, direction);
 //        Node lastNode = getPredecessor(startNode, direction, forwardBackwardDetermination);
 //        Node lastNode = forwardBackwardIndicatorNode; // Because Periodic BC
         Link currLink = startLink;
+        // Create first stop
+//        Link startLinkInverted = startLink.getFromNode().getInLinks().values().stream()
+//                .filter(l -> doubleCloseToZero(apprModulo(getPositiveAngle(getDirectionOfLink(startLink)) -
+//                        getPositiveAngle(getDirectionOfLink(l)) + Math.PI, 2 * Math.PI)))
+//                .findAny().orElseThrow();
+        createStop(transitRouteStopList, startLink, 0, 0);
+//        linkList.add(startLinkInverted);
+        linkList.add(startLink);
         do {
             currLink = moveToNextLinkPeriodic(linkList, startLink, currLink, transitRouteStopList,
                     addAsTransitStop);
             addAsTransitStop = true;
         }
-        while (!currLink.equals(startLink));
+        // TODO test wether this still works with second condition in while
+        while (!currLink.equals(startLink) && !currLink.getToNode().equals(startLink.getFromNode()));
+        // Create last stop
+//        linkList.add(currLink);
+//        double timeDelta = currLink.getLength() / freeSpeedTrainForSchedule - stop_length;
+//        createStop(transitRouteStopList, currLink, lastDepartureTime + timeDelta, lastDepartureTime + timeDelta);
+//        lastDepartureTime += timeDelta;
     }
 
     private Node getPredecessor(Node startNode, String direction, int forwardBackwardDetermination) {
@@ -164,49 +185,73 @@ public class TransitScheduleConstructor implements UtilComponent {
 
     private Link moveToNextLinkPeriodic(ArrayList<Link> linkList, Link startLink, Link currLink,
                                         List<TransitRouteStop> transitRouteStopList,
-                                        boolean addAsTransitStop) throws Exception {
+                                        boolean addAsTransitStop) {
         Link newLink = null;
         Node toNode = currLink.getToNode();
         Node fromNode = currLink.getFromNode();
-        if (fromNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true) && addAsTransitStop) {
-            if (currLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
-                createStop(transitRouteStopList, currLink,
-                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
-            } else {
-                createStop(transitRouteStopList, linkList.get(linkList.size() - 1),
-                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
-            }
-        }
 
         List<Link> newLinkCandidates = toNode.getOutLinks().values().stream()
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> doubleCloseToZero(getDirectionOfLink(startLink) - getDirectionOfLink(l)))
+                .filter(l -> doubleCloseToZero(apprModulo(getPositiveAngle(getDirectionOfLink(startLink)) -
+                        getPositiveAngle(getDirectionOfLink(l)) + dirAdd, 2 * Math.PI)))
                 .collect(Collectors.toList());
 //        assert (newLinkCandidates.size() == 1) : "Expected to encounter only one link in same direction!";
         // I no link is found look for periodic link in opposite direction
         if (newLinkCandidates.isEmpty()) {
-            try {
-                newLinkCandidates.add(toNode.getOutLinks().values().stream()
-                        .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                        // Filter so that they have to be periodic
-                        .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(true))
-                        // Filter so that only links are relevant which do have the same direction modulo 180°
-                        .filter(l -> doubleCloseToZero(
-                                (getDirectionOfLink(l) - getDirectionOfLink(startLink) + Math.PI) %
-                                        (2 * Math.PI)))
-                        .findAny().orElseThrow());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            dirAdd += Math.PI;
+            return currLink;
+//            try {
+//                if (this.mode.equals("Manhatten")) {
+//                    newLinkCandidates.add(toNode.getOutLinks().values().stream()
+//                            .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+//                            // Filter so that they have to be periodic
+//                            .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(true))
+//                            // Filter so that only links are relevant which do have the same direction modulo 180°
+//                            .filter(l -> doubleCloseToZero(
+//                                    (getDirectionOfLink(l) - getDirectionOfLink(startLink) + Math.PI) %
+//                                            (2 * Math.PI)))
+//                            .findAny().orElseThrow());
+//                } else if (this.mode.equals("RadCirc")) {
+//                    newLinkCandidates.add(toNode.getOutLinks().values().stream()
+//                            .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+//                            .filter(l -> doubleCloseToZero(getDirectionOfLink(startLink) - getDirectionOfLink(l) + Math.PI))
+//                            .findAny().orElseThrow());
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         }
         newLink = newLinkCandidates.get(0);
         // Add last node so connection becomes periodic if start link is reached
-        linkList.add(currLink);
-        if (newLink.equals(startLink) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
-            linkList.add(newLink);
-            createStop(transitRouteStopList, newLink, transitIntervalTime, transitIntervalTime);
+        linkList.add(newLink);
+        if (toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true) && addAsTransitStop) {
+//            if (currLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
+//                createStop(transitRouteStopList, currLink,
+//                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
+//            } else {
+//                createStop(transitRouteStopList, linkList.get(linkList.size() - 1),
+//                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
+//            }
+            double timeDelta = newLink.getLength() / freeSpeedTrainForSchedule - stop_length;
+            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
+                createStop(transitRouteStopList, newLink, lastDepartureTime + timeDelta,
+                        lastDepartureTime + timeDelta);
+            } else {
+                createStop(transitRouteStopList, linkList.get(linkList.size() - 1), lastDepartureTime + timeDelta,
+                        lastDepartureTime + timeDelta);
+            }
+            lastDepartureTime += timeDelta;
         }
+//        if (newLink.equals(startLink) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+//        if (newLink.getToNode().equals(startLink.getFromNode()) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+//            linkList.add(newLink);
+////            createStop(transitRouteStopList, newLink, transitIntervalTime, transitIntervalTime);
+//            double timeDelta = newLink.getLength() / freeSpeedTrainForSchedule - stop_length;
+//            createStop(transitRouteStopList, newLink, lastDepartureTime +timeDelta, lastDepartureTime +timeDelta);
+//            lastDepartureTime += timeDelta;
+//            LOG.warn("check me");
+//        }
         return newLink;
     }
 
@@ -217,7 +262,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         TransitStopFacility transitStopFacility = null;
         if (!schedule.getFacilities().containsKey(stopId)) {
             transitStopFacility = transitScheduleFactory.createTransitStopFacility(
-                    stopId, currLink.getCoord(), false);
+                    stopId, currLink.getFromNode().getCoord(), false);
             transitStopFacility.setLinkId(currLink.getId());
             schedule.addStopFacility(transitStopFacility);
         } else {

@@ -50,9 +50,9 @@ public class PopulationCreator implements UtilComponent {
     }
 
     public static void main(String... args) {
-        String networkPath = "./output/network_diag.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(100000, 24 * 3600, new Random(), TransportMode.pt,
-                true, 100, false, true, "Uniform", 1 / 4, 10000);
+        String networkPath = "./output/network_circ_rad.xml.gz";
+        PopulationCreator populationCreator = new PopulationCreator(1000, 4 * 3600, new Random(), TransportMode.pt,
+                false, 100, false, true, "Uniform", 1 / 4, 10000);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }
 
@@ -70,16 +70,17 @@ public class PopulationCreator implements UtilComponent {
 
         Function<Double, Double> probabilityDensityDist = null;
         if (travelDistanceDistribution.equals("InverseGamma")) {
-            probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelDistanceMeanOverL*systemSize, 3.1);
+            probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelDistanceMeanOverL * systemSize,
+                    3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            probabilityDensityDist = x -> 1 / (travelDistanceMeanOverL*systemSize*2 - xy_0);
+            probabilityDensityDist = x -> 1 / (travelDistanceMeanOverL * systemSize * 2 - xy_0);
         }
 
         InverseTransformSampler sampler = new InverseTransformSampler(
                 probabilityDensityDist,
                 false,
-                xy_0 + 0.0001,
-                xy_1, // Because Periodic BC
+                0.0001,
+                Math.abs(xy_1-xy_0),
                 (int) 1e7,
                 random);
 
@@ -154,7 +155,8 @@ public class PopulationCreator implements UtilComponent {
 //                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
                     dest_link = startOutLinks.get(random.nextInt(startOutLinks.size()));
                 }
-            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
+//            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
+            } while (dest_link.equals(orig_link));
             generateTrip(orig_link, dest_link, j, population);
         }
 //        System.out.println("preDistAverage" + preDistAverage/nRequests);

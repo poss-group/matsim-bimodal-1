@@ -69,8 +69,8 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
 
     public static void main(String[] args) {
 
-        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 200, new Random())
-                .run("./output/network_diag.xml", "output/drtvehicles.xml");
+        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 10, new Random())
+                .run("./output/network_circ_rad.xml", "output/drtvehicles.xml");
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }

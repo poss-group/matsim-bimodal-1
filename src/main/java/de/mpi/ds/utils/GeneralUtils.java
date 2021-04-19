@@ -35,6 +35,10 @@ public class GeneralUtils {
         return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
 
+    public static double calculateDistanceNonPeriodic(Node from, Node to) {
+        return calculateDistanceNonPeriodic(from.getCoord(), to.getCoord());
+    }
+
     public static double calculateManhattenDistancePeriodicBC(Coord from, Coord to, double L) {
         double deltaX = Math.abs(to.getX() - from.getX());
         double deltaXPeriodic = deltaX < L / 2 ? deltaX : -deltaX + L;
@@ -81,5 +85,20 @@ public class GeneralUtils {
         double deltaY = to.getY() - from.getY();
 
         return Math.atan2(deltaY, deltaX);
+    }
+
+    public static double getPositiveAngle(double angle) {
+        while (angle < 0) {
+            angle += 2*Math.PI;
+        }
+        return angle;
+    }
+
+    public static double apprModulo(double number, double mod) {
+        double result = number % mod;
+        if (doubleCloseToZero(result - mod)) {
+            result = 0;
+        }
+        return result;
     }
 }

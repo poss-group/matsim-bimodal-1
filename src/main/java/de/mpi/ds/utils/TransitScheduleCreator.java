@@ -143,7 +143,7 @@ public class TransitScheduleCreator implements UtilComponent {
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, railInterval*carGridSpacing / freeSpeedTrain, transitStopLength, 0,
-                transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule, departureIntervalTime);
+                transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule, departureIntervalTime, "Manhatten");
 
 //        LOG.info(
 //                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +

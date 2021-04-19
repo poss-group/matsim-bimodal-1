@@ -15,8 +15,6 @@ public class InverseTransformSampler {
     private double[] domain;
     private double[] cummulative_values;
     private double[] probs_values;
-    private double x0 = 0;
-    private double x1 = 0;
     private int N;
     private Random random;
     private double EPSILON = 0.00001;
@@ -24,8 +22,6 @@ public class InverseTransformSampler {
     InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
                             int integrationSteps, Random random) {
         this.function = function;
-        this.x0 = x0;
-        this.x0 = x1;
 
         double arg = 0;
         double last_arg = x0;

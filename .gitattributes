@@ -208,3 +208,11 @@ scenarios/fine_grid/bimodal/transitVehicles_15min.xml.gz filter=lfs diff=lfs mer
 scenarios/real_world/network.xml filter=lfs diff=lfs merge=lfs -text
 scenarios/real_world/population.xml filter=lfs diff=lfs merge=lfs -text
 scenarios/real_world/drtVehicles.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/drtvehicles.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/network_circ_rad.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/population.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/ptAlightCounts.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/ptBoardCounts.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/ptOccupancyCounts.xml filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/transitSchedule.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/fine_grid/CircRadTest/transitVehicles.xml.gz filter=lfs diff=lfs merge=lfs -text
