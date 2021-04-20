@@ -44,6 +44,7 @@ public class TransitScheduleConstructor implements UtilComponent {
     private String mode;
     private double dirAdd = 0;
     private double lastDepartureTime = 0;
+    private boolean searchForPeriodic = false;
 
     public TransitScheduleConstructor(TransitScheduleFactory tsf, PopulationFactory pf, Network net, TransitSchedule ts,
                                       Vehicles vehicles, double departure_delay, double stop_length,
@@ -192,14 +193,16 @@ public class TransitScheduleConstructor implements UtilComponent {
 
         List<Link> newLinkCandidates = toNode.getOutLinks().values().stream()
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                 .filter(l -> doubleCloseToZero(apprModulo(getPositiveAngle(getDirectionOfLink(startLink)) -
                         getPositiveAngle(getDirectionOfLink(l)) + dirAdd, 2 * Math.PI)))
+                .sorted(Comparator.comparing(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(searchForPeriodic) ? 0 : 1))
                 .collect(Collectors.toList());
+        searchForPeriodic = false;
 //        assert (newLinkCandidates.size() == 1) : "Expected to encounter only one link in same direction!";
         // I no link is found look for periodic link in opposite direction
         if (newLinkCandidates.isEmpty()) {
             dirAdd += Math.PI;
+            searchForPeriodic = true;
             return currLink;
 //            try {
 //                if (this.mode.equals("Manhatten")) {
@@ -233,15 +236,25 @@ public class TransitScheduleConstructor implements UtilComponent {
 //                createStop(transitRouteStopList, linkList.get(linkList.size() - 1),
 //                        currRouteStopCount * departure_delay - stop_length, currRouteStopCount * departure_delay);
 //            }
-            double timeDelta = newLink.getLength() / freeSpeedTrainForSchedule - stop_length;
-            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
-                createStop(transitRouteStopList, newLink, lastDepartureTime + timeDelta,
-                        lastDepartureTime + timeDelta);
-            } else {
-                createStop(transitRouteStopList, linkList.get(linkList.size() - 1), lastDepartureTime + timeDelta,
-                        lastDepartureTime + timeDelta);
+//            TransitStopFacility lastStopFacility = transitRouteStopList.get(transitRouteStopList.size() - 1)
+//                    .getStopFacility();
+//            double length = calculateDistancePeriodicBC(lastStopFacility.getCoord(), newLink.getCoord(), 10000);
+//            double timeDelta = length / freeSpeedTrainForSchedule - stop_length;
+            createStop(transitRouteStopList, newLink, 0, 0);
+            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(true)) {
+                linkList.add(startLink);
+                createStop(transitRouteStopList, startLink, 0, 0);
             }
-            lastDepartureTime += timeDelta;
+//            if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(false)) {
+////                createStop(transitRouteStopList, newLink, lastDepartureTime + timeDelta,
+////                        lastDepartureTime + timeDelta);
+//                createStop(transitRouteStopList, newLink, 0, 0);
+//            } else {
+////                createStop(transitRouteStopList, linkList.get(linkList.size() - 1), lastDepartureTime + timeDelta,
+////                        lastDepartureTime + timeDelta);
+//                createStop(transitRouteStopList, linkList.get(linkList.size() - 1), 0, 0);
+//            }
+//            lastDepartureTime += timeDelta;
         }
 //        if (newLink.equals(startLink) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
 //        if (newLink.getToNode().equals(startLink.getFromNode()) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {

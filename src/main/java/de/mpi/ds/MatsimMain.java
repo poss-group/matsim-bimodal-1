@@ -33,7 +33,7 @@ import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
-    //TODO check transit schedule util, slow later in schedule?
+    //TODO set Q below Q_crit
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -46,14 +46,14 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-//            runMultipleOptDrtCount(config, args[1], args[2], args[3], false);
+//            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
-            run(config, false, false);
+//            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -186,8 +186,13 @@ public class MatsimMain {
         String outPath = null;
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setSmallLinksCloseToNodes(true).setTravelDistanceDistribution("InverseGamma")
-                    .setTravelDistanceMeanOverL(1./8).setNDrtVehicles(Integer.parseInt(N_drt)).build();
+                    .setRailInterval(railInterval).setTravelDistanceDistribution("InverseGamma").setNRequests((int) 1e6)
+                    .setTravelDistanceMeanOverL(1./10).setNDrtVehicles(Integer.parseInt(N_drt)).build();
+            double mu = scenarioCreator.getTransitEndTime()/scenarioCreator.getDepartureIntervalTime();
+            double nu = 1;
+            double E = scenarioCreator.getnRequests()/(scenarioCreator.getSystemSize()*scenarioCreator.getSystemSize());
+            double avDist = scenarioCreator.getSystemSize()*scenarioCreator.getTravelDistanceMeanOverL();
+            LOG.info("Q: " + mu/(nu*E*avDist*avDist));
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
@@ -214,7 +219,9 @@ public class MatsimMain {
         LOG.info("Running simulation");
         run(config, false, true);
         LOG.info("Finished simulation with " + varyParameter + " = " + railInterval * carGridSpacing);
+//        LOG.info("Deleting input directory");
     }
+
 
     public static void run(Config config, boolean otfvis, boolean isGridAndPt) throws Exception {
 //        String vehiclesFile = getVehiclesFile(config);
@@ -244,77 +251,17 @@ public class MatsimMain {
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         controler.addOverridingModule(new CustomRoutingModule());
 
-//        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
-//        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
-//                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
-//                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
-//                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
-//                        "org/matsim/core/utils/collections/QuadTree.java" +
-//                        "org/matsim/contrib/util/distance/DistanceUtils.java";
+        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
+        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
+                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
+                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
+                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
+                        "org/matsim/core/utils/collections/QuadTree.java" +
+                        "org/matsim/contrib/util/distance/DistanceUtils.java";
 
         controler.run();
     }
 
-    private static void runMultipleOptDrtCount(Config config, String popDir, String drtDir,
-                                               String appendOutDir, boolean otfvis) throws Exception {
-        Pattern patternPop = Pattern.compile("population(.*)\\.xml\\.gz");
-        Pattern patternDrt = null;
-        Pattern patternDrt2 = null;
-        boolean splittedFleet = false;
-
-        if (drtDir.matches(".*/splitted/?")) {
-            splittedFleet = true;
-            patternDrt = Pattern.compile("drtvehicles_(.*?)_1\\.xml\\.gz");
-            patternDrt2 = Pattern.compile("drtvehicles_(.*?)_2\\.xml\\.gz");
-        } else
-            patternDrt = Pattern.compile("drtvehicles_(.*?)\\.xml\\.gz");
-
-        String[] populationFiles = getFiles(patternPop, popDir);
-        String[] drtVehicleFiles = getFiles(patternDrt, drtDir);
-        String[] drtVehicleFiles2 = splittedFleet ? getFiles(patternDrt2, drtDir) : null;
-
-
-        for (int i = 0; i < populationFiles.length; i++) {
-            for (int j = 0; j < drtVehicleFiles.length; j++) {
-                String populationFile = populationFiles[i];
-                String drtVehicleFile = drtVehicleFiles[j];
-                String drtVehicleFile2 = splittedFleet ? drtVehicleFiles2[j] : null;
-                Matcher matcherPop = patternPop.matcher(populationFile);
-                Matcher matcherDrt = patternDrt.matcher(drtVehicleFile);
-                matcherPop.find();
-                matcherDrt.find();
-
-                MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(config);
-                Collection<DrtConfigGroup> modalElements = multiModeConfGroup.getModalElements();
-                List<DrtConfigGroup> modalElementsList = new ArrayList<>(modalElements);
-                config.plans().setInputFile(popDir + populationFile);
-                if (splittedFleet) {
-                    LOG.error("Two drt modal elements expected in config file for splitted Fleet scenario!");
-                    modalElementsList.get(0).setVehiclesFile(Paths.get(drtDir, drtVehicleFile).toString());
-                    modalElementsList.get(1).setVehiclesFile(Paths.get(drtDir, drtVehicleFile2).toString());
-                } else {
-                    LOG.error("Only one drt modal element expected in config file; removing additional one");
-                    modalElementsList.get(0).setVehiclesFile(drtDir + drtVehicleFile);
-                    try {
-                        multiModeConfGroup.removeParameterSet(modalElementsList.get(1));
-                    } catch (Exception e) {
-                        LOG.warn("Already removed second parameter set");
-                    }
-                }
-
-//                assert matcherDrt.group(1).equals(matcherPop.group(1)) : "Running with files for different scenarios";
-                config.controler()
-                        .setOutputDirectory(Paths.get("./output".concat(appendOutDir), matcherDrt.group(1)).toString());
-//                System.out.println(populationFile);
-//                System.out.println(drtVehicleFile);
-//                System.out.println(drtVehicleFile2);
-//                System.out.println("./output/" + matcherDrt.group(1));
-
-                run(config, otfvis, true);
-            }
-        }
-
-    }
 
     private static void runMultipleConvCrit(Config config, String zetas, String popDir, String drtDir,
                                             String appendOutDir, boolean otfvis) throws Exception {
