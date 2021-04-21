@@ -174,32 +174,32 @@ public class ScenarioCreatorBuilder {
 
     private void printScenarioInfo() {
         LOG.info("Building Scenario with Specifications:\n" +
-                "systemSize: " + systemSize +
-                "railInterval: " + railInterval +
-                "carGridSpacing: " + carGridSpacing +
-                "linkCapacity: " + linkCapacity +
-                "freeSpeedCar: " + freeSpeedCar +
-                "freeSpeedTrain: " + freeSpeedTrain +
-                "freeSpeedTrainForSchedule: " + freeSpeedTrainForSchedule +
-                "numberOfLanes: " + numberOfLanes +
-                "requestEndTime: " + requestEndTime +
-                "nRequests: " + nRequests +
-                "transitEndTime: " + transitEndTime +
-                "departureIntervalTime: " + departureIntervalTime +
-                "transitStopLength: " + transitStopLength +
-                "nDrtVehicles: " + nDrtVehicles +
-                "drtCapacity: " + drtCapacity +
-                "drtOperationStartTime: " + drtOperationStartTime +
-                "drtOperationEndTime: " + drtOperationEndTime +
-                "drtOperationStartTime: " + drtOperationStartTime +
-                "seed: " + seed +
-                "transportMode: " + transportMode +
-                "isGridNetwork: " + isGridNetwork +
-                "diagonalConnetions: " + diagonalConnetions +
-                "smallLinksCloseToNodes : " + smallLinksCloseToNodes +
-                "createTrainLines : " + createTrainLines +
-                "travelDistanceDistribution : " + travelDistanceDistribution +
-                "travelDistanceMeanOverL : " + travelDistanceMeanOverL
+                "\nsystemSize: " + systemSize +
+                "\nrailInterval: " + railInterval +
+                "\ncarGridSpacing: " + carGridSpacing +
+                "\nlinkCapacity: " + linkCapacity +
+                "\nfreeSpeedCar: " + freeSpeedCar +
+                "\nfreeSpeedTrain: " + freeSpeedTrain +
+                "\nfreeSpeedTrainForSchedule: " + freeSpeedTrainForSchedule +
+                "\nnumberOfLanes: " + numberOfLanes +
+                "\nrequestEndTime: " + requestEndTime +
+                "\nnRequests: " + nRequests +
+                "\ntransitEndTime: " + transitEndTime +
+                "\ndepartureIntervalTime: " + departureIntervalTime +
+                "\ntransitStopLength: " + transitStopLength +
+                "\nnDrtVehicles: " + nDrtVehicles +
+                "\ndrtCapacity: " + drtCapacity +
+                "\ndrtOperationStartTime: " + drtOperationStartTime +
+                "\ndrtOperationEndTime: " + drtOperationEndTime +
+                "\ndrtOperationStartTime: " + drtOperationStartTime +
+                "\nseed: " + seed +
+                "\ntransportMode: " + transportMode +
+                "\nisGridNetwork: " + isGridNetwork +
+                "\ndiagonalConnetions: " + diagonalConnetions +
+                "\nsmallLinksCloseToNodes : " + smallLinksCloseToNodes +
+                "\ncreateTrainLines : " + createTrainLines +
+                "\ntravelDistanceDistribution : " + travelDistanceDistribution +
+                "\ntravelDistanceMeanOverL : " + travelDistanceMeanOverL
         );
     }
 }
