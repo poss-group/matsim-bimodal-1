@@ -16,7 +16,7 @@ public class ScenarioCreatorBuilder {
     private double freeSpeedTrainForSchedule = 60 / 3.6;
     private double numberOfLanes = 100;
 
-    private int requestEndTime = 10 * 3600;
+    private int requestEndTime = 9 * 3600;
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
 

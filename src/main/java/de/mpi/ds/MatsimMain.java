@@ -186,17 +186,13 @@ public class MatsimMain {
         String outPath = null;
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setTravelDistanceDistribution("Uniform").setNRequests((int) 1e5)
+                    .setRailInterval(railInterval).setTravelDistanceDistribution("Uniform").setNRequests((int) 32e3)
                     .setSmallLinksCloseToNodes(false)
-                    //test
-                    .setRequestEndTime(23*3600).setTransitEndTime(24*3600).setDrtOperationEndTime(24*3600)
-                    //end test
                     .setTravelDistanceMeanOverL(1./4).setNDrtVehicles(Integer.parseInt(N_drt)).build();
             double mu = scenarioCreator.getTransitEndTime()/scenarioCreator.getDepartureIntervalTime();
-            double nu = 1;
+            double nu = 1/scenarioCreator.getRequestEndTime();
             double E = scenarioCreator.getnRequests()/(scenarioCreator.getSystemSize()*scenarioCreator.getSystemSize());
             double avDist = scenarioCreator.getSystemSize()*scenarioCreator.getTravelDistanceMeanOverL();
-            // 40/(3e5*0.1*0.1)
             LOG.info("Q: " + mu/(nu*E*avDist*avDist));
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
