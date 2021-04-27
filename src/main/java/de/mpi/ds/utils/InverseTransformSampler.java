@@ -88,13 +88,13 @@ public class InverseTransformSampler {
 
     public static void main(String[] args) {
         try {
-//            InverseTransformSampler sampler = new InverseTransformSampler(a -> 1/20., true, -10, 10,
-//                    100000, new Random());
+            InverseTransformSampler sampler = new InverseTransformSampler(a -> a<0.1*10000*2 ? 1/(0.1*10000*2):0, false, 0, (10000),
+                    100000, new Random());
 //            InverseTransformSampler sampler = new InverseTransformSampler(x -> normalDist(x, 1000, 1000), false, 0,
 //                    10000,
 //                    10000);
-            InverseTransformSampler sampler = new InverseTransformSampler(
-                    x -> taxiDistDistributionNotNormalized(x, 1250, 3.1), false, 0.0001, 10000, (int) 1e7, new Random());
+//            InverseTransformSampler sampler = new InverseTransformSampler(
+//                    x -> taxiDistDistributionNotNormalized(x, 1250, 3.1), false, 0.0001, 10000, (int) 1e7, new Random());
 //            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
             StringBuilder testout = new StringBuilder();
             for (int i = 0; i < (int) 1E5; i++) {

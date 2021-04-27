@@ -13,7 +13,7 @@
     <description>Doesnt matter</description>
 
     <properties>
-        <matsim.version>14.0-SNAPSHOT</matsim.version>
+        <matsim.version>14.0-MyVersion</matsim.version>
         <mainClass>de.mpi.ds.MatsimMain</mainClass>
     </properties>
 
@@ -48,7 +48,7 @@
     <dependencies>
         <dependency>
             <groupId>org.matsim</groupId>
-            <artifactId>matsim_periodicBC</artifactId>
+            <artifactId>matsim</artifactId>
             <version>${matsim.version}</version>
         </dependency>
         <dependency>
@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>org.matsim</groupId>
-            <artifactId>matsim_periodicBC</artifactId>
+            <artifactId>matsim</artifactId>
             <version>${matsim.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -85,12 +85,12 @@
 <!--        </dependency>-->
         <dependency>
             <groupId>org.matsim.contrib</groupId>
-            <artifactId>add_constraints_drt</artifactId>
+            <artifactId>drt</artifactId>
             <version>${matsim.version}</version>
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
-            <artifactId>dvrp_periodicBC</artifactId>
+            <artifactId>dvrp</artifactId>
             <version>${matsim.version}</version>
         </dependency>
 <!--        <dependency>-->

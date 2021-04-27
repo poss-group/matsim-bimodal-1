@@ -173,7 +173,7 @@ public class ScenarioCreatorBuilder {
     }
 
     private void printScenarioInfo() {
-        LOG.info("Building Scenario with Specifications:\n" +
+        LOG.info("Building Scenario with Specifications:" +
                 "\nsystemSize: " + systemSize +
                 "\nrailInterval: " + railInterval +
                 "\ncarGridSpacing: " + carGridSpacing +

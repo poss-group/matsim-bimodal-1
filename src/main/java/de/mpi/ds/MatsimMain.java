@@ -8,7 +8,15 @@ import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
 import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
+import org.apache.log4j.Appender;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.builders.appender.AppenderBuilder;
+import org.apache.log4j.builders.appender.FileAppenderBuilder;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -17,23 +25,21 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
-    //TODO set Q below Q_crit
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -96,10 +102,11 @@ public class MatsimMain {
         double endTime = 3 * 24 * 3600;
         if (mode.equals("create-input")) {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100).setSystemSize(10000)
-                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(70).setDrtCapacity(10000).setNRequests((int) (3 * 1e5))
+                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(70).setDrtCapacity(10000)
+                    .setNRequests((int) (3 * 1e5))
                     .setRequestEndTime((int) endTime).setSmallLinksCloseToNodes(true)
                     .setDrtOperationEndTime(endTime).setCreateTrainLines(false)
-                    .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1./8).build();
+                    .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1. / 8).build();
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
@@ -157,13 +164,18 @@ public class MatsimMain {
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
                                             String N_drt, String mode) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
-        String nDrtOutPath = Paths.get(basicOutPath, String.valueOf(N_drt).concat("drt")).toString();
-        String varyParameter = "l_";
         int railInterval = Integer.parseInt(railIntervalString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
+        String nDrtOutPath = Paths.get(basicOutPath, String.valueOf(N_drt).concat("drt")).toString();
+//        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
+        String varyParameter = "l_";
+//        String varyParameter = "Ndrt_";
         String iterationSpecificPath = Paths.get(nDrtOutPath, varyParameter + (int) (railInterval * carGridSpacing))
                 .toString();
+//        String iterationSpecificPath = Paths.get(railIntervalOutPath, varyParameter + N_drt)
+//                .toString();
         String inputPath = Paths.get(iterationSpecificPath, "input").toString();
+        String logPath = Paths.get(inputPath, "logfile.log").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
         String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
@@ -185,15 +197,26 @@ public class MatsimMain {
 
         String outPath = null;
         if (mode.equals("create-input")) {
+
+            OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
+
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setTravelDistanceDistribution("Uniform").setNRequests((int) 32e3)
-                    .setSmallLinksCloseToNodes(false)
-                    .setTravelDistanceMeanOverL(1./4).setNDrtVehicles(Integer.parseInt(N_drt)).build();
-            double mu = scenarioCreator.getTransitEndTime()/scenarioCreator.getDepartureIntervalTime();
-            double nu = 1/scenarioCreator.getRequestEndTime();
-            double E = scenarioCreator.getnRequests()/(scenarioCreator.getSystemSize()*scenarioCreator.getSystemSize());
-            double avDist = scenarioCreator.getSystemSize()*scenarioCreator.getTravelDistanceMeanOverL();
-            LOG.info("Q: " + mu/(nu*E*avDist*avDist));
+                    .setRailInterval(railInterval).setTravelDistanceDistribution("InverseGamma")
+                    .setNRequests((int) 1e3)
+//                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
+//                    .setNRequests((int) 125e3).setTravelDistanceMeanOverL(1/5.)
+//                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
+//                    .setNRequests((int) 5e4)
+//                    .setTravelDistanceMeanOverL(1./4).setDepartureIntervalTime(3600/2.5)
+//                    .setTravelDistanceMeanOverL(1./5).setDepartureIntervalTime(3600/1.6)
+//                    .setTravelDistanceMeanOverL(1./10).setDepartureIntervalTime(3600/0.4)
+                    .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
+            double mu = scenarioCreator.getTransitEndTime() / scenarioCreator.getDepartureIntervalTime();
+            double nu = 1. / scenarioCreator.getRequestEndTime();
+            double E = scenarioCreator.getnRequests() /
+                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
+            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
+            LOG.info("Q: " + mu / (nu * E * avDist * avDist));
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");

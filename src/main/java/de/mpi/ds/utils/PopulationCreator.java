@@ -73,14 +73,16 @@ public class PopulationCreator implements UtilComponent {
             probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelDistanceMeanOverL * systemSize,
                     3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            probabilityDensityDist = x -> 1 / (travelDistanceMeanOverL * systemSize * 2 - xy_0);
+            probabilityDensityDist = x ->
+                    x < travelDistanceMeanOverL * systemSize * 2 ?
+                            1 / (travelDistanceMeanOverL * systemSize * 2 - xy_0) : 0;
         }
 
         InverseTransformSampler sampler = new InverseTransformSampler(
                 probabilityDensityDist,
                 false,
-                0.0001,
-                Math.abs(xy_1-xy_0),
+                xy_0 + 1e-3,
+                Math.abs(xy_1 - xy_0),
                 (int) 1e7,
                 random);
 
