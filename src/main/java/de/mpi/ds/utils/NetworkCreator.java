@@ -61,13 +61,12 @@ public class NetworkCreator implements UtilComponent {
     private double freeSpeedCar;
     private double numberOfLanes;
     private boolean diagonalConnections;
-    private Random random;
     private boolean smallLinksCloseToNodes;
     private boolean createTrainLines;
 
     public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
                           double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
-                          double freeSpeedCar, boolean diagonalConnections, Random random,
+                          double freeSpeedCar, boolean diagonalConnections,
                           boolean smallLinksCloseToNodes, boolean createTrainLines) {
         this.systemSize = systemSize;
 //        this.railGridSpacing = railGridSpacing;
@@ -78,7 +77,6 @@ public class NetworkCreator implements UtilComponent {
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
         this.railInterval = railInterval;
-        this.random = random;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
         this.createTrainLines = createTrainLines;
     }
@@ -120,7 +118,7 @@ public class NetworkCreator implements UtilComponent {
                 if (createTrainLines) {
                     if ((i % railInterval == 0) && (j % railInterval == 0)) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
-                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
+//                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
                         newStationAtrribute = true;
                         stationNodesX[i / railInterval] = i;
                         stationNodesY[j / railInterval] = j;

@@ -87,8 +87,11 @@ public class ScenarioCreator {
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
         this.random = new Random(seed);
+//        for (int i=0; i<10;i++) {
+//            System.out.println(random.nextInt());
+//        }
         this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
-                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections, random,
+                freeSpeedTrainForSchedule, numberOfLanes, freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
                 carGridSpacing, smallLinksCloseToStations, createTrainLines, travelDistanceDistribution,

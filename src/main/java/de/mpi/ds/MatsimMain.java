@@ -40,6 +40,7 @@ import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
+    //TODO fix seed (different populations for different ells)
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -202,11 +203,11 @@ public class MatsimMain {
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setTravelDistanceDistribution("InverseGamma")
-                    .setNRequests((int) 1e3)
+                    .setNRequests((int) 5e3).setTravelDistanceMeanOverL(1/5.)
+
 //                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
 //                    .setNRequests((int) 125e3).setTravelDistanceMeanOverL(1/5.)
 //                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
-//                    .setNRequests((int) 5e4)
 //                    .setTravelDistanceMeanOverL(1./4).setDepartureIntervalTime(3600/2.5)
 //                    .setTravelDistanceMeanOverL(1./5).setDepartureIntervalTime(3600/1.6)
 //                    .setTravelDistanceMeanOverL(1./10).setDepartureIntervalTime(3600/0.4)

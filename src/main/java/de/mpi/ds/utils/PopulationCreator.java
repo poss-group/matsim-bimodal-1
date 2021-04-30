@@ -109,21 +109,21 @@ public class PopulationCreator implements UtilComponent {
         List<Link> startLinks = null;
         List<Link> startInLinks = null;
         List<Link> startOutLinks = null;
-        if (isGridNetwork) {
-            startLinks = net.getLinks().values().stream()
-                    .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true)).collect(
-                            Collectors.toList());
+        //TODO check which are available for different scenarios
+        startLinks = net.getLinks().values().stream()
+                .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                .collect(Collectors.toList());
+        if (isGridNetwork && smallLinksCloseToNodes) {
             //TODO maybe make this with an additional node attribute (help node or normal node) but works also likes this
             startInLinks = startLinks.stream()
                     .filter(l -> isInsertedNode(l.getFromNode())).collect(Collectors.toList());
             startOutLinks = startLinks.stream()
                     .filter(l -> isInsertedNode(l.getToNode())).collect(Collectors.toList());
-        } else {
-            startLinks = new ArrayList<>(net.getLinks().values());
+        } else if (isGridNetwork) {
             startInLinks = startLinks;
             startOutLinks = startLinks;
-        }
-        if (!smallLinksCloseToNodes) {
+        } else {
+            startLinks = new ArrayList<>(net.getLinks().values());
             startInLinks = startLinks;
             startOutLinks = startLinks;
         }
@@ -190,14 +190,15 @@ public class PopulationCreator implements UtilComponent {
 
     private Activity createSecond(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
-        // Apparently Transit router needs Coordinates to work
-        activity.setCoord(link.getCoord());
+        // Apparently Transit router needs Coordinates to work (of toNoe because otherwise, passengers have to walk to final dest.)
+        activity.setCoord(link.getToNode().getCoord());
         return activity;
     }
 
     private Activity createFirst(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
-        activity.setCoord(link.getCoord());
+        // Apparently Transit router needs Coordinates to work (of toNoe because otherwise, passengers have to walk to final dest.)
+        activity.setCoord(link.getToNode().getCoord());
 //        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
         activity.setEndTime(random.nextInt(requestEndTime)); // [s]
         return activity;
