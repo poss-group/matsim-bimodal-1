@@ -57,20 +57,17 @@ public class TransitScheduleCreatorRadCirc implements UtilComponent {
     private double transitEndTime;
     private int railInterval;
     private double transitStopLength;
-    private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
     private double carGridSpacing;
 
     public TransitScheduleCreatorRadCirc(double systemSize, int railInterval, double freeSpeedTrain,
                                          double transitEndTime, double transitStopLength,
-                                         double freeSpeedTrainForSchedule,
                                          double departureIntervalTime, double carGridSpacing) {
         this.railInterval = railInterval;
         this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
         this.transitEndTime = transitEndTime;
         this.transitStopLength = transitStopLength;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.departureIntervalTime = departureIntervalTime;
         this.carGridSpacing = carGridSpacing;
     }
@@ -79,7 +76,7 @@ public class TransitScheduleCreatorRadCirc implements UtilComponent {
         String suffix = "_15min";
 
         new TransitScheduleCreatorRadCirc(10000, 5, 60 / 3.6,
-                24 * 3600, 0, 60 / 3.6 * 1.05, 15 * 60, 100).
+                24 * 3600, 0, 15 * 60, 100).
                 runTransitScheduleUtil("./output/network_circ_rad.xml.gz", "./output/transitSchedule.xml.gz",
                         "./output/transitVehicles.xml.gz");
     }
@@ -114,7 +111,7 @@ public class TransitScheduleCreatorRadCirc implements UtilComponent {
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, railInterval * carGridSpacing / freeSpeedTrain,
-                transitStopLength, 0, transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule,
+                transitStopLength, 0, transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrain,
                 2*60, "RadCirc");
 
         for (int i = 0; i < startLinks.size(); i++) {

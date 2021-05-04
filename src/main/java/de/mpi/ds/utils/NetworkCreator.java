@@ -52,12 +52,12 @@ public class NetworkCreator implements UtilComponent {
             "west", new int[]{-1, 0}
     );
 
-//    private double railGridSpacing;
+    //    private double railGridSpacing;
     private double systemSize;
     private int railInterval;
     private double carGridSpacing;
     private double linkCapacity;
-    private double freeSpeedTrainForSchedule;
+    private double effectiveFreeTrainSpeed;
     private double freeSpeedCar;
     private double numberOfLanes;
     private boolean diagonalConnections;
@@ -65,14 +65,14 @@ public class NetworkCreator implements UtilComponent {
     private boolean createTrainLines;
 
     public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
-                          double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
+                          double linkCapacity, double effectiveFreeSpeedTrain, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections,
                           boolean smallLinksCloseToNodes, boolean createTrainLines) {
         this.systemSize = systemSize;
 //        this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.effectiveFreeTrainSpeed = effectiveFreeSpeedTrain;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
@@ -87,10 +87,10 @@ public class NetworkCreator implements UtilComponent {
         double systemSize = 10000;
         int ptInterval = 4; // L/l
         int linkCapacity = 1000;
-        double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
+        double freeSpeedTrain = 60 / 3.6 * 1.4;
         double numberOfLanes = 4;
         double freeSpeedCar = 30 / 3.6;
-//        new NetworkCreator(cellLength, systemSize, ptInterval, linkCapacity, freeSpeedTrainForSchedule,
+//        new NetworkCreator(cellLength, systemSize, ptInterval, linkCapacity, freeSpeedTrain,
 //                numberOfLanes, freeSpeedCar, true).createGridNetwork(path, true);
     }
 
@@ -215,8 +215,8 @@ public class NetworkCreator implements UtilComponent {
         Link l4 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
                         .concat(String.valueOf(a.getId()).concat("_pt"))),
                 b, a);
-        setLinkAttributes(l3, linkCapacity, length, freeSpeedTrainForSchedule, numberOfLanes);
-        setLinkAttributes(l4, linkCapacity, length, freeSpeedTrainForSchedule, numberOfLanes);
+        setLinkAttributes(l3, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes);
+        setLinkAttributes(l4, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes);
         if (periodicConnection) {
             l3.getAttributes().putAttribute(PERIODIC_LINK, true);
             l4.getAttributes().putAttribute(PERIODIC_LINK, true);
@@ -318,13 +318,16 @@ public class NetworkCreator implements UtilComponent {
                 }
             } else {
                 List<Link> inLinksNonPt = null;
+                List<Link> outLinksNonPt = null;
                 int i = 0;
                 do {
                     double dir = neighbourToAddDirections[i];
                     inLinksNonPt = getLinksWithDirection(inLinksNonPeriodic, dir, NETWORK_MODE_CAR);
+                    outLinksNonPt = getLinksWithOppositeDirection(outLinksNonPeriodic, dir, NETWORK_MODE_CAR);
                     i++;
-                } while (inLinksNonPt.isEmpty());
+                } while (inLinksNonPt.isEmpty() || outLinksNonPt.isEmpty());
                 inLinksNonPt.get(0).getAttributes().putAttribute(IS_START_LINK, true);
+                outLinksNonPt.get(0).getAttributes().putAttribute(IS_START_LINK, true);
             }
             if (n.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
                 for (double dir : neighbourToAddDirections) {
@@ -358,8 +361,7 @@ public class NetworkCreator implements UtilComponent {
     }
 
 
-    private void divide(Network net, NetworkFactory fac, Link link, String inOut,
-                        boolean isStartLink) {
+    private void divide(Network net, NetworkFactory fac, Link link, String inOut, boolean isStartLink) {
 
         // Do nothing if link length is zero
         if (link.getAttributes().getAttribute(PERIODIC_LINK).equals(true)) {
@@ -409,25 +411,34 @@ public class NetworkCreator implements UtilComponent {
         fstLink.setLength(calculateDistancePeriodicBC(fstLink.getFromNode(), fstLink.getToNode(), systemSize));
         scndLink.setLength(calculateDistancePeriodicBC(scndLink.getFromNode(), scndLink.getToNode(), systemSize));
 
-        if (inOut.equals("in") && isStartLink) {
-//            scndLink.getAttributes().putAttribute(IS_FACILITY_LINK, true);
-            scndLink.getAttributes().putAttribute(IS_START_LINK, true);
+        if (inOut.equals("in")) {
+            if (isStartLink) {
+                scndLink.getAttributes().putAttribute(IS_START_LINK, true);
+            } else {
+                fstLink.getAttributes().putAttribute(IS_START_LINK, false);
+                scndLink.getAttributes().putAttribute(IS_START_LINK, true);
+            }
 //            if (isTrainFacility) {
-//                Set<String> allowedModes = new HashSet<>();
-//                allowedModes.add(NETWORK_MODE_CAR);
-//                allowedModes.add(NETWORK_MODE_TRAIN);
-//                scndLink.setAllowedModes(allowedModes);
+            Set<String> allowedModes = new HashSet<>();
+            allowedModes.add(NETWORK_MODE_CAR);
+            allowedModes.add(NETWORK_MODE_TRAIN);
+            scndLink.setAllowedModes(allowedModes);
 //            }
         }
 
-        if (inOut.equals("out") && isStartLink) {
-//            fstLink.getAttributes().putAttribute(IS_FACILITY_LINK, true);
-            fstLink.getAttributes().putAttribute(IS_START_LINK, true);
+        if (inOut.equals("out")) {
+            if (isStartLink) {
+                fstLink.getAttributes().putAttribute(IS_START_LINK, true);
+            } else {
+                fstLink.getAttributes().putAttribute(IS_START_LINK, true);
+                scndLink.getAttributes().putAttribute(IS_START_LINK, false);
+            }
 //            if (isTrainFacility) {
-//                Set<String> allowedModes = new HashSet<>();
-//                allowedModes.add(NETWORK_MODE_CAR);
-//                allowedModes.add(NETWORK_MODE_TRAIN);
-//                fstLink.setAllowedModes(allowedModes);
+//            if (isTrainFacility) {
+            Set<String> allowedModes = new HashSet<>();
+            allowedModes.add(NETWORK_MODE_CAR);
+            allowedModes.add(NETWORK_MODE_TRAIN);
+            fstLink.setAllowedModes(allowedModes);
 //            }
         }
 

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
 import static de.mpi.ds.utils.ScenarioCreator.IS_STATION_NODE;
 
@@ -86,11 +87,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     .collect(Collectors.toList());
             transitStopInLinks = transitStopNodes.stream()
                     .flatMap(n -> n.getInLinks().values().stream())
-                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+//                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                    .filter(l -> doubleCloseToZero(l.getLength() - 1))
                     .collect(Collectors.toList());
             transitStopOutLinks = transitStopNodes.stream()
                     .flatMap(n -> n.getOutLinks().values().stream())
-                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+//                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                    .filter(l -> doubleCloseToZero(l.getLength() - 1))
                     .collect(Collectors.toList());
             // TODO change to link attribute also (more general but more memory consumption)
             if (transitStopInLinks.size() != transitStopOutLinks.size()) {
@@ -235,7 +238,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                                      Link dummy_last_link, boolean splittedFleet) {
         if (dummy_last_link != null) {
             Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_last_link.getId());
-            activity.setCoord(dummy_last_link.getCoord());
+            activity.setCoord(dummy_last_link.getToNode().getCoord());
 //            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);
@@ -250,7 +253,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
             else
                 plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
             Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
-            activity.setCoord(dummy_first_link.getCoord());
+            activity.setCoord(dummy_first_link.getFromNode().getCoord());
 //            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);

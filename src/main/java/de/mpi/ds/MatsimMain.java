@@ -1,5 +1,8 @@
 package de.mpi.ds;
 
+import ch.sbb.matsim.mobsim.qsim.SBBTransitModule;
+import ch.sbb.matsim.mobsim.qsim.pt.SBBTransitEngineQSimModule;
+import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.DrtTrajectoryAnalyzer.DrtTrajectoryAnalyzer;
 import de.mpi.ds.custom_routing.CustomRoutingModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
@@ -203,21 +206,21 @@ public class MatsimMain {
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setTravelDistanceDistribution("InverseGamma")
-                    .setNRequests((int) 5e3).setTravelDistanceMeanOverL(1/5.)
-
+//                    .setNRequests(300).setFreeSpeedTrain(60/3.6)
 //                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
-//                    .setNRequests((int) 125e3).setTravelDistanceMeanOverL(1/5.)
+                    .setNRequests((int) 125e3).setTravelDistanceMeanOverL(1 / 5.)
 //                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
 //                    .setTravelDistanceMeanOverL(1./4).setDepartureIntervalTime(3600/2.5)
 //                    .setTravelDistanceMeanOverL(1./5).setDepartureIntervalTime(3600/1.6)
 //                    .setTravelDistanceMeanOverL(1./10).setDepartureIntervalTime(3600/0.4)
                     .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
-            double mu = scenarioCreator.getTransitEndTime() / scenarioCreator.getDepartureIntervalTime();
+            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
             double nu = 1. / scenarioCreator.getRequestEndTime();
-            double E = scenarioCreator.getnRequests() /
-                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
-            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
-            LOG.info("Q: " + mu / (nu * E * avDist * avDist));
+//            double E = scenarioCreator.getnRequests() /
+//                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
+//            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
+            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMeanOverL() *
+                    scenarioCreator.getTravelDistanceMeanOverL()));
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
@@ -271,6 +274,11 @@ public class MatsimMain {
 //        controler.addOverridingModule(new GridPrePlanner());
         controler.addOverridingModule(new MyAnalysisModule());
         controler.addOverridingQSimModule(new CustomTransitStopHandlerModule());
+
+//        controler.addOverridingModule(new SBBTransitModule());
+////        controler.addOverridingModule(new SwissRailRaptorModule());
+//        controler.configureQSimComponents(components -> {SBBTransitEngineQSimModule.configure(components);});
+
         controler.addOverridingModule(new DrtTrajectoryAnalyzer());
         DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
         controler.addOverridingModule(new DrtPlanModifier(drtGroup));

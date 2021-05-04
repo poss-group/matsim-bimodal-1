@@ -13,7 +13,6 @@ public class ScenarioCreatorBuilder {
     private long linkCapacity = 9999999;
     private double freeSpeedCar = 30 / 3.6;
     private double freeSpeedTrain = 60 / 3.6;
-    private double freeSpeedTrainForSchedule = 60 / 3.6;
     private double numberOfLanes = 100;
 
     private int requestEndTime = 9 * 3600;
@@ -68,8 +67,8 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
-    public ScenarioCreatorBuilder setFreeSpeedTrainForSchedule(double freeSpeedTrainForSchedule) {
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+    public ScenarioCreatorBuilder setFreeSpeedTrainForSchedule(double freeSpeedTrain) {
+        this.freeSpeedTrain = freeSpeedTrain;
         return this;
     }
 
@@ -166,7 +165,7 @@ public class ScenarioCreatorBuilder {
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
-                freeSpeedTrain, freeSpeedTrainForSchedule, numberOfLanes, requestEndTime, nRequests, transitEndTime,
+                freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
                 createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL);
@@ -180,7 +179,6 @@ public class ScenarioCreatorBuilder {
                 "\nlinkCapacity: " + linkCapacity +
                 "\nfreeSpeedCar: " + freeSpeedCar +
                 "\nfreeSpeedTrain: " + freeSpeedTrain +
-                "\nfreeSpeedTrainForSchedule: " + freeSpeedTrainForSchedule +
                 "\nnumberOfLanes: " + numberOfLanes +
                 "\nrequestEndTime: " + requestEndTime +
                 "\nnRequests: " + nRequests +

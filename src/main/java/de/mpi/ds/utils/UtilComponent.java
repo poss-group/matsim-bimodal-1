@@ -19,7 +19,7 @@ public interface UtilComponent {
 //    static final double freeSpeedCar = 30 / 3.6;
 //    static final double freeSpeedTrain = 60 / 3.6;
 //    // This is neccessary so that trains are running according to their schedule
-//    static final double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
+//    static final double freeSpeedTrain = 60 / 3.6 * 1.4;
 //    static final double numberOfLanes = 4.;
 //
 //    //Transit Schedule variables/shared variables

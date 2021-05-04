@@ -39,7 +39,7 @@ public class TransitScheduleConstructor implements UtilComponent {
     private TransitSchedule schedule;
     private int route_counter = 0;
     private int currRouteStopCount;
-    private double freeSpeedTrainForSchedule;
+    private double effectiveFreeSpeedTrain;
     private double departureIntervalTime;
     private String mode;
     private double dirAdd = 0;
@@ -49,7 +49,7 @@ public class TransitScheduleConstructor implements UtilComponent {
     public TransitScheduleConstructor(TransitScheduleFactory tsf, PopulationFactory pf, Network net, TransitSchedule ts,
                                       Vehicles vehicles, double departure_delay, double stop_length,
                                       double transitStartTime, double transitEndTime, double transitIntervalTime,
-                                      double freeSpeedTrainForSchedule, double departureIntervalTime, String mode) {
+                                      double effectiveFreeSpeedTrain, double departureIntervalTime, String mode) {
         this.transitScheduleFactory = tsf;
         this.transitEndTime = transitEndTime;
         this.transitIntervalTime = transitIntervalTime;
@@ -60,7 +60,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         this.departure_delay = departure_delay;
         this.transitStartTime = transitStartTime;
         this.vehicles = vehicles;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.effectiveFreeSpeedTrain = effectiveFreeSpeedTrain;
         this.departureIntervalTime = departureIntervalTime;
         assert (mode.equals("Manhatten") ||
                 mode.equals("RadCric")) : "mode has to be either \"Manhatten\" or \"RadCirc\"";
@@ -72,7 +72,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1", VehicleType.class));
         vehicleType.setDescription("train");
         vehicleType.setNetworkMode("train");
-        vehicleType.setMaximumVelocity(freeSpeedTrainForSchedule);
+        vehicleType.setMaximumVelocity(effectiveFreeSpeedTrain);
         vehicleType.setLength(10);
         vehicleType.getCapacity().setSeats(10000);
         vehicleType.getCapacity().setStandingRoom(0);
@@ -147,7 +147,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         while (!currLink.equals(startLink) && !currLink.getToNode().equals(startLink.getFromNode()));
         // Create last stop
 //        linkList.add(currLink);
-//        double timeDelta = currLink.getLength() / freeSpeedTrainForSchedule - stop_length;
+//        double timeDelta = currLink.getLength() / freeSpeedTrain - stop_length;
 //        createStop(transitRouteStopList, currLink, lastDepartureTime + timeDelta, lastDepartureTime + timeDelta);
 //        lastDepartureTime += timeDelta;
     }
@@ -239,7 +239,7 @@ public class TransitScheduleConstructor implements UtilComponent {
 //            TransitStopFacility lastStopFacility = transitRouteStopList.get(transitRouteStopList.size() - 1)
 //                    .getStopFacility();
 //            double length = calculateDistancePeriodicBC(lastStopFacility.getCoord(), newLink.getCoord(), 10000);
-//            double timeDelta = length / freeSpeedTrainForSchedule - stop_length;
+//            double timeDelta = length / freeSpeedTrain - stop_length;
             createStop(transitRouteStopList, newLink, 0, 0);
             if (newLink.getAttributes().getAttribute(PERIODIC_LINK).equals(true)) {
                 linkList.add(startLink);
@@ -260,7 +260,7 @@ public class TransitScheduleConstructor implements UtilComponent {
 //        if (newLink.getToNode().equals(startLink.getFromNode()) && toNode.getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
 //            linkList.add(newLink);
 ////            createStop(transitRouteStopList, newLink, transitIntervalTime, transitIntervalTime);
-//            double timeDelta = newLink.getLength() / freeSpeedTrainForSchedule - stop_length;
+//            double timeDelta = newLink.getLength() / freeSpeedTrain - stop_length;
 //            createStop(transitRouteStopList, newLink, lastDepartureTime +timeDelta, lastDepartureTime +timeDelta);
 //            lastDepartureTime += timeDelta;
 //            LOG.warn("check me");
@@ -292,7 +292,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         double time = transitStartTime;
         int i = 0;
         boolean first_dep = true;
-        int transportersPerLine = (int) Math.ceil(transitIntervalTime / departureIntervalTime);
+        int transportersPerLine = Integer.MAX_VALUE;//(int) Math.ceil(transitIntervalTime / departureIntervalTime);
         while (time < transitEndTime) {
             Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
             Id<Vehicle> vehicleId =

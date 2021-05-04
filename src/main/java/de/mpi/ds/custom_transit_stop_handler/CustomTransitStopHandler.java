@@ -31,6 +31,7 @@ public class CustomTransitStopHandler implements TransitStopHandler {
             }
         }
 //        LOG.warn("Returning zero");
-        return 0;
+//        return stopTime*0.0001;
+        return 0.;
     }
 }

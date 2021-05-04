@@ -218,4 +218,12 @@
         <param name="fractionOfIterationsToDisableInnovation" value="0"/>
     </module>
 
+<!--    <module name="SBBPt" >-->
+<!--        &lt;!&ndash; (iterationNumber % createLinkEventsInterval) == 0 defines in which iterations linkEnter- and linkLeave-events are created,-->
+<!--                "useful for visualization or analysis purposes. Defaults to 0. `0' disables the creation of events completely. &ndash;&gt;-->
+<!--        <param name="createLinkEventsInterval" value="0" />-->
+<!--        &lt;!&ndash; Leg modes used by the created transit drivers that should be simulated strictly according to the schedule. &ndash;&gt;-->
+<!--        <param name="deterministicServiceModes" value="train" />-->
+<!--    </module>-->
+
 </config>

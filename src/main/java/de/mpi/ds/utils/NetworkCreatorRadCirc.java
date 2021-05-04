@@ -57,7 +57,7 @@ public class NetworkCreatorRadCirc implements UtilComponent {
     private int railInterval;
     private double carGridSpacing;
     private double linkCapacity;
-    private double freeSpeedTrainForSchedule;
+    private double freeSpeedTrain;
     private double freeSpeedCar;
     private double numberOfLanes;
     private boolean diagonalConnections;
@@ -66,14 +66,14 @@ public class NetworkCreatorRadCirc implements UtilComponent {
     private boolean createTrainLines;
 
     public NetworkCreatorRadCirc(double systemSize, int railInterval, double carGridSpacing,
-                                 double linkCapacity, double freeSpeedTrainForSchedule, double numberOfLanes,
+                                 double linkCapacity, double freeSpeedTrain, double numberOfLanes,
                                  double freeSpeedCar, boolean diagonalConnections, Random random,
                                  boolean smallLinksCloseToNodes, boolean createTrainLines) {
         this.systemSize = systemSize;
 //        this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
+        this.freeSpeedTrain = freeSpeedTrain;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
@@ -89,10 +89,10 @@ public class NetworkCreatorRadCirc implements UtilComponent {
         double systemSize = 1000;
         int ptInterval = 4; // L/l
         int linkCapacity = 1000;
-        double freeSpeedTrainForSchedule = 60 / 3.6 * 1.4;
+        double freeSpeedTrain = 60 / 3.6 * 1.4;
         double numberOfLanes = 4;
         double freeSpeedCar = 30 / 3.6;
-        new NetworkCreatorRadCirc(systemSize, ptInterval, 200, linkCapacity, freeSpeedTrainForSchedule,
+        new NetworkCreatorRadCirc(systemSize, ptInterval, 200, linkCapacity, freeSpeedTrain,
                 numberOfLanes, freeSpeedCar, true, new Random(), false, true).createGridNetwork(path);
     }
 
@@ -188,8 +188,8 @@ public class NetworkCreatorRadCirc implements UtilComponent {
                         .concat(String.valueOf(a.getId()).concat("_pt"))),
                 b, a);
         double length = GeneralUtils.calculateDistanceNonPeriodic(a, b);
-        setLinkAttributes(l3, linkCapacity, length, freeSpeedTrainForSchedule, numberOfLanes);
-        setLinkAttributes(l4, linkCapacity, length, freeSpeedTrainForSchedule, numberOfLanes);
+        setLinkAttributes(l3, linkCapacity, length, freeSpeedTrain, numberOfLanes);
+        setLinkAttributes(l4, linkCapacity, length, freeSpeedTrain, numberOfLanes);
         l3.getAttributes().putAttribute(PERIODIC_LINK, false);
         l4.getAttributes().putAttribute(PERIODIC_LINK, false);
         setLinkModes(l3, NETWORK_MODE_TRAIN);

@@ -54,21 +54,21 @@ public class TransitScheduleCreator implements UtilComponent {
     private double transitEndTime;
     private int railInterval;
     private double transitStopLength;
-    private double freeSpeedTrainForSchedule;
     private double departureIntervalTime;
     private double carGridSpacing;
+    private double effectiveFreeSpeedTrain;
 
-    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain,
-                                  double transitEndTime, double transitStopLength, double freeSpeedTrainForSchedule,
+    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain, double effectiveFreeSpeedTrain,
+                                  double transitEndTime, double transitStopLength,
                                   double departureIntervalTime, double carGridSpacing) {
         this.railInterval = railInterval;
         this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
         this.transitEndTime = transitEndTime;
         this.transitStopLength = transitStopLength;
-        this.freeSpeedTrainForSchedule = freeSpeedTrainForSchedule;
         this.departureIntervalTime = departureIntervalTime;
         this.carGridSpacing = carGridSpacing;
+        this.effectiveFreeSpeedTrain = effectiveFreeSpeedTrain;
     }
 
     public static void main(String[] args) {
@@ -143,7 +143,7 @@ public class TransitScheduleCreator implements UtilComponent {
 
         TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
                 populationFactory, net, schedule, vehicles, railInterval*carGridSpacing / freeSpeedTrain, transitStopLength, 0,
-                transitEndTime, systemSize / freeSpeedTrain, freeSpeedTrainForSchedule, departureIntervalTime, "Manhatten");
+                transitEndTime, systemSize / freeSpeedTrain, effectiveFreeSpeedTrain, departureIntervalTime, "Manhatten");
 
 //        LOG.info(
 //                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
