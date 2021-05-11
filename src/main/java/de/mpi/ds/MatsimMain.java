@@ -1,8 +1,5 @@
 package de.mpi.ds;
 
-import ch.sbb.matsim.mobsim.qsim.SBBTransitModule;
-import ch.sbb.matsim.mobsim.qsim.pt.SBBTransitEngineQSimModule;
-import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 import de.mpi.ds.DrtTrajectoryAnalyzer.DrtTrajectoryAnalyzer;
 import de.mpi.ds.custom_routing.CustomRoutingModule;
 import de.mpi.ds.custom_transit_stop_handler.CustomTransitStopHandlerModule;
@@ -11,15 +8,7 @@ import de.mpi.ds.drt_plan_modification.DrtPlanModifierConfigGroup;
 import de.mpi.ds.my_analysis.MyAnalysisModule;
 import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
-import org.apache.log4j.Appender;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.builders.appender.AppenderBuilder;
-import org.apache.log4j.builders.appender.FileAppenderBuilder;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
@@ -33,7 +22,6 @@ import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +31,6 @@ import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
-    //TODO fix seed (different populations for different ells)
 
     private static final Logger LOG = Logger.getLogger(MatsimMain.class.getName());
 
@@ -58,7 +45,7 @@ public class MatsimMain {
         try {
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
@@ -139,16 +126,17 @@ public class MatsimMain {
     }
 
     private static void manuallyStartMultipleNeworks(String configPath) throws Exception {
-        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
-        String carGridSpacingString = "200";
-        for (int N_drt = 100; N_drt < 400; N_drt += 100) {
-            for (int railInterval = 2; railInterval <= 24; railInterval += 4) {
+//        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
+        String[] modes = new String[]{"create-input", "bimodal"};
+        String carGridSpacingString = "100";
+        for (int N_drt = 10; N_drt < 11; N_drt += 1) {
+            for (int railInterval = 2; railInterval <= 4; railInterval += 2) {
                 for (String mode : modes) {
                     Config config = ConfigUtils
                             .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
                     runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-                            String.valueOf(N_drt), mode);
+                            String.valueOf(N_drt), "1000", mode, "test");
                 }
             }
         }
@@ -166,9 +154,14 @@ public class MatsimMain {
     }
 
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
-                                            String N_drt, String mode) throws Exception {
+                                            String N_drt, String nReqsString, String mode, String outFolder) throws
+            Exception {
         String basicOutPath = config.controler().getOutputDirectory();
+        if (!outFolder.equals("")) {
+            basicOutPath = basicOutPath.concat("/" + outFolder);
+        }
         int railInterval = Integer.parseInt(railIntervalString);
+        int nReqs = Integer.parseInt(nReqsString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
         String nDrtOutPath = Paths.get(basicOutPath, String.valueOf(N_drt).concat("drt")).toString();
 //        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
@@ -205,10 +198,9 @@ public class MatsimMain {
             OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setTravelDistanceDistribution("InverseGamma")
-//                    .setNRequests(300).setFreeSpeedTrain(60/3.6)
+                    .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("Uniform")
 //                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
-                    .setNRequests((int) 125e3).setTravelDistanceMeanOverL(1 / 5.)
+                    .setTravelDistanceMeanOverL(1 / 5.)
 //                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
 //                    .setTravelDistanceMeanOverL(1./4).setDepartureIntervalTime(3600/2.5)
 //                    .setTravelDistanceMeanOverL(1./5).setDepartureIntervalTime(3600/1.6)

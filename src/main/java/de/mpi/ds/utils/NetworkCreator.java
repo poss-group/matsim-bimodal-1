@@ -414,10 +414,11 @@ public class NetworkCreator implements UtilComponent {
         if (inOut.equals("in")) {
             if (isStartLink) {
                 scndLink.getAttributes().putAttribute(IS_START_LINK, true);
-            } else {
-                fstLink.getAttributes().putAttribute(IS_START_LINK, false);
-                scndLink.getAttributes().putAttribute(IS_START_LINK, true);
             }
+//            } else {
+//                fstLink.getAttributes().putAttribute(IS_START_LINK, false);
+//                scndLink.getAttributes().putAttribute(IS_START_LINK, true);
+//            }
 //            if (isTrainFacility) {
             Set<String> allowedModes = new HashSet<>();
             allowedModes.add(NETWORK_MODE_CAR);
@@ -429,10 +430,11 @@ public class NetworkCreator implements UtilComponent {
         if (inOut.equals("out")) {
             if (isStartLink) {
                 fstLink.getAttributes().putAttribute(IS_START_LINK, true);
-            } else {
-                fstLink.getAttributes().putAttribute(IS_START_LINK, true);
-                scndLink.getAttributes().putAttribute(IS_START_LINK, false);
             }
+//            } else {
+//                fstLink.getAttributes().putAttribute(IS_START_LINK, true);
+//                scndLink.getAttributes().putAttribute(IS_START_LINK, false);
+//            }
 //            if (isTrainFacility) {
 //            if (isTrainFacility) {
             Set<String> allowedModes = new HashSet<>();

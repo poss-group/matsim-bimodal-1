@@ -82,7 +82,8 @@ public class PopulationCreator implements UtilComponent {
                 probabilityDensityDist,
                 false,
                 xy_0 + 1e-3,
-                Math.abs(xy_1 - xy_0),
+                // xy_1/2 -> periodic BC
+                Math.abs(xy_1/2 - xy_0),
                 (int) 1e7,
                 random);
 
@@ -197,7 +198,7 @@ public class PopulationCreator implements UtilComponent {
 
     private Activity createFirst(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
-        // Apparently Transit router needs Coordinates to work (of toNoe because otherwise, passengers have to walk to final dest.)
+        // Apparently Transit router needs Coordinates to work (of toNode because otherwise, passengers have to walk to final dest.)
         activity.setCoord(link.getToNode().getCoord());
 //        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
         activity.setEndTime(random.nextInt(requestEndTime)); // [s]
