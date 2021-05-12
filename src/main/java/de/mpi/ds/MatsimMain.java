@@ -45,8 +45,8 @@ public class MatsimMain {
         try {
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
-//            manuallyStartMultipleNeworks(args[0]);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
+            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
@@ -127,16 +127,16 @@ public class MatsimMain {
 
     private static void manuallyStartMultipleNeworks(String configPath) throws Exception {
 //        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
-        String[] modes = new String[]{"create-input", "bimodal"};
+        String[] modes = new String[]{"create-input", "unimodal"};
         String carGridSpacingString = "100";
-        for (int N_drt = 10; N_drt < 11; N_drt += 1) {
-            for (int railInterval = 2; railInterval <= 4; railInterval += 2) {
+        for (int N_drt = 240; N_drt < 280; N_drt += 5) {
+            for (int railInterval = 25; railInterval < 26; railInterval += 1) {
                 for (String mode : modes) {
                     Config config = ConfigUtils
                             .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
                     runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-                            String.valueOf(N_drt), "1000", mode, "test");
+                            String.valueOf(N_drt), "50000", mode, "reconstruct");
                 }
             }
         }
@@ -198,7 +198,8 @@ public class MatsimMain {
             OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("Uniform")
+                    .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
+                    .setDiagonalConnetions(false)
 //                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
                     .setTravelDistanceMeanOverL(1 / 5.)
 //                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
@@ -227,6 +228,7 @@ public class MatsimMain {
             outPath = Paths.get(iterationSpecificPath, mode).toString();
         } else if (mode.equals("unimodal")) {
             outPath = Paths.get(nDrtOutPath, mode).toString();
+            config.transit().setUseTransit(false);
         } else if (mode.equals("car")) {
             outPath = Paths.get(basicOutPath, mode).toString();
         }

@@ -275,7 +275,7 @@ public class TransitScheduleConstructor implements UtilComponent {
         TransitStopFacility transitStopFacility = null;
         if (!schedule.getFacilities().containsKey(stopId)) {
             transitStopFacility = transitScheduleFactory.createTransitStopFacility(
-                    stopId, currLink.getFromNode().getCoord(), false);
+                    stopId, currLink.getToNode().getCoord(), false);
             transitStopFacility.setLinkId(currLink.getId());
             schedule.addStopFacility(transitStopFacility);
         } else {

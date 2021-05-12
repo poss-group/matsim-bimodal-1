@@ -88,12 +88,14 @@ class DrtPlanModifierStartupListener implements StartupListener {
             transitStopInLinks = transitStopNodes.stream()
                     .flatMap(n -> n.getInLinks().values().stream())
 //                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-                    .filter(l -> doubleCloseToZero(l.getLength() - 1))
+//                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
+                    .filter(l -> !l.getAllowedModes().contains(TransportMode.pt))
                     .collect(Collectors.toList());
             transitStopOutLinks = transitStopNodes.stream()
                     .flatMap(n -> n.getOutLinks().values().stream())
 //                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-                    .filter(l -> doubleCloseToZero(l.getLength() - 1))
+//                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
+                    .filter(l -> !l.getAllowedModes().contains(TransportMode.pt))
                     .collect(Collectors.toList());
             // TODO change to link attribute also (more general but more memory consumption)
             if (transitStopInLinks.size() != transitStopOutLinks.size()) {
@@ -159,11 +161,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         if (calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) > zetaCut * trainDelta) {
                             Link dummyFirstLink = null;
                             Link dummyLastLink = null;
-                            if (!firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
-                                dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopOutLinks,
+                            if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
+                                dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopInLinks,
                                         "shortest_dist", netDimsMinMax[1]);
                             }
-                            if (!lastLink.getFromNode().getAttributes().getAttribute(IS_STATION_NODE).equals(true)) {
+                            // Todo ToNode or FromNode?
+                            if (lastLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
                                 dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
                                         "shortest_dist", netDimsMinMax[1]);
                             }
@@ -253,7 +256,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
             else
                 plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
             Activity activity = population.getFactory().createActivityFromLinkId("dummy", dummy_first_link.getId());
-            activity.setCoord(dummy_first_link.getFromNode().getCoord());
+            activity.setCoord(dummy_first_link.getToNode().getCoord());
 //            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_link.getCoord());
             activity.setMaximumDuration(0);
             plan.getPlanElements().add(2, activity);

@@ -194,7 +194,7 @@ public class NetworkCreator implements UtilComponent {
             makeDiagConnections(net, fac);
         }
         // this has to be done second because diagonal connections where also introduced before
-        putNodesCloseToStations(net, fac);
+//        putNodesCloseToStations(net, fac);
         try {
             File outFile = new File(path);
             // create output folder if necessary
@@ -215,12 +215,8 @@ public class NetworkCreator implements UtilComponent {
         Link l4 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
                         .concat(String.valueOf(a.getId()).concat("_pt"))),
                 b, a);
-        setLinkAttributes(l3, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes);
-        setLinkAttributes(l4, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes);
-        if (periodicConnection) {
-            l3.getAttributes().putAttribute(PERIODIC_LINK, true);
-            l4.getAttributes().putAttribute(PERIODIC_LINK, true);
-        }
+        setLinkAttributes(l3, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, periodicConnection, false);
+        setLinkAttributes(l4, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, periodicConnection, false);
         setLinkModes(l3, NETWORK_MODE_TRAIN);
         setLinkModes(l4, NETWORK_MODE_TRAIN);
         net.addLink(l3);
@@ -235,12 +231,8 @@ public class NetworkCreator implements UtilComponent {
         Link l2 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
                         .concat(String.valueOf(a.getId()))),
                 b, a);
-        setLinkAttributes(l1, linkCapacity, length, freeSpeedCar, numberOfLanes);
-        setLinkAttributes(l2, linkCapacity, length, freeSpeedCar, numberOfLanes);
-        if (periodicConnection) {
-            l1.getAttributes().putAttribute(PERIODIC_LINK, true);
-            l2.getAttributes().putAttribute(PERIODIC_LINK, true);
-        }
+        setLinkAttributes(l1, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, true);
+        setLinkAttributes(l2, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, true);
         setLinkModes(l1, NETWORK_MODE_CAR);
         setLinkModes(l2, NETWORK_MODE_CAR);
         net.addLink(l1);
@@ -466,7 +458,7 @@ public class NetworkCreator implements UtilComponent {
             for (Node ndiag : diagNeighbours) {
                 // Only consider one direction because the other one is done when iterating over neighbour node
                 Link nij_ndiag = fac.createLink(Id.createLinkId(temp.getId() + "-" + ndiag.getId()), temp, ndiag);
-                setLinkAttributes(nij_ndiag, linkCapacity, diag_length, freeSpeedCar, numberOfLanes);
+                setLinkAttributes(nij_ndiag, linkCapacity, diag_length, freeSpeedCar, numberOfLanes, false, true);
                 setLinkModes(nij_ndiag, NETWORK_MODE_CAR);
 
                 newLinks.add(nij_ndiag);
@@ -489,13 +481,14 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
-    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes) {
+    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes,
+                                   boolean isPeriodic, boolean isStartLink) {
         link.setCapacity(capacity);
         link.setLength(length);
         link.setFreespeed(freeSpeed);
         link.setNumberOfLanes(numberLanes);
-        link.getAttributes().putAttribute(PERIODIC_LINK, false);
-        link.getAttributes().putAttribute(IS_START_LINK, false);
+        link.getAttributes().putAttribute(PERIODIC_LINK, isPeriodic);
+        link.getAttributes().putAttribute(IS_START_LINK, isStartLink);
     }
 
     private void setLinkModes(Link link, String modes) {

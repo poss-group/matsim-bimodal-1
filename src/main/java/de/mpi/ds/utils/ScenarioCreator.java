@@ -81,8 +81,9 @@ public class ScenarioCreator {
         this.travelDistanceMeanOverL = travelDistanceMeanOverL;
 
         // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
-        int numberOfStopsPerLine = (int) (systemSize/carGridSpacing)/railInterval;
-        this.effectiveFreeTrainSpeed = systemSize/(600-numberOfStopsPerLine*2);
+//        int numberOfStopsPerLine = (int) (systemSize/carGridSpacing)/railInterval;
+//        this.effectiveFreeTrainSpeed = systemSize/(600-numberOfStopsPerLine*2);
+        this.effectiveFreeTrainSpeed = freeSpeedTrain;
 
         assert railInterval > 0 : "Pt grid spacing must be bigger than drt grid spacing";
         assert carGridSpacing * railInterval < systemSize : "Rail interval bigger than sysem size";
