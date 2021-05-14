@@ -22,6 +22,7 @@ import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,8 +46,8 @@ public class MatsimMain {
         try {
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
-            manuallyStartMultipleNeworks(args[0]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
+//            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
@@ -129,14 +130,14 @@ public class MatsimMain {
 //        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
         String[] modes = new String[]{"create-input", "unimodal"};
         String carGridSpacingString = "100";
-        for (int N_drt = 240; N_drt < 280; N_drt += 5) {
+        for (int N_drt = 15; N_drt < 16; N_drt += 5) {
             for (int railInterval = 25; railInterval < 26; railInterval += 1) {
                 for (String mode : modes) {
                     Config config = ConfigUtils
                             .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
                     runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-                            String.valueOf(N_drt), "50000", mode, "reconstruct");
+                            String.valueOf(N_drt), "100", mode, "test");
                 }
             }
         }
@@ -163,7 +164,8 @@ public class MatsimMain {
         int railInterval = Integer.parseInt(railIntervalString);
         int nReqs = Integer.parseInt(nReqsString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
-        String nDrtOutPath = Paths.get(basicOutPath, String.valueOf(N_drt).concat("drt")).toString();
+        String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
+        String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
 //        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
         String varyParameter = "l_";
 //        String varyParameter = "Ndrt_";
@@ -199,7 +201,7 @@ public class MatsimMain {
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
-                    .setDiagonalConnetions(false)
+//                    .setDiagonalConnetions(false)
 //                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
                     .setTravelDistanceMeanOverL(1 / 5.)
 //                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)

@@ -13,7 +13,7 @@
     <description>Doesnt matter</description>
 
     <properties>
-        <matsim.version>14.0-MyVersion</matsim.version>
+        <matsim.version>13.1-MyVersion</matsim.version>
         <mainClass>de.mpi.ds.MatsimMain</mainClass>
     </properties>
 
