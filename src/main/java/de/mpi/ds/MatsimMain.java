@@ -46,7 +46,7 @@ public class MatsimMain {
         try {
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
@@ -136,8 +136,8 @@ public class MatsimMain {
                     Config config = ConfigUtils
                             .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-                    runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-                            String.valueOf(N_drt), "100", mode, "test");
+//                    runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
+//                            String.valueOf(N_drt), "100", mode,"1/5" ,"42", "test");
                 }
             }
         }
@@ -155,8 +155,8 @@ public class MatsimMain {
     }
 
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
-                                            String N_drt, String nReqsString, String mode, String outFolder) throws
-            Exception {
+                                            String N_drt, String nReqsString, String mode, String meanOverLString,
+                                            String seedString, String endTimeString, String diagConnections, String outFolder) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
@@ -199,15 +199,13 @@ public class MatsimMain {
 
             OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
 
+            double endTime = Double.parseDouble(endTimeString);
+
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
-//                    .setDiagonalConnetions(false)
-//                    .setNRequests((int) 8e4).setTravelDistanceMeanOverL(1./4)
-                    .setTravelDistanceMeanOverL(1 / 5.)
-//                    .setNRequests((int) 5e5).setTravelDistanceMeanOverL(1. / 10)
-//                    .setTravelDistanceMeanOverL(1./4).setDepartureIntervalTime(3600/2.5)
-//                    .setTravelDistanceMeanOverL(1./5).setDepartureIntervalTime(3600/1.6)
-//                    .setTravelDistanceMeanOverL(1./10).setDepartureIntervalTime(3600/0.4)
+                    .setSeed(Long.parseLong(seedString)).setTravelDistanceMeanOverL(Double.parseDouble(meanOverLString))
+                    .setRequestEndTime((int)(endTime-3600)).setTransitEndTime(endTime).setDrtOperationEndTime(endTime)
+                    .setDiagonalConnetions(Boolean.parseBoolean(diagConnections))
                     .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
             double mu = 1. / scenarioCreator.getDepartureIntervalTime();
             double nu = 1. / scenarioCreator.getRequestEndTime();
@@ -232,7 +230,7 @@ public class MatsimMain {
             outPath = Paths.get(nDrtOutPath, mode).toString();
             config.transit().setUseTransit(false);
         } else if (mode.equals("car")) {
-            outPath = Paths.get(basicOutPath, mode).toString();
+            outPath = Paths.get(nReqsOutPath, mode).toString();
         }
         DrtPlanModifierConfigGroup.get(config).setMode(mode);
 //        if (mode.equals("car")) {

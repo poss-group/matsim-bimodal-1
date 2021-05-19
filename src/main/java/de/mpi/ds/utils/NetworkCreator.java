@@ -143,14 +143,14 @@ public class NetworkCreator implements UtilComponent {
 //                int i_minusPtInterval_periodic = (((i - ptInterval) % n_y) + n_y) % n_y;
 //                int j_minusPtInterval_periodic = (((j - ptInterval) % n_x) + n_x) % n_x;
                 if (i - 1 >= 0) {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], carGridSpacing, false);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], carGridSpacing, false, true);
                 } else {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true, false);
                 }
                 if ((j - 1) >= 0) {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], carGridSpacing, false);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], carGridSpacing, false, true);
                 } else {
-                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
+                    insertCarLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true, false);
                 }
             }
         }
@@ -224,15 +224,15 @@ public class NetworkCreator implements UtilComponent {
     }
 
     private void insertCarLinks(Network net, NetworkFactory fac, Node a, Node b, double length,
-                                boolean periodicConnection) {
+                                boolean periodicConnection, boolean isStartLink) {
         Link l1 = fac.createLink(Id.createLinkId(String.valueOf(a.getId()).concat("-")
                         .concat(String.valueOf(b.getId()))),
                 a, b);
         Link l2 = fac.createLink(Id.createLinkId(String.valueOf(b.getId()).concat("-")
                         .concat(String.valueOf(a.getId()))),
                 b, a);
-        setLinkAttributes(l1, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, true);
-        setLinkAttributes(l2, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, true);
+        setLinkAttributes(l1, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, isStartLink);
+        setLinkAttributes(l2, linkCapacity, length, freeSpeedCar, numberOfLanes, periodicConnection, isStartLink);
         setLinkModes(l1, NETWORK_MODE_CAR);
         setLinkModes(l2, NETWORK_MODE_CAR);
         net.addLink(l1);

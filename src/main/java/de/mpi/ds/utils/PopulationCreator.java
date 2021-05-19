@@ -108,26 +108,9 @@ public class PopulationCreator implements UtilComponent {
         Link orig_link;
         Link dest_link;
         List<Link> startLinks = null;
-        List<Link> startInLinks = null;
-        List<Link> startOutLinks = null;
-        //TODO check which are available for different scenarios
         startLinks = net.getLinks().values().stream()
                 .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
-        if (isGridNetwork && smallLinksCloseToNodes) {
-            //TODO maybe make this with an additional node attribute (help node or normal node) but works also likes this
-            startInLinks = startLinks.stream()
-                    .filter(l -> isInsertedNode(l.getFromNode())).collect(Collectors.toList());
-            startOutLinks = startLinks.stream()
-                    .filter(l -> isInsertedNode(l.getToNode())).collect(Collectors.toList());
-        } else if (isGridNetwork) {
-            startInLinks = startLinks;
-            startOutLinks = startLinks;
-        } else {
-            startLinks = new ArrayList<>(net.getLinks().values());
-            startInLinks = startLinks;
-            startOutLinks = startLinks;
-        }
 //        List<Node> borderNonStationNodeList = facilityNodes.stream()
 //                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
 //                        n.getCoord().getY() != 10000).collect(Collectors.toList());
@@ -136,7 +119,10 @@ public class PopulationCreator implements UtilComponent {
         for (int j = 0; j < nRequests; j++) {
             do {
 //                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                orig_link = startInLinks.get(random.nextInt(startInLinks.size()));
+                double newX = random.nextDouble()*L;
+                double newY = random.nextDouble()*L;
+                Coord pre_target = new Coord(newX, newY);
+                orig_link = getClosestDestLink(pre_target, startLinks, L);
 //                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
@@ -147,16 +133,16 @@ public class PopulationCreator implements UtilComponent {
                     }
                     double angle = random.nextDouble() * 2 * Math.PI;
 
-                    double newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
-                    double newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
-                    Coord pre_target = new Coord(newX, newY);
-                    dest_link = getClosestDestLink(pre_target, startOutLinks, L);
+                    newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
+                    newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
+                    pre_target = new Coord(newX, newY);
+                    dest_link = getClosestDestLink(pre_target, startLinks, L);
 
 //                    preDistAverage += dist;
 //                    resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
                 } else {
 //                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_link = startOutLinks.get(random.nextInt(startOutLinks.size()));
+                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
                 }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             } while (dest_link.equals(orig_link));
