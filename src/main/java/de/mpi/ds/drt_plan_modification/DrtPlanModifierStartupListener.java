@@ -20,8 +20,7 @@ import java.util.stream.Stream;
 
 import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
-import static de.mpi.ds.utils.ScenarioCreator.IS_START_LINK;
-import static de.mpi.ds.utils.ScenarioCreator.IS_STATION_NODE;
+import static de.mpi.ds.utils.ScenarioCreator.*;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
@@ -89,18 +88,19 @@ class DrtPlanModifierStartupListener implements StartupListener {
                     .flatMap(n -> n.getInLinks().values().stream())
 //                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
 //                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
-                    .filter(l -> !l.getAllowedModes().contains(TransportMode.pt))
+                    .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
+                    .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                     .collect(Collectors.toList());
-            transitStopOutLinks = transitStopNodes.stream()
-                    .flatMap(n -> n.getOutLinks().values().stream())
-//                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-//                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
-                    .filter(l -> !l.getAllowedModes().contains(TransportMode.pt))
-                    .collect(Collectors.toList());
-            // TODO change to link attribute also (more general but more memory consumption)
-            if (transitStopInLinks.size() != transitStopOutLinks.size()) {
-                transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
-            }
+//            transitStopOutLinks = transitStopNodes.stream()
+//                    .flatMap(n -> n.getOutLinks().values().stream())
+////                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+////                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
+//                    .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
+//                    .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+//                    .collect(Collectors.toList());
+//            if (transitStopInLinks.size() != transitStopOutLinks.size()) {
+//                transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
+//            }
 
             Node randomNode = network.getNodes().values().stream()
                     .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
@@ -154,33 +154,39 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 }
                 assert middleLeg != null;
                 // Only insert transit activities if leg mode is pt
-                if (mode.equals("bimodal")) {
-                    if (middleLeg.getMode().equals(TransportMode.pt)) {
-                        Link firstLink = network.getLinks().get(firstAct.getLinkId());
-                        Link lastLink = network.getLinks().get(lastAct.getLinkId());
-                        if (calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) > zetaCut * trainDelta) {
-                            Link dummyFirstLink = null;
-                            Link dummyLastLink = null;
-                            if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
-                                dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopInLinks,
-                                        "shortest_dist", netDimsMinMax[1]);
-                            }
-                            // Todo ToNode or FromNode?
-                            if (lastLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
-                                dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
-                                        "shortest_dist", netDimsMinMax[1]);
-                            }
+                switch (mode) {
+                    case "bimodal":
+                        if (middleLeg.getMode().equals(TransportMode.pt)) {
+                            Link firstLink = network.getLinks().get(firstAct.getLinkId());
+                            Link lastLink = network.getLinks().get(lastAct.getLinkId());
+                            if (calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
+                                    zetaCut * trainDelta) {
+                                Link dummyFirstLink = null;
+                                Link dummyLastLink = null;
+                                if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
+                                    dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopInLinks,
+                                            "shortest_dist", netDimsMinMax[1]);
+                                }
+                                // Todo ToNode or FromNode?
+                                if (lastLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
+                                    dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
+                                            "shortest_dist", netDimsMinMax[1]);
+                                }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
-                            insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink, splittedFleet);
+                                insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink,
+                                        splittedFleet);
 //                        middleLeg.setMode(TransportMode.car);
-                        } else {
-                            middleLeg.setMode(TransportMode.drt);
+                            } else {
+                                middleLeg.setMode(TransportMode.drt);
+                            }
                         }
-                    }
-                } else if (mode.equals("car")) {
-                    middleLeg.setMode(TransportMode.car);
-                } else if (mode.equals("unimodal")) {
-                    middleLeg.setMode(TransportMode.drt);
+                        break;
+                    case "car":
+                        middleLeg.setMode(TransportMode.car);
+                        break;
+                    case "unimodal":
+                        middleLeg.setMode(TransportMode.drt);
+                        break;
                 }
             }
         }
