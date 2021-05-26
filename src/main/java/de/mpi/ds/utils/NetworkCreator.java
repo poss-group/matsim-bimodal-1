@@ -114,12 +114,12 @@ public class NetworkCreator implements UtilComponent {
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
-                boolean newStationAtrribute = false;
+                boolean newNodeStationAtrribute = false;
                 if (createTrainLines) {
                     if ((i % railInterval == 0) && (j % railInterval == 0)) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
 //                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
-                        newStationAtrribute = true;
+                        newNodeStationAtrribute = true;
                         stationNodesX[i / railInterval] = i;
                         stationNodesY[j / railInterval] = j;
                     }
@@ -127,7 +127,7 @@ public class NetworkCreator implements UtilComponent {
 
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
                         new Coord(i * carGridSpacing, j * carGridSpacing));
-                n.getAttributes().putAttribute(IS_STATION_NODE, newStationAtrribute);
+                n.getAttributes().putAttribute(IS_STATION_NODE, newNodeStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
             }
@@ -173,23 +173,10 @@ public class NetworkCreator implements UtilComponent {
                     length = calculateDistancePeriodicBC(from, to, systemSize);
                     length = doubleCloseToZero(length) ? periodicLength : length;
                     insertTrainLinks(net, fac, from, to, length, j == 0);
-//                    if (i - ptInterval >= 0) {
-//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minusPtInterval_periodic][j], cellLength,
-//                                false);
-//                    } else {
-//                        //i_minus1_periodic is right because point is identified with last point
-//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i_minus1_periodic][j], periodicLength, true);
-//                    }
-//                    if (j - ptInterval >= 0) {
-//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minusPtInterval_periodic], cellLength,
-//                                false);
-//                    } else {
-//                        insertTrainLinks(net, fac, nodes[i][j], nodes[i][j_minus1_periodic], periodicLength, true);
-//                    }
                 }
-
             }
         }
+
         if (diagonalConnections) {
             makeDiagConnections(net, fac);
         }
@@ -443,7 +430,6 @@ public class NetworkCreator implements UtilComponent {
 
     private void makeDiagConnections(Network net, NetworkFactory fac) {
         double diag_length = Math.sqrt(carGridSpacing * carGridSpacing + carGridSpacing * carGridSpacing);
-        List<Link> newLinks = new ArrayList<>();
         for (Node temp : net.getNodes().values()) {
             List<Node> diagNeighbours = temp.getOutLinks().values().stream()
                     .map(Link::getToNode)
@@ -461,11 +447,8 @@ public class NetworkCreator implements UtilComponent {
                 setLinkAttributes(nij_ndiag, linkCapacity, diag_length, freeSpeedCar, numberOfLanes, false, true);
                 setLinkModes(nij_ndiag, NETWORK_MODE_CAR);
 
-                newLinks.add(nij_ndiag);
+                net.addLink(nij_ndiag);
             }
-        }
-        for (Link newLink : newLinks) {
-            net.addLink(newLink);
         }
     }
 

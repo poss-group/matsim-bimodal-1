@@ -98,32 +98,19 @@ public class PopulationCreator implements UtilComponent {
 
     private void generatePopulation(Population population, Network net, int nRequests,
                                     InverseTransformSampler sampler, double L) {
-//        Id<Node> orig_id;
-//        Id<Node> dest_id;
-//        List<Id<Node>> nodeIdList = net.getNodes().values().stream()
-//                .filter(n -> n.getCoord().getX() % delta_xy == 0)
-//                .filter(n -> n.getCoord().getY() % delta_xy == 0)
-//                .map(Identifiable::getId)
-//                .collect(Collectors.toList());
         Link orig_link;
         Link dest_link;
         List<Link> startLinks = null;
         startLinks = net.getLinks().values().stream()
                 .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
-//        List<Node> borderNonStationNodeList = facilityNodes.stream()
-//                .filter(n -> n.getCoord().getX() != 0 && n.getCoord().getX() != 10000 && n.getCoord().getY() != 0 &&
-//                        n.getCoord().getY() != 10000).collect(Collectors.toList());
-//        double preDistAverage = 0;
-//        double resultingDistAverage = 0;
+
         for (int j = 0; j < nRequests; j++) {
             do {
-//                orig_coord = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
                 double newX = random.nextDouble()*L;
                 double newY = random.nextDouble()*L;
                 Coord pre_target = new Coord(newX, newY);
                 orig_link = getClosestDestLink(pre_target, startLinks, L);
-//                orig_coord = borderNonStationNodeList.get(rand.nextInt(borderNonStationNodeList.size())).getCoord();
                 if (sampler != null) {
                     double dist = 0;
                     try {
@@ -141,8 +128,10 @@ public class PopulationCreator implements UtilComponent {
 //                    preDistAverage += dist;
 //                    resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
                 } else {
-//                    dest_link = getRandomNodeOfCollection(net.getNodes().values()).getCoord();
-                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
+                    newX = random.nextDouble()*L;
+                    newY = random.nextDouble()*L;
+                    pre_target = new Coord(newX, newY);
+                    dest_link = getClosestDestLink(pre_target, startLinks, L);
                 }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             } while (dest_link.equals(orig_link));
@@ -157,19 +146,13 @@ public class PopulationCreator implements UtilComponent {
     }
 
     private void generateTrip(Link source, Link sink, int passenger_id, Population population) {
-        Person person = population.getFactory()
-                .createPerson(Id.createPersonId(String.valueOf(passenger_id)));
+        Person person = population.getFactory().createPerson(Id.createPersonId(String.valueOf(passenger_id)));
         // person.getCustomAttributes().put("hasLicense", "false");
-        person.getAttributes().putAttribute("hasLicense", "false");
+        person.getAttributes().putAttribute("hasLicense", "false"); // Necessary ?
         Plan plan = population.getFactory().createPlan();
 
         plan.addActivity(createFirst(source, population));
         plan.addLeg(population.getFactory().createLeg(transportMode));
-//        if (DistanceUtils.calculateDistance(sourceLocation, sinkLocation) > gamma * pt_interval * delta_xy) {
-//            plan.addLeg(createDriveLeg(population, TransportMode.pt));
-//        } else {
-//            plan.addLeg(createDriveLeg(population, TransportMode.drt));
-//        }
         plan.addActivity(createSecond(sink, population));
         person.addPlan(plan);
         population.addPerson(person);
@@ -184,53 +167,16 @@ public class PopulationCreator implements UtilComponent {
 
     private Activity createFirst(Link link, Population population) {
         Activity activity = population.getFactory().createActivityFromLinkId("dummy", link.getId());
-        // Apparently Transit router needs Coordinates to work (of toNode because otherwise, passengers have to walk to final dest.)
         activity.setCoord(link.getToNode().getCoord());
-//        Activity activity = population.getFactory().createActivityFromCoord("dummy", link.getCoord());
+        // For uniform temporal distribution
         activity.setEndTime(random.nextInt(requestEndTime)); // [s]
         return activity;
-    }
-
-    private Coord searchTransferLoc(Coord startLoc, Coord targetLoc) {
-        double source_x = startLoc.getX();
-        double source_y = startLoc.getY();
-        double sink_x = targetLoc.getX();
-        double sink_y = targetLoc.getY();
-        double new_x = source_x;
-        double new_y = source_y;
-        if (source_x / 1000 % 2 == 0 && source_y / 1000 % 2 == 0) {
-            if (sink_x - source_x < sink_y - source_y && sink_x - source_x != 0) {
-                new_x = source_x + Math.signum(sink_x - source_x) * 1000;
-            } else {
-                new_y = source_y + Math.signum(sink_y - source_y) * 1000;
-            }
-        }
-        return new Coord(new_x, new_y);
-    }
-
-    private Activity createDrtActivity(Coord location, Population population) {
-        Activity activity = population.getFactory().createActivityFromCoord("dummy", location);
-        activity.setMaximumDuration(0);
-        return activity;
-    }
-
-    private Id<Person> createId(String source, String sink, int i, String transportMode) {
-        return Id.create(source + "_" + sink + "_" + i, Person.class);
-    }
-
+}
 
     private Link getClosestDestLink(Coord coord, List<Link> outLinks, double L) {
         return outLinks.stream()
-//                        .allMatch(l -> l.getAllowedModes().stream().map(s -> s.contains("train"))))
                 .min(Comparator
                         .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();
-    }
-
-
-    boolean isInsertedNode(Node node) {
-        String nodeId = node.getId().toString();
-        return (nodeId.contains("north") || nodeId.contains("west") || nodeId.contains("south") ||
-                nodeId.contains("east"));
     }
 }

@@ -107,6 +107,9 @@ public class TransitScheduleCreator implements UtilComponent {
 //        List<Link> startLinksXDir =
         List<Link> startLinksXDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getX() == 0)
+                // Should be more general:
+//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+//                .firstEntry().getValue().stream()
                 .flatMap(n -> n.getOutLinks().values().stream())
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
@@ -125,6 +128,9 @@ public class TransitScheduleCreator implements UtilComponent {
 
         List<Link> startLinksYDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getY() == 0)
+                // Should be more general:
+//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+//                .firstEntry().getValue().stream()
                 .flatMap(n -> n.getOutLinks().values().stream())
                 .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
                 .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))

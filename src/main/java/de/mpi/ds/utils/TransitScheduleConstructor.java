@@ -139,8 +139,7 @@ public class TransitScheduleConstructor implements UtilComponent {
 //        linkList.add(startLinkInverted);
         linkList.add(startLink);
         do {
-            currLink = moveToNextLinkPeriodic(linkList, startLink, currLink, transitRouteStopList,
-                    addAsTransitStop);
+            currLink = moveToNextLinkPeriodic(linkList, startLink, currLink, transitRouteStopList, addAsTransitStop);
             addAsTransitStop = true;
         }
         // TODO test wether this still works with second condition in while
