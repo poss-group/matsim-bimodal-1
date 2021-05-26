@@ -3,6 +3,8 @@
 [Matsim](https://www.matsim.org/) is an open-source software written in java for agent-based mobility simulations.
 
 ## Usage
+...
+<!--
 1. Clone the repository
 2. Clone the forked matsim-libs repository
     - Checkout the branch `add_constraints_drt`
