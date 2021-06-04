@@ -6,7 +6,7 @@
 <!--    <artifactId>matsim-bimodal-convcrit-manhattenEllipse</artifactId>-->
 <!--    <artifactId>matsim-bimodal-euclideanEllipse</artifactId>-->
 <!--    <artifactId>matsim-bimodal-optDrtCount-euclideanEllipse</artifactId>-->
-    <artifactId>matsim-bimodal-varyl</artifactId>
+    <artifactId>matsim-bimodal</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>MATSim bimodal transport simulation</name>
@@ -78,11 +78,6 @@
             <artifactId>otfvis</artifactId>
             <version>${matsim.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.matsim.contrib</groupId>-->
-<!--            <artifactId>drt</artifactId>-->
-<!--            <version>${matsim.version}</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>drt</artifactId>
@@ -91,6 +86,11 @@
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>osm</artifactId>
             <version>${matsim.version}</version>
         </dependency>
 <!--        <dependency>-->

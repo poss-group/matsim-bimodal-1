@@ -37,7 +37,7 @@ def getAverageOcc(df, exclude_empty_vehicles=False, count_idle_vehicles=False):
         weights = np.zeros(len(df.columns))
         weights[1:] = np.arange(0, len(df.columns) - 1)
     else:
-        raise Exception("Entered combination of modes not possible combination of modes")
+        raise Exception("Entered combination of modes not possible")
 
     pass_sum = df.sum(axis=1)
     mean = (df.dot(weights) / pass_sum).mean()

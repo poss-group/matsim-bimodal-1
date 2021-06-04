@@ -10,22 +10,31 @@ import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
+import org.matsim.contrib.osm.networkReader.SupersonicOsmNetworkReader;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryLogging;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.io.OsmNetworkReader;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
@@ -46,7 +55,13 @@ public class MatsimMain {
         try {
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
+            CoordinateTransformation coordinateTransformation = TransformationFactory
+                    .getCoordinateTransformation(TransformationFactory.WGS84, "EPSG:25832");
+            Network network = new SupersonicOsmNetworkReader.Builder()
+                    .setCoordinateTransformation(coordinateTransformation)
+                    .build().read("/home/helge/Applications/osm-data/out_osmosis.osm.pbf");
+            new NetworkWriter(network).write("test_network.xml");
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
@@ -130,14 +145,19 @@ public class MatsimMain {
 //        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
         String[] modes = new String[]{"create-input", "unimodal"};
         String carGridSpacingString = "100";
-        for (int N_drt = 15; N_drt < 16; N_drt += 5) {
-            for (int railInterval = 25; railInterval < 26; railInterval += 1) {
-                for (String mode : modes) {
-                    Config config = ConfigUtils
-                            .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
-                                    new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-//                    runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-//                            String.valueOf(N_drt), "100", mode,"1/5" ,"42", "test");
+        int simTime = 12 * 3600;
+        for (int N_drt = 9; N_drt < 10; N_drt += 5) {
+            for (int railInterval = 50; railInterval < 51; railInterval += 1) {
+                for (double freq = 0.01; freq < 0.1; freq += 0.01) {
+                    for (String mode : modes) {
+                        Config config = ConfigUtils
+                                .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+                                        new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+                        runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
+                                String.valueOf(N_drt), String.valueOf((int) (freq * (simTime - 3600))), mode, "0.2",
+                                "1.6", "42",
+                                String.valueOf(simTime), "true", "out");
+                    }
                 }
             }
         }
@@ -156,7 +176,8 @@ public class MatsimMain {
 
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
                                             String N_drt, String nReqsString, String mode, String meanOverLString,
-                                            String seedString, String endTimeString, String diagConnections, String outFolder) throws Exception {
+                                            String deltaMaxString, String seedString, String endTimeString,
+                                            String diagConnections, String outFolder) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
@@ -164,6 +185,7 @@ public class MatsimMain {
         int railInterval = Integer.parseInt(railIntervalString);
         int nReqs = Integer.parseInt(nReqsString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
+        double deltaMax = Double.parseDouble(deltaMaxString);
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
         String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
 //        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
@@ -204,7 +226,8 @@ public class MatsimMain {
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
                     .setSeed(Long.parseLong(seedString)).setTravelDistanceMeanOverL(Double.parseDouble(meanOverLString))
-                    .setRequestEndTime((int)(endTime-3600)).setTransitEndTime(endTime).setDrtOperationEndTime(endTime)
+                    .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
+                    .setDrtOperationEndTime(endTime)
                     .setDiagonalConnetions(Boolean.parseBoolean(diagConnections))
                     .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
             double mu = 1. / scenarioCreator.getDepartureIntervalTime();
@@ -225,8 +248,12 @@ public class MatsimMain {
             LOG.info("Finished creating drt fleet");
             return;
         } else if (mode.equals("bimodal")) {
+            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+                    .setMaxDetour(deltaMax);
             outPath = Paths.get(iterationSpecificPath, mode).toString();
         } else if (mode.equals("unimodal")) {
+            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+                    .setMaxDetour(deltaMax);
             outPath = Paths.get(nDrtOutPath, mode).toString();
             config.transit().setUseTransit(false);
         } else if (mode.equals("car")) {
