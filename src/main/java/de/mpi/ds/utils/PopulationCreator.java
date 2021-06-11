@@ -51,7 +51,7 @@ public class PopulationCreator implements UtilComponent {
 
     public static void main(String... args) {
         String networkPath = "./output/network_circ_rad.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(1000, 4 * 3600, new Random(), TransportMode.pt,
+        PopulationCreator populationCreator = new PopulationCreator(1000, 9 * 3600, new Random(), TransportMode.drt,
                 false, 100, false, true, "Uniform", 1 / 4, 10000);
         populationCreator.createPopulation("./output/population.xml.gz", networkPath);
     }

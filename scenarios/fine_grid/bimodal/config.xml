@@ -160,7 +160,7 @@
             <param name="maxTravelTimeBeta" value="9999999.0"/>
             <param name="maxWaitTime" value="9999999.0"/>
             <param name="operationalScheme" value="door2door"/>
-            <param name="stopDuration" value="1.0"/>
+            <param name="stopDuration" value="0.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
             <param name="maxDetour" value="1.5"/>
             <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->

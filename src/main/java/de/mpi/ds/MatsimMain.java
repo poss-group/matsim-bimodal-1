@@ -53,16 +53,17 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
-//            runMultipleNDrt(config, args[1], args[2], args[3], false);
-//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
             CoordinateTransformation coordinateTransformation = TransformationFactory
                     .getCoordinateTransformation(TransformationFactory.WGS84, "EPSG:25832");
             Network network = new SupersonicOsmNetworkReader.Builder()
                     .setCoordinateTransformation(coordinateTransformation)
                     .build().read("/home/helge/Applications/osm-data/out_osmosis.osm.pbf");
             new NetworkWriter(network).write("test_network.xml");
-//            manuallyStartMultipleNeworks(args[0]);
+
+//            runMultipleNDrt(config, args[1], args[2], args[3], false);
+//            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
+            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
@@ -148,7 +149,7 @@ public class MatsimMain {
         int simTime = 12 * 3600;
         for (int N_drt = 9; N_drt < 10; N_drt += 5) {
             for (int railInterval = 50; railInterval < 51; railInterval += 1) {
-                for (double freq = 0.01; freq < 0.1; freq += 0.01) {
+                for (double freq = 0.01; freq < 0.02; freq += 0.01) {
                     for (String mode : modes) {
                         Config config = ConfigUtils
                                 .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
