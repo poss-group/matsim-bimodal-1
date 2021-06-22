@@ -221,28 +221,6 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 .mapToInt(Integer::intValue).sum() > 3;
     }
 
-    private void insertTransferStops(Plan plan, Population population, Coord dummy_first_coord,
-                                     Coord dummy_last_coord, boolean splittedFleet) {
-        if (dummy_last_coord != null) {
-            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_last_coord);
-            activity.setMaximumDuration(0);
-            plan.getPlanElements().add(2, activity);
-            if (splittedFleet)
-                plan.getPlanElements().add(3, population.getFactory().createLeg("acc_egr_drt"));
-            else
-                plan.getPlanElements().add(3, population.getFactory().createLeg(TransportMode.drt));
-        }
-        if (dummy_first_coord != null) {
-            if (splittedFleet)
-                plan.getPlanElements().add(1, population.getFactory().createLeg("acc_egr_drt"));
-            else
-                plan.getPlanElements().add(1, population.getFactory().createLeg(TransportMode.drt));
-            Activity activity = population.getFactory().createActivityFromCoord("dummy", dummy_first_coord);
-            activity.setMaximumDuration(0);
-            plan.getPlanElements().add(2, activity);
-        }
-    }
-
     private void insertTransferStops(Plan plan, Population population, Link dummy_first_link,
                                      Link dummy_last_link, boolean splittedFleet) {
         if (dummy_last_link != null) {

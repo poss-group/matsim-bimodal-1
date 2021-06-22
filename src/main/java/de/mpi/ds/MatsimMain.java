@@ -144,11 +144,11 @@ public class MatsimMain {
 
     private static void manuallyStartMultipleNeworks(String configPath) throws Exception {
 //        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
-        String[] modes = new String[]{"create-input", "unimodal"};
+        String[] modes = new String[]{"create-input", "bimodal"};
         String carGridSpacingString = "100";
         int simTime = 12 * 3600;
         for (int N_drt = 9; N_drt < 10; N_drt += 5) {
-            for (int railInterval = 50; railInterval < 51; railInterval += 1) {
+            for (int railInterval = 8; railInterval < 9; railInterval += 1) {
                 for (double freq = 0.01; freq < 0.02; freq += 0.01) {
                     for (String mode : modes) {
                         Config config = ConfigUtils
