@@ -519,7 +519,7 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
-    private void copyLinkProperties(Link link, Link toCopyLink) {
+    public static void copyLinkProperties(Link link, Link toCopyLink) {
         toCopyLink.setCapacity(link.getCapacity());
         toCopyLink.setAllowedModes(link.getAllowedModes());
         toCopyLink.setFreespeed(link.getFreespeed());

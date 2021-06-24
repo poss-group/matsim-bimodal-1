@@ -1,6 +1,5 @@
 package de.mpi.ds.osm_utils;
 
-import de.mpi.ds.utils.ScenarioCreator;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -27,7 +26,7 @@ public class ScenarioCreatorBuilderOsm {
     private long seed = 42;
 
     private String travelDistanceDistribution = "InverseGamma";
-    private double travelDistanceMeanOverL = 1/4;
+    private double meanTravelDist = 1000;
 
     public ScenarioCreatorBuilderOsm setLinkCapacity(long linkCapacity) {
         this.linkCapacity = linkCapacity;
@@ -114,8 +113,8 @@ public class ScenarioCreatorBuilderOsm {
         return this;
     }
 
-    public ScenarioCreatorBuilderOsm setTravelDistanceMeanOverL(double travelDistanceMeanOverL) {
-        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+    public ScenarioCreatorBuilderOsm setMeanTravelDist(double meanTravelDist) {
+        this.meanTravelDist = meanTravelDist;
         return this;
     }
 
@@ -125,7 +124,7 @@ public class ScenarioCreatorBuilderOsm {
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode,
-                travelDistanceDistribution, travelDistanceMeanOverL);
+                travelDistanceDistribution, meanTravelDist);
     }
 
     private void printScenarioInfo() {
@@ -147,7 +146,7 @@ public class ScenarioCreatorBuilderOsm {
                 "\nseed: " + seed +
                 "\ntransportMode: " + transportMode +
                 "\ntravelDistanceDistribution : " + travelDistanceDistribution +
-                "\ntravelDistanceMeanOverL : " + travelDistanceMeanOverL
+                "\ntravelDistanceMean : " + meanTravelDist
         );
     }
 }

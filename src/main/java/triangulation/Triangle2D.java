@@ -6,7 +6,7 @@ import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
 
 /**
  * 2D triangle class implementation.
- * 
+ *
  * @author Johannes Diemke
  */
 public class Triangle2D {
@@ -25,13 +25,10 @@ public class Triangle2D {
     /**
      * Constructor of the 2D triangle class used to create a new triangle
      * instance from three 2D vectors describing the triangle's vertices.
-     * 
-     * @param a
-     *            The first vertex of the triangle
-     * @param b
-     *            The second vertex of the triangle
-     * @param c
-     *            The third vertex of the triangle
+     *
+     * @param a The first vertex of the triangle
+     * @param b The second vertex of the triangle
+     * @param c The third vertex of the triangle
      */
     public Triangle2D(Vector2D a, Vector2D b, Vector2D c) {
         this.a = a;
@@ -40,8 +37,8 @@ public class Triangle2D {
         double ab = b.sub(a).mag();
         double bc = c.sub(b).mag();
         double ca = a.sub(c).mag();
-        double r = ab*bc*ca/Math.sqrt((ab+bc+ca)*(bc+ca-ab)*(ca+ab-bc)*(ab+bc-ca));
-        this.r2 = r*r;
+        double r = ab * bc * ca / Math.sqrt((ab + bc + ca) * (bc + ca - ab) * (ca + ab - bc) * (ab + bc - ca));
+        this.r2 = r * r;
         this.ab = new Edge2D(a, b);
         this.bc = new Edge2D(b, c);
         this.ca = new Edge2D(c, a);
@@ -50,9 +47,8 @@ public class Triangle2D {
     /**
      * Tests if a 2D point lies inside this 2D triangle. See Real-Time Collision
      * Detection, chap. 5, p. 206.
-     * 
-     * @param point
-     *            The point to be tested
+     *
+     * @param point The point to be tested
      * @return Returns true iff the point lies inside this 2D triangle
      */
     public boolean contains(Vector2D point) {
@@ -80,11 +76,10 @@ public class Triangle2D {
      * When det = 0, the four points are cocircular. If the triangle is oriented
      * clockwise (CW) the result is reversed. See Real-Time Collision Detection,
      * chap. 3, p. 34.
-     * 
-     * @param point
-     *            The point to be tested
+     *
+     * @param point The point to be tested
      * @return Returns true iff the point lies inside the circumcircle through
-     *         the three points a, b, and c of the triangle
+     * the three points a, b, and c of the triangle
      */
     public boolean isPointInCircumcircle(Vector2D point) {
         double a11 = a.x - point.x;
@@ -116,9 +111,9 @@ public class Triangle2D {
      * det &lt; 0, C lies to the right of the directed line AB, and the triangle
      * ABC is oriented clockwise. When det = 0, the three points are colinear.
      * See Real-Time Collision Detection, chap. 3, p. 32
-     * 
+     *
      * @return Returns true iff the triangle ABC is oriented counterclockwise
-     *         (CCW)
+     * (CCW)
      */
     public boolean isOrientedCCW() {
         double a11 = a.x - c.x;
@@ -134,21 +129,20 @@ public class Triangle2D {
 
     /**
      * Returns true if this triangle contains the given edge.
-     * 
-     * @param edge
-     *            The edge to be tested
+     *
+     * @param edge The edge to be tested
      * @return Returns true if this triangle contains the edge
      */
     public boolean isNeighbour(Edge2D edge) {
 //        return (a == edge.a || b == edge.a || c == edge.a) && (a == edge.b || b == edge.b || c == edge.b);
-        return (a.equals(edge.a) || b.equals(edge.a) || c.equals(edge.a)) && (a.equals(edge.b) || b.equals(edge.b) || c.equals(edge.b));
+        return (a.equals(edge.a) || b.equals(edge.a) || c.equals(edge.a)) &&
+                (a.equals(edge.b) || b.equals(edge.b) || c.equals(edge.b));
     }
 
     /**
      * Returns the vertex of this triangle that is not part of the given edge.
-     * 
-     * @param edge
-     *            The edge
+     *
+     * @param edge The edge
      * @return The vertex of this triangle that is not part of the edge
      */
     public Vector2D getNoneEdgeVertex(Edge2D edge) {
@@ -166,11 +160,10 @@ public class Triangle2D {
     /**
      * Returns true if the given vertex is one of the vertices describing this
      * triangle.
-     * 
-     * @param vertex
-     *            The vertex to be tested
+     *
+     * @param vertex The vertex to be tested
      * @return Returns true if the Vertex is one of the vertices describing this
-     *         triangle
+     * triangle
      */
     public boolean hasVertex(Vector2D vertex) {
         if (a == vertex || b == vertex || c == vertex) {
@@ -183,9 +176,8 @@ public class Triangle2D {
     /**
      * Returns an EdgeDistancePack containing the edge and its distance nearest
      * to the specified point.
-     * 
-     * @param point
-     *            The point the nearest edge is queried for
+     *
+     * @param point The point the nearest edge is queried for
      * @return The edge of this triangle that is nearest to the specified point
      */
     public EdgeDistancePack findNearestEdge(Vector2D point) {
@@ -204,12 +196,10 @@ public class Triangle2D {
 
     /**
      * Computes the closest point on the given edge to the specified point.
-     * 
-     * @param edge
-     *            The edge on which we search the closest point to the specified
-     *            point
-     * @param point
-     *            The point to which we search the closest point on the edge
+     *
+     * @param edge  The edge on which we search the closest point to the specified
+     *              point
+     * @param point The point to which we search the closest point on the edge
      * @return The closest point on the given edge to the specified point
      */
     private Vector2D computeClosestPoint(Edge2D edge, Vector2D point) {
@@ -227,11 +217,9 @@ public class Triangle2D {
 
     /**
      * Tests if the two arguments have the same sign.
-     * 
-     * @param a
-     *            The first floating point argument
-     * @param b
-     *            The second floating point argument
+     *
+     * @param a The first floating point argument
+     * @param b The second floating point argument
      * @return Returns true iff both arguments have the same sign
      */
     private boolean hasSameSign(double a, double b) {

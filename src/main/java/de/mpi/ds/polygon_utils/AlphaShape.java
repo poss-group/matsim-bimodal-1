@@ -1,11 +1,15 @@
 package de.mpi.ds.polygon_utils;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.network.NetworkUtils;
 import triangulation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static de.mpi.ds.utils.GeneralUtils.calculateDistanceNonPeriodic;
 
@@ -15,26 +19,58 @@ public class AlphaShape {
     private List<Triangle2D> triangulation = null;
     private TriangleSoup triSoup = null;
 
-    public AlphaShape(List<Vector2D> points, double alpha) {
-        this.alpha = alpha;
-        this.points = points;
-    }
+//    public AlphaShape(String netPath, double normalizedAlpha) {
+//        Network net = NetworkUtils.readNetwork(netPath);
+//        points = net.getNodes().values().stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(Collectors.toList());
+//        double minR = Double.MAX_VALUE;
+//        double maxR = -Double.MAX_VALUE;
+//
+//        try {
+//            DelaunayTriangulator delaunyTriangulator = new DelaunayTriangulator(points);
+//            delaunyTriangulator.triangulate();
+//
+//            triangulation = delaunyTriangulator.getTriangles();
+//            triSoup = delaunyTriangulator.getTriangleSoup();
+//            for (Triangle2D tri : triangulation) {
+//                minR = min4(tri.ab.l, tri.bc.l, tri.ca.l, minR);
+//                maxR = max4(tri.ab.l, tri.bc.l, tri.ca.l, maxR);
+//            }
+//        } catch (NotEnoughPointsException e) {
+//            e.printStackTrace();
+//        }
+//
+//        this.alpha = normalizedAlpha * (maxR - minR) + minR;
+//
+//        // This would be easier
+////        this(net.getNodes().values(), normalizedAlpha);
+//    }
 
-    public ArrayList<Coord> compute() {
-        List<Vector2D> resultPolygon = new ArrayList<>();
+    public AlphaShape(Collection<? extends Node> nodes, double normalizedAlpha) {
+        points = nodes.stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(Collectors.toList());
+        double minR = Double.MAX_VALUE;
+        double maxR = -Double.MAX_VALUE;
 
         try {
             DelaunayTriangulator delaunyTriangulator = new DelaunayTriangulator(points);
             delaunyTriangulator.triangulate();
 
             triangulation = delaunyTriangulator.getTriangles();
-            triSoup = new TriangleSoup();
+            triSoup = delaunyTriangulator.getTriangleSoup();
             for (Triangle2D tri : triangulation) {
-                triSoup.add(tri);
+                minR = min4(tri.ab.l, tri.bc.l, tri.ca.l, minR);
+                maxR = max4(tri.ab.l, tri.bc.l, tri.ca.l, maxR);
             }
         } catch (NotEnoughPointsException e) {
             e.printStackTrace();
         }
+
+        this.alpha = normalizedAlpha * (maxR - minR) + minR;
+//        System.out.println((1000 - minR) / (maxR - minR));
+    }
+
+    public ArrayList<Coord> compute() {
+        List<Vector2D> resultPolygon = new ArrayList<>();
+
 
         // Working data
         List<Vector2D> cur = new ArrayList<>();
@@ -58,8 +94,11 @@ public class AlphaShape {
         }
 
 
-        return TwoOpt.alternate((ArrayList<Coord>) resultPolygon.stream().map(v -> new Coord(v.x, v.y)).collect(Collectors.toList()));
-//        return sortCoords(resultPolygon.stream().map(v -> new Coord(v.x, v.y)).collect(Collectors.toList()),
+        return TwoOpt.alternate(
+                (ArrayList<Coord>) resultPolygon.stream().map(v -> new Coord(v.x, v.y)).collect(Collectors.toList()));
+//        return (ArrayList<Edge2D>) triangulation.stream().flatMap(t -> Stream.of(t.ab, t.bc, t.ca)).collect(
+//                Collectors.toList());
+        //        return sortCoords(resultPolygon.stream().map(v -> new Coord(v.x, v.y)).collect(Collectors.toList()),
 //                "closest+");
     }
 
@@ -151,7 +190,7 @@ public class AlphaShape {
     }
 
     private double customComparator(Coord coord, Coord p, double direction, double avLinkLength) {
-        return angleDifference(coord, p, direction) + calculateDistanceNonPeriodic(coord, p)/avLinkLength;
+        return angleDifference(coord, p, direction) + calculateDistanceNonPeriodic(coord, p) / avLinkLength;
     }
 
     private double angleDifference(Coord c1, Coord c2, double prevDir) {
@@ -159,4 +198,31 @@ public class AlphaShape {
                 c2.getX() - c1.getX()) - prevDir);
     }
 
+    private double min4(double a, double b, double c, double d) {
+        double min = a;
+        if (b < min) {
+            min = b;
+        }
+        if (c < min) {
+            min = c;
+        }
+        if (d < min) {
+            min = d;
+        }
+        return min;
+    }
+
+    private double max4(double a, double b, double c, double d) {
+        double max = a;
+        if (b > max) {
+            max = b;
+        }
+        if (c > max) {
+            max = c;
+        }
+        if (d > max) {
+            max = d;
+        }
+        return max;
+    }
 }

@@ -23,9 +23,11 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.*;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
@@ -70,17 +72,21 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     public static void main(String[] args) {
 
         new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 10, new Random())
-                .run("./output/network_circ_rad.xml", "output/drtvehicles.xml");
+                .run("scenarios/Manhatten/network_trams.xml", "scenarios/Manhatten/drtvehicles.xml");
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }
 
     public void run(String networkPath, String outputDrtVehiclesPath) {
+        Network net = NetworkUtils.readNetwork(networkPath);
+        run(net, outputDrtVehiclesPath);
+    }
+    public void run(Network net, String outputDrtVehiclesPath) {
 
-        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
+//        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+//        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
         final int[] i = {0};
-        List<? extends Map.Entry<Id<Link>, ? extends Link>> linkList = scenario.getNetwork().getLinks().entrySet()
+        List<? extends Map.Entry<Id<Link>, ? extends Link>> linkList = net.getLinks().entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().getAllowedModes()
                         .contains(TransportMode.car)) // drt can only start on links with Transport mode 'car'

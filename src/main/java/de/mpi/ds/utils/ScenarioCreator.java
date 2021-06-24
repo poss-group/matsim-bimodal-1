@@ -98,9 +98,10 @@ public class ScenarioCreator {
                 effectiveFreeTrainSpeed, numberOfLanes, freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                carGridSpacing, smallLinksCloseToStations, createTrainLines, travelDistanceDistribution,
-                travelDistanceMeanOverL, systemSize);
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain, effectiveFreeTrainSpeed,
+                smallLinksCloseToStations, createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL,
+                systemSize);
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
+                effectiveFreeTrainSpeed,
                 transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, nDrtVehicles, random);

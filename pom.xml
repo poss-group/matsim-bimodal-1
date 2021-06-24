@@ -13,7 +13,8 @@
     <description>Doesnt matter</description>
 
     <properties>
-        <matsim.version>13.1-MyVersion</matsim.version>
+        <!--        <matsim.version>13.1-MyVersion</matsim.version>-->
+        <matsim.version>13.0</matsim.version>
         <mainClass>de.mpi.ds.MatsimMain</mainClass>
     </properties>
 
@@ -31,10 +32,10 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
-        <!--        <repository>-->
-        <!--            <id>matsim</id>-->
-        <!--            <url>http://dl.bintray.com/matsim/matsim</url>-->
-        <!--        </repository>-->
+        <repository>
+            <id>matsim</id>
+            <url>http://dl.bintray.com/matsim/matsim</url>
+        </repository>
         <repository>
             <id>ojo-snapshots</id>
             <url>http://oss.jfrog.org/libs-snapshot</url>

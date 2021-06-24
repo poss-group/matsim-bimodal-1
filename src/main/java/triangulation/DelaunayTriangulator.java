@@ -213,4 +213,6 @@ public class DelaunayTriangulator {
         return triangleSoup.getTriangles();
     }
 
+    public TriangleSoup getTriangleSoup() {return this.triangleSoup;}
+
 }

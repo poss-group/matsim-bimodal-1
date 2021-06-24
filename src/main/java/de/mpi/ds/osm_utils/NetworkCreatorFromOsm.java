@@ -23,13 +23,13 @@ package de.mpi.ds.osm_utils;
 
 import de.mpi.ds.utils.UtilComponent;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.*;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 
 import java.io.File;
@@ -38,13 +38,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import de.mpi.ds.polygon_utils.*;
-import triangulation.DelaunayTriangulator;
-import triangulation.NotEnoughPointsException;
-import triangulation.Triangle2D;
-import triangulation.Vector2D;
+import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.vehicles.*;
+import triangulation.*;
 
+import static de.mpi.ds.osm_utils.ScenarioCreatorOsm.IS_START_LINK;
 import static de.mpi.ds.utils.GeneralUtils.calculateDistanceNonPeriodic;
-import static java.lang.Double.NaN;
 
 /**
  * @author tthunig
@@ -53,22 +54,38 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     private final static Logger LOG = Logger.getLogger(NetworkCreatorFromOsm.class.getName());
 
     private double linkCapacity;
-    private double effectiveFreeTrainSpeed;
+    private double freeSpeedTrain;
     private double numberOfLanes;
     private double freeSpeedCar;
 
-    public NetworkCreatorFromOsm(double linkCapacity, double effectiveFreeTrainSpeed, double numberOfLanes,
-                                 double freeSpeedCar) {
+    private ArrayList<Coord> hull;
+
+    private double transitStartTime;
+    private double transitEndTime;
+    private double departureIntervalTime;
+    private int route_counter;
+
+    public NetworkCreatorFromOsm(ArrayList<Coord> hull, double linkCapacity,
+                                 double freeSpeedTrain, double numberOfLanes,
+                                 double freeSpeedCar, double transitStartTime, double transitEndTime,
+                                 double departureIntervalTime) {
+        this.hull = hull;
         this.linkCapacity = linkCapacity;
-        this.effectiveFreeTrainSpeed = effectiveFreeTrainSpeed;
+        this.freeSpeedTrain = freeSpeedTrain;
         this.numberOfLanes = numberOfLanes;
         this.freeSpeedCar = freeSpeedCar;
+        this.transitStartTime = transitStartTime;
+        this.transitEndTime = transitEndTime;
+        this.departureIntervalTime = departureIntervalTime;
+        this.route_counter = 0;
     }
 
     public static void main(String... args) {
-        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network.xml";
-        NetworkCreatorFromOsm networkCreatorFromOsm = new NetworkCreatorFromOsm(9999999, 60 / 3.6, 100, 30.6);
-        networkCreatorFromOsm.addTramNet(path);
+//        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean.xml";
+//        ArrayList<Coord> hull = new AlphaShape(path, 0.1).compute();
+//        NetworkCreatorFromOsm networkCreatorFromOsm = new NetworkCreatorFromOsm(hull, 9999999, 60 / 3.6, 100, 30.6, 0,
+//                10 * 3600, 15 * 3600);
+//        networkCreatorFromOsm.addTramNet(path, path);
     }
 
     public void testAlphaShapeCreation(String path) {
@@ -80,29 +97,17 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         double maxX = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).max().getAsDouble();
         double minY = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).min().getAsDouble();
         double maxY = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).max().getAsDouble();
-        double lX = maxX - minX;
-        double lY = maxY - minY;
 
         for (Node node : net.getNodes().values()) {
             node.setCoord(new Coord(node.getCoord().getX() - minX, node.getCoord().getY() - minY));
         }
 
-        List<Coord> hull = new AlphaShape(
-                net.getNodes().values().stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY()))
-                        .collect(Collectors.toList()), 1000).compute();
-
-        int i = 0;
-        Node lastNode = null;
-        for (Coord coord : hull) {
-            Node node = fac.createNode(Id.createNodeId(i), coord);
-            newNet.addNode(node);
-            if (lastNode != null) {
-                Link link = fac.createLink(Id.createLinkId(lastNode.getId().toString() + "-" + node.getId().toString()), lastNode, node);
-                newNet.addLink(link);
-            }
-            lastNode = node;
-            i++;
-        }
+        addCoordsToNet(newNet, hull, "hull", true);
+//        ArrayList<Edge2D> hull = new AlphaShape(
+//                net.getNodes().values().stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY()))
+//                        .collect(Collectors.toList()), 1.0).compute();
+//
+//        addEdgesToNet(newNet, hull, "hull", false);
 
         try {
             String[] filenameArray = path.split("/");
@@ -115,10 +120,28 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         }
     }
 
-    public void addTramNet(String path) {
-        Network net = NetworkUtils.readNetwork(path);
-        Network newNet = NetworkUtils.createNetwork();
+    private void addEdgesToNet(Network newNet, ArrayList<Edge2D> edges, String hull1, boolean b) {
+        int i = 0;
+        for (Edge2D edge : edges) {
+            Node n1 = newNet.getFactory().createNode(Id.createNodeId(i + "a"), new Coord(edge.a.x, edge.a.y));
+            Node n2 = newNet.getFactory().createNode(Id.createNodeId(i + "b"), new Coord(edge.b.x, edge.b.y));
+            Link l = newNet.getFactory()
+                    .createLink(Id.createLinkId(n1.getId().toString() + "-" + n2.getId().toString()), n1, n2);
+            newNet.addNode(n1);
+            newNet.addNode(n2);
+            newNet.addLink(l);
+            i++;
+        }
+    }
+
+    public Network addTramNet(Network net, String path) {
         NetworkFactory fac = net.getFactory();
+
+        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        TransitSchedule schedule = scenario.getTransitSchedule();
+        TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
+        PopulationFactory populationFactory = scenario.getPopulation().getFactory();
+        Vehicles vehicles = createVehicles();
 
         double minX = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).min().getAsDouble();
         double maxX = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).max().getAsDouble();
@@ -127,25 +150,12 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         double lX = maxX - minX;
         double lY = maxY - minY;
 
-        for (Node node : net.getNodes().values()) {
-            node.setCoord(new Coord(node.getCoord().getX() - minX, node.getCoord().getY() - minY));
-        }
-
-        for (Link link : net.getLinks().values()) {
-            setLinkAttributes(link, linkCapacity, freeSpeedCar, numberOfLanes, false);
-        }
-
-//        ArrayList<Coord> hull = new QuickHull().quickHull(
-//                new ArrayList<>(net.getNodes().values().stream().map(Node::getCoord).collect(Collectors.toList())));
-        ArrayList<Coord> hull = new AlphaShape(
-                net.getNodes().values().stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY()))
-                        .collect(Collectors.toList()), 999).compute();
-
-        addCoordsToNet(newNet, hull, "hull", true);
+//        addCoordsToNet(net, hull, "hull", true);
 
         try {
-            List<Vector2D> pointSet = net.getNodes().values().stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(
-                    Collectors.toList());
+            List<Vector2D> pointSet = net.getNodes().values().stream()
+                    .map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(
+                            Collectors.toList());
             DelaunayTriangulator delaunyTriangulator = new DelaunayTriangulator(pointSet);
             delaunyTriangulator.triangulate();
 
@@ -154,8 +164,8 @@ public class NetworkCreatorFromOsm implements UtilComponent {
             e.printStackTrace();
         }
 
-        double deltaPtX = 1000;
-        double deltaPtY = 1000;
+        double deltaPtX = 500;
+        double deltaPtY = 500;
         int nX = (int) (lX / deltaPtX) + 1;
         int nY = (int) (lY / deltaPtY) + 1;
 
@@ -166,27 +176,31 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                 double y = j * deltaPtY;
                 Coord transitCoord = new Coord(x, y);
                 if (RayCasting.contains(hull, transitCoord)) {
-                    Node transitNode = fac.createNode(Id.createNodeId("pt_" + i + "_" + j), transitCoord);
-//                    Node transitNode = net.getNodes().values().stream().min(Comparator
-//                            .comparingDouble(n -> calculateDistanceNonPeriodic(n.getCoord(), transitCoord))).get();
+//                    Node transitNode = fac.createNode(Id.createNodeId("pt_" + i + "_" + j), transitCoord);
+                    Node transitNode = net.getNodes().values().stream().min(Comparator
+                            .comparingDouble(n -> calculateDistanceNonPeriodic(n.getCoord(), transitCoord))).get();
                     if (!containedInMatrix(transitNode, transitNodes)) {
-                        newNet.addNode(transitNode);
+//                        net.addNode(transitNode);
                         transitNodes[i][j] = transitNode;
                     }
                 }
             }
         }
 
-        // Links in x directions
-        for (int i = 0; i < transitNodes.length - 1; i++) {
-            for (int j = 0; j < transitNodes[0].length; j++) {
+        // Links in y directions
+        for (int i = 0; i < transitNodes.length; i++) {
+            ArrayList<Link> transitLinks = new ArrayList<>();
+            ArrayList<Link> transitLinksReverse = new ArrayList<>();
+            List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+            List<TransitRouteStop> transitRouteStopsReverse = new ArrayList<>();
+            for (int j = 0; j < transitNodes[0].length - 1; j++) {
                 Node from = transitNodes[i][j];
                 if (from == null) {
                     continue;
                 }
-                Node toX = findNextNonNull(transitNodes, i, j, "i");
+                Node toX = findNextNonNull(transitNodes, i, j, "j");
                 if (toX == null) {
-                    continue;
+                    break; //break?
                 }
 
                 Link linkX = fac
@@ -196,53 +210,154 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                         .createLink(Id.createLinkId("pt_" + toX.getId().toString() + "-" + from.getId().toString()),
                                 toX, from);
 
+                addTransitStop(linkX, schedule, transitScheduleFactory, transitRouteStops);
+                addTransitStop(linkX_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
+                transitLinks.add(linkX);
+                transitLinksReverse.add(linkX_r);
+
                 double length = calculateDistanceNonPeriodic(from, toX);
-                setLinkAttributes(linkX, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, true);
-                setLinkAttributes(linkX_r, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, true);
-                newNet.addLink(linkX);
-                newNet.addLink(linkX_r);
+                setLinkAttributes(linkX, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                setLinkAttributes(linkX_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                net.addLink(linkX);
+                net.addLink(linkX_r);
+            }
+            if (transitLinks.size() > 1) {
+                TransitLine transitLine = transitScheduleFactory
+                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
+                        transitScheduleFactory, schedule);
+
+                TransitLine transitLineReverse = transitScheduleFactory
+                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                Collections.reverse(transitLinksReverse);
+                Collections.reverse(transitRouteStopsReverse);
+                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse, populationFactory,
+                        transitScheduleFactory, schedule);
             }
         }
 
-        // Links in y direction
-        for (int i = 0; i < transitNodes.length; i++) {
-            for (int j = 0; j < transitNodes[0].length - 1; j++) {
+        // Links in x direction
+        for (int j = 0; j < transitNodes[0].length; j++) {
+            ArrayList<Link> transitLinks = new ArrayList<>();
+            ArrayList<Link> transitLinksReverse = new ArrayList<>();
+            List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+            List<TransitRouteStop> transitRouteStopsReverse = new ArrayList<>();
+            for (int i = 0; i < transitNodes.length - 1; i++) {
                 Node from = transitNodes[i][j];
                 if (from == null) {
                     continue;
                 }
-                Node toY = findNextNonNull(transitNodes, i, j, "j");
+                Node toY = findNextNonNull(transitNodes, i, j, "i");
                 if (toY == null) {
-                    continue;
+                    break;
                 }
 
-                if (from != null && toY != null) {
-                    Link linkY = fac
-                            .createLink(Id.createLinkId("pt_" + from.getId().toString() + "-" + toY.getId().toString()),
-                                    from, toY);
-                    Link linkY_r = fac
-                            .createLink(Id.createLinkId("pt_" + toY.getId().toString() + "-" + from.getId().toString()),
-                                    toY, from);
+                Link linkY = fac
+                        .createLink(Id.createLinkId("pt_" + from.getId().toString() + "-" + toY.getId().toString()),
+                                from, toY);
+                Link linkY_r = fac
+                        .createLink(Id.createLinkId("pt_" + toY.getId().toString() + "-" + from.getId().toString()),
+                                toY, from);
 
-                    double length = calculateDistanceNonPeriodic(from, toY);
-                    setLinkAttributes(linkY, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, true);
-                    setLinkAttributes(linkY_r, linkCapacity, length, effectiveFreeTrainSpeed, numberOfLanes, true);
-                    newNet.addLink(linkY);
-                    newNet.addLink(linkY_r);
-                }
+                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops);
+                addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
+                transitLinks.add(linkY);
+                transitLinksReverse.add(linkY_r);
+
+                double length = calculateDistanceNonPeriodic(from, toY);
+                setLinkAttributes(linkY, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                setLinkAttributes(linkY_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                net.addLink(linkY);
+                net.addLink(linkY_r);
+            }
+            if (transitLinks.size() > 1) {
+                TransitLine transitLine = transitScheduleFactory
+                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
+                        transitScheduleFactory, schedule);
+
+                TransitLine transitLineReverse = transitScheduleFactory
+                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                Collections.reverse(transitLinksReverse);
+                Collections.reverse(transitRouteStopsReverse);
+                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse, populationFactory,
+                        transitScheduleFactory, schedule);
             }
         }
+
 
         try {
             String[] filenameArray = path.split("/");
             File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_trams.xml"));
+            File outTransitSchedule = new File(
+                    path.replace(filenameArray[filenameArray.length - 1], "transitSchedule.xml"));
+            File outVehicles = new File(path.replace(filenameArray[filenameArray.length - 1], "transitVehicles.xml"));
             // create output folder if necessary
             Files.createDirectories(outFile.getParentFile().toPath());
             // write network
-            NetworkUtils.writeNetwork(newNet, outFile.getAbsolutePath());
+            NetworkUtils.writeNetwork(net, outFile.getAbsolutePath());
+            new TransitScheduleWriter(schedule).writeFile(outTransitSchedule.getAbsolutePath());
+            new MatsimVehicleWriter(vehicles).writeFile(outVehicles.getAbsolutePath());
         } catch (Exception e) {
             System.out.println("Failed to write output...");
             e.printStackTrace();
+        }
+
+        return net;
+    }
+
+
+    private void addTransitLineToSchedule(ArrayList<Link> transitLinks, List<TransitRouteStop> transitRouteStopList,
+                                          Vehicles vehicles, TransitLine transitLine,
+                                          PopulationFactory populationFactory,
+                                          TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule) {
+        //TODO switch to idList from start on
+        List<Id<Link>> idLinkList = transitLinks.stream().map(Identifiable::getId).collect(Collectors.toList());
+        Id<TransitRoute> tr_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
+        NetworkRoute networkRoute = populationFactory.getRouteFactories()
+                .createRoute(NetworkRoute.class, idLinkList.get(0),
+                        idLinkList.get(idLinkList.size() - 1));
+        networkRoute.setLinkIds(idLinkList.get(0), idLinkList.subList(1, transitLinks.size() - 1),
+                idLinkList.get(idLinkList.size() - 1));
+        TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(tr_id, networkRoute,
+                transitRouteStopList, "train");
+        createDepartures(transitRoute, transitScheduleFactory, vehicles);
+        transitLine.addRoute(transitRoute);
+
+        schedule.addTransitLine(transitLine);
+        route_counter++;
+    }
+
+    private void addTransitStop(Link link, TransitSchedule schedule,
+                                       TransitScheduleFactory transitScheduleFactory,
+                                       List<TransitRouteStop> transitRouteStopList) {
+        Id<TransitStopFacility> transitStopFacilityId = Id.create(link.getId() + "_trStop", TransitStopFacility.class);
+        TransitStopFacility transitStopFacility = transitScheduleFactory
+                .createTransitStopFacility(transitStopFacilityId, link.getToNode().getCoord(), false);
+        transitStopFacility.setLinkId(link.getId());
+        schedule.addStopFacility(transitStopFacility);
+        TransitRouteStop transitRouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility, 0, 0);
+        transitRouteStopList.add(transitRouteStop);
+    }
+
+    private void createDepartures(TransitRoute transitRoute, TransitScheduleFactory transitScheduleFactory,
+                                  Vehicles vehicles) {
+        double time = transitStartTime;
+        int i = 0;
+        while (time < transitEndTime) {
+            Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
+            Id<Vehicle> vehicleId =
+                    Id.create("tr_".concat(String.valueOf(route_counter).concat("_").concat(String.valueOf(i))),
+                            Vehicle.class);
+            dep.setVehicleId(vehicleId);
+            if (!vehicles.getVehicles().containsKey(vehicleId)) {
+                vehicles.addVehicle(VehicleUtils.createVehicle(Id.create(vehicleId, Vehicle.class),
+                        vehicles.getVehicleTypes().entrySet().iterator().next().getValue()));
+            }
+            transitRoute.addDeparture(dep);
+            i++;
+
+            time += departureIntervalTime;
         }
     }
 
@@ -329,22 +444,38 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         }
     }
 
-    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes,
-                                   boolean trainLink) {
+    public Vehicles createVehicles() {
+        VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1", VehicleType.class));
+        vehicleType.setDescription("train");
+        vehicleType.setNetworkMode("train");
+        vehicleType.setMaximumVelocity(freeSpeedTrain);
+        vehicleType.setLength(10);
+        vehicleType.getCapacity().setSeats(10000);
+        vehicleType.getCapacity().setStandingRoom(0);
+        Vehicles result = VehicleUtils.createVehiclesContainer();
+        result.addVehicleType(vehicleType);
+        return result;
+    }
+
+    public static void setLinkAttributes(Link link, double capacity, double length, double freeSpeed,
+                                         double numberLanes,
+                                         boolean trainLink) {
         setLinkAttributes(link, capacity, freeSpeed, numberLanes, trainLink);
         link.setLength(length);
     }
 
-    private void setLinkAttributes(Link link, double capacity, double freeSpeed, double numberLanes,
-                                   boolean trainLink) {
+    public static void setLinkAttributes(Link link, double capacity, double freeSpeed, double numberLanes,
+                                         boolean trainLink) {
         link.setCapacity(capacity);
         link.setFreespeed(freeSpeed);
         link.setNumberOfLanes(numberLanes);
         Set<String> modes = new HashSet<>();
         if (trainLink) {
             modes.add(TransportMode.pt);
+            link.getAttributes().putAttribute(IS_START_LINK, false);
         } else {
             modes.add(TransportMode.car);
+            link.getAttributes().putAttribute(IS_START_LINK, true);
         }
         link.setAllowedModes(modes);
     }
