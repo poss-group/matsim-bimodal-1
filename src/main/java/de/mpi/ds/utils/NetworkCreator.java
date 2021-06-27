@@ -179,6 +179,7 @@ public class NetworkCreator implements UtilComponent {
 
         if (diagonalConnections) {
             makeDiagConnections(net, fac);
+//            makeTriGrid(net, fac);
         }
         // this has to be done second because diagonal connections where also introduced before
 //        putNodesCloseToStations(net, fac);
@@ -435,7 +436,6 @@ public class NetworkCreator implements UtilComponent {
                     .map(Link::getToNode)
                     .flatMap(n -> n.getOutLinks().values().stream().map(Link::getToNode))
                     .filter(n -> {
-                        //TODO introduce diag connection also over boundary maybe
                         double dist = calculateDistanceNonPeriodic(n.getCoord(), temp.getCoord());
                         return doubleCloseToZero(dist - diag_length);
                     })
@@ -452,8 +452,74 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
+    private void makeTriGrid(Network net, NetworkFactory fac) {
+        double diag_length = 0.5 * Math.sqrt(carGridSpacing * carGridSpacing + carGridSpacing * carGridSpacing);
 
-    private void copyLinkProperties(Link link, Link toCopyLink) {
+        List<Node> nodes = new ArrayList<>(net.getNodes().values());
+//        for (Node temp : net.getNodes().values()) {
+        for (Node temp : nodes) {
+            Coord eastCoord = new Coord(temp.getCoord().getX() + carGridSpacing, temp.getCoord().getY());
+            Coord northCoord = new Coord(temp.getCoord().getX(), temp.getCoord().getY() + carGridSpacing);
+            Coord northEastCoord = new Coord(temp.getCoord().getX() + carGridSpacing,
+                    temp.getCoord().getY() + carGridSpacing);
+            Node eastNeighbour = getClosestNeighbourNodeToCoord(temp, eastCoord);
+            Node northNeighbour = getClosestNeighbourNodeToCoord(temp, northCoord);
+            Node northEastNeighbour = getClosestNeighbourNodeToCoord(temp, northEastCoord);
+            if (eastNeighbour == null || northNeighbour == null || northEastNeighbour == null) {
+                continue;
+            }
+            List<Node> nodesToConnect = Arrays.asList(temp, eastNeighbour, northNeighbour, northEastNeighbour);
+            Node middleNode = fac.createNode(Id.createNodeId(temp.getId().toString() + "_tri"),
+                    new Coord(temp.getCoord().getX() + carGridSpacing / 2,
+                            temp.getCoord().getY() + carGridSpacing / 2));
+            middleNode.getAttributes().putAttribute(IS_STATION_NODE, false);
+            net.addNode(middleNode);
+
+            for (Node neighbour : nodesToConnect) {
+                Link nij_ndiag = fac
+                        .createLink(Id.createLinkId(middleNode.getId() + "-" + neighbour.getId()), middleNode,
+                                neighbour);
+                Link ndiag_nij = fac
+                        .createLink(Id.createLinkId(neighbour.getId() + "-" + middleNode.getId()), neighbour,
+                                middleNode);
+                setLinkAttributes(nij_ndiag, linkCapacity, diag_length, freeSpeedCar, numberOfLanes, false, true);
+                setLinkAttributes(ndiag_nij, linkCapacity, diag_length, freeSpeedCar, numberOfLanes, false, true);
+                setLinkModes(nij_ndiag, NETWORK_MODE_CAR);
+                setLinkModes(ndiag_nij, NETWORK_MODE_CAR);
+
+                net.addLink(nij_ndiag);
+                net.addLink(ndiag_nij);
+            }
+        }
+    }
+
+    private Node getClosestNeighbourNodeToCoord(Node node, Coord coord) {
+        List<Node> nodeList = null;
+        if (doubleCloseToZero(node.getCoord().getX() - coord.getX()) ||
+                doubleCloseToZero(node.getCoord().getY() - coord.getY())) {
+            // For direct neighbour
+            nodeList = node.getOutLinks().values().stream()
+                    .map(Link::getToNode)
+                    .filter(n -> doubleCloseToZero(calculateDistancePeriodicBC(coord, n.getCoord(), systemSize)))
+                    .collect(Collectors.toList());
+        } else {
+            // For diagonal neighbour
+            nodeList = node.getOutLinks().values().stream()
+                    .map(Link::getToNode)
+                    .flatMap(n -> n.getOutLinks().values().stream().map(Link::getToNode))
+                    .filter(n -> doubleCloseToZero(calculateDistancePeriodicBC(coord, n.getCoord(), systemSize)))
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+        assert nodeList.size() <= 1 : "Number of neighbours satisfying constraint should be max one";
+        if (nodeList.size() == 1) {
+            return nodeList.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public static void copyLinkProperties(Link link, Link toCopyLink) {
         toCopyLink.setCapacity(link.getCapacity());
         toCopyLink.setAllowedModes(link.getAllowedModes());
         toCopyLink.setFreespeed(link.getFreespeed());

@@ -53,20 +53,21 @@ public class MatsimMain {
 
         LOG.info("Starting matsim simulation...");
         try {
+//            CoordinateTransformation coordinateTransformation = TransformationFactory
+//                    .getCoordinateTransformation(TransformationFactory.WGS84, "EPSG:25832");
+//            Network network = new SupersonicOsmNetworkReader.Builder()
+//                    .setCoordinateTransformation(coordinateTransformation)
+//                    .build().read("/home/helge/Applications/osm-data/out_osmosis.osm.pbf");
+//            new NetworkWriter(network).write("test_network.xml");
+
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
 //            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
-            CoordinateTransformation coordinateTransformation = TransformationFactory
-                    .getCoordinateTransformation(TransformationFactory.WGS84, "EPSG:25832");
-            Network network = new SupersonicOsmNetworkReader.Builder()
-                    .setCoordinateTransformation(coordinateTransformation)
-                    .build().read("/home/helge/Applications/osm-data/out_osmosis.osm.pbf");
-            new NetworkWriter(network).write("test_network.xml");
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
 //            runRealWorldScenario(config);
-//            run(config, false, false);
+            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -74,94 +75,94 @@ public class MatsimMain {
         LOG.info("Simulation finished");
     }
 
-    private static void manuallyStartMultipleDeltaMax(String configPath) throws Exception {
-        Config config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
-                new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-        runMulitpleDeltaMax(config, "1.0", "create-input");
-        for (double deltaMax = 1.1; deltaMax < 2.1; deltaMax += 1.1) {
-            config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
-                    new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-            runMulitpleDeltaMax(config, String.valueOf(Math.round(deltaMax * 10) / 10.), "unimodal");
-        }
-    }
+//    private static void manuallyStartMultipleDeltaMax(String configPath) throws Exception {
+//        Config config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+//                new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+//        runMulitpleDeltaMax(config, "1.0", "create-input");
+//        for (double deltaMax = 1.1; deltaMax < 2.1; deltaMax += 1.1) {
+//            config = ConfigUtils.loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+//                    new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+//            runMulitpleDeltaMax(config, String.valueOf(Math.round(deltaMax * 10) / 10.), "unimodal");
+//        }
+//    }
 
-    private static void runMulitpleDeltaMax(Config config, String deltaMaxString, String mode) throws Exception {
-        System.out.println("DeltaMax: " + deltaMaxString);
-        String basicOutPath = config.controler().getOutputDirectory();
-        String varyParameter = "DeltaMax_";
-        double deltaMax = Double.parseDouble(deltaMaxString);
-        String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + deltaMaxString).toString();
-        String inputPath = Paths.get(basicOutPath, "input").toString();
-        String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
-        String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
-        String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
-        String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
-        String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
+//    private static void runMulitpleDeltaMax(Config config, String deltaMaxString, String mode) throws Exception {
+//        System.out.println("DeltaMax: " + deltaMaxString);
+//        String basicOutPath = config.controler().getOutputDirectory();
+//        String varyParameter = "DeltaMax_";
+//        double deltaMax = Double.parseDouble(deltaMaxString);
+//        String iterationSpecificPath = Paths.get(basicOutPath, varyParameter + deltaMaxString).toString();
+//        String inputPath = Paths.get(basicOutPath, "input").toString();
+//        String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
+//        String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
+//        String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
+//        String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
+//        String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
+//
+//        config.network().setInputFile(networkPath);
+//        config.plans().setInputFile(populationPath);
+//        config.transit().setTransitScheduleFile(transitSchedulePath);
+//        config.transit().setVehiclesFile(transitVehiclesPath);
+//        MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                .setVehiclesFile(drtFleetPath);
+//
+//        String outPath = iterationSpecificPath;
+//        double endTime = 3 * 24 * 3600;
+//        if (mode.equals("create-input")) {
+//            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100).setSystemSize(10000)
+//                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(70).setDrtCapacity(10000)
+//                    .setNRequests((int) (3 * 1e5))
+//                    .setRequestEndTime((int) endTime).setSmallLinksCloseToNodes(true)
+//                    .setDrtOperationEndTime(endTime).setCreateTrainLines(false)
+//                    .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1. / 8).build();
+//            LOG.info("Creating network");
+//            scenarioCreator.createNetwork(networkPath);
+//            LOG.info("Finished creating network\nCreating population for network");
+//            scenarioCreator.createPopulation(populationPath, networkPath);
+//            LOG.info("Finished creating population\nCreating transit Schedule");
+////            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+//            LOG.info("Finished creating transit schedule\nCreating drt fleet");
+//            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
+//            LOG.info("Finished creating drt fleet");
+//            return;
+//        } else if (mode.equals("unimodal")) {
+//            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                    .setMaxDetour(deltaMax);
+//            config.transit().setUseTransit(false);
+//            config.transit().setTransitScheduleFile(null);
+//            config.transit().setVehiclesFile(null);
+//
+//            config.qsim().setEndTime(endTime);
+//        }
+//        DrtPlanModifierConfigGroup.get(config).setMode(mode);
+//
+//        config.controler().setOutputDirectory(outPath);
+//        LOG.info("Running simulation");
+//        run(config, false, false);
+//        LOG.info("Finished simulation with " + varyParameter + " = " + deltaMaxString);
+//    }
 
-        config.network().setInputFile(networkPath);
-        config.plans().setInputFile(populationPath);
-        config.transit().setTransitScheduleFile(transitSchedulePath);
-        config.transit().setVehiclesFile(transitVehiclesPath);
-        MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                .setVehiclesFile(drtFleetPath);
-
-        String outPath = iterationSpecificPath;
-        double endTime = 3 * 24 * 3600;
-        if (mode.equals("create-input")) {
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(100).setSystemSize(10000)
-                    .setSmallLinksCloseToNodes(true).setNDrtVehicles(70).setDrtCapacity(10000)
-                    .setNRequests((int) (3 * 1e5))
-                    .setRequestEndTime((int) endTime).setSmallLinksCloseToNodes(true)
-                    .setDrtOperationEndTime(endTime).setCreateTrainLines(false)
-                    .setTravelDistanceDistribution("InverseGamma").setTravelDistanceMeanOverL(1. / 8).build();
-            LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath);
-            LOG.info("Finished creating network\nCreating population for network");
-            scenarioCreator.createPopulation(populationPath, networkPath);
-            LOG.info("Finished creating population\nCreating transit Schedule");
-//            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
-            LOG.info("Finished creating transit schedule\nCreating drt fleet");
-            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
-            LOG.info("Finished creating drt fleet");
-            return;
-        } else if (mode.equals("unimodal")) {
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setMaxDetour(deltaMax);
-            config.transit().setUseTransit(false);
-            config.transit().setTransitScheduleFile(null);
-            config.transit().setVehiclesFile(null);
-
-            config.qsim().setEndTime(endTime);
-        }
-        DrtPlanModifierConfigGroup.get(config).setMode(mode);
-
-        config.controler().setOutputDirectory(outPath);
-        LOG.info("Running simulation");
-        run(config, false, false);
-        LOG.info("Finished simulation with " + varyParameter + " = " + deltaMaxString);
-    }
-
-    private static void manuallyStartMultipleNeworks(String configPath) throws Exception {
-//        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
-        String[] modes = new String[]{"create-input", "unimodal"};
-        String carGridSpacingString = "100";
-        int simTime = 12 * 3600;
-        for (int N_drt = 9; N_drt < 10; N_drt += 5) {
-            for (int railInterval = 50; railInterval < 51; railInterval += 1) {
-                for (double freq = 0.01; freq < 0.1; freq += 0.01) {
-                    for (String mode : modes) {
-                        Config config = ConfigUtils
-                                .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
-                                        new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
-                        runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
-                                String.valueOf(N_drt), String.valueOf((int) (freq * (simTime - 3600))), mode, "0.2",
-                                "1.6", "42",
-                                String.valueOf(simTime), "true", "out");
-                    }
-                }
-            }
-        }
-    }
+//    private static void manuallyStartMultipleNeworks(String configPath) throws Exception {
+////        String[] modes = new String[]{"create-input", "bimodal", "unimodal", "car"};
+//        String[] modes = new String[]{"create-input", "bimodal"};
+//        String carGridSpacingString = "100";
+//        int simTime = 12 * 3600;
+//        for (int N_drt = 9; N_drt < 10; N_drt += 5) {
+//            for (int railInterval = 8; railInterval < 9; railInterval += 1) {
+//                for (double freq = 0.01; freq < 0.02; freq += 0.01) {
+//                    for (String mode : modes) {
+//                        Config config = ConfigUtils
+//                                .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
+//                                        new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
+//                        runMultipleNetworks(config, String.valueOf(railInterval), carGridSpacingString,
+//                                String.valueOf(N_drt), String.valueOf((int) (freq * (simTime - 3600))), mode, "0.2",
+//                                "1.6", "42",
+//                                String.valueOf(simTime), "true", "out");
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private static void runRealWorldScenario(Config config) throws Exception {
         ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setNDrtVehicles(20).setNRequests(10000)
@@ -174,102 +175,102 @@ public class MatsimMain {
         run(config, false, true);
     }
 
-    private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
-                                            String N_drt, String nReqsString, String mode, String meanOverLString,
-                                            String deltaMaxString, String seedString, String endTimeString,
-                                            String diagConnections, String outFolder) throws Exception {
-        String basicOutPath = config.controler().getOutputDirectory();
-        if (!outFolder.equals("")) {
-            basicOutPath = basicOutPath.concat("/" + outFolder);
-        }
-        int railInterval = Integer.parseInt(railIntervalString);
-        int nReqs = Integer.parseInt(nReqsString);
-        double carGridSpacing = Double.parseDouble(carGridSpacingString);
-        double deltaMax = Double.parseDouble(deltaMaxString);
-        String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
-        String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
-//        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
-        String varyParameter = "l_";
-//        String varyParameter = "Ndrt_";
-        String iterationSpecificPath = Paths.get(nDrtOutPath, varyParameter + (int) (railInterval * carGridSpacing))
-                .toString();
-//        String iterationSpecificPath = Paths.get(railIntervalOutPath, varyParameter + N_drt)
-//                .toString();
-        String inputPath = Paths.get(iterationSpecificPath, "input").toString();
-        String logPath = Paths.get(inputPath, "logfile.log").toString();
-        String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
-        String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
-        String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
-        String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
-        String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
-
-        // Varying drt grid size w.r.t. pt grid size
-//                int SysOvPt = 10;
-//                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(x*SysOvPt)
-//                        .setSystemSizeOverPtGridSize(SysOvPt).build();
-        // Varying pt grid size w.r.t. system grid size
-
-        config.network().setInputFile(networkPath);
-        config.plans().setInputFile(populationPath);
-        config.transit().setTransitScheduleFile(transitSchedulePath);
-        config.transit().setVehiclesFile(transitVehiclesPath);
-        MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                .setVehiclesFile(drtFleetPath);
-
-        String outPath = null;
-        if (mode.equals("create-input")) {
-
-            OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
-
-            double endTime = Double.parseDouble(endTimeString);
-
-            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
-                    .setSeed(Long.parseLong(seedString)).setTravelDistanceMeanOverL(Double.parseDouble(meanOverLString))
-                    .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
-                    .setDrtOperationEndTime(endTime)
-                    .setDiagonalConnetions(Boolean.parseBoolean(diagConnections))
-                    .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
-            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
-            double nu = 1. / scenarioCreator.getRequestEndTime();
-//            double E = scenarioCreator.getnRequests() /
-//                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
-//            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
-            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMeanOverL() *
-                    scenarioCreator.getTravelDistanceMeanOverL()));
-            LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath);
-            LOG.info("Finished creating network\nCreating population for network");
-            scenarioCreator.createPopulation(populationPath, networkPath);
-            LOG.info("Finished creating population\nCreating transit Schedule");
-            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
-            LOG.info("Finished creating transit schedule\nCreating drt fleet");
-            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
-            LOG.info("Finished creating drt fleet");
-            return;
-        } else if (mode.equals("bimodal")) {
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setMaxDetour(deltaMax);
-            outPath = Paths.get(iterationSpecificPath, mode).toString();
-        } else if (mode.equals("unimodal")) {
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setMaxDetour(deltaMax);
-            outPath = Paths.get(nDrtOutPath, mode).toString();
-            config.transit().setUseTransit(false);
-        } else if (mode.equals("car")) {
-            outPath = Paths.get(nReqsOutPath, mode).toString();
-        }
-        DrtPlanModifierConfigGroup.get(config).setMode(mode);
-//        if (mode.equals("car")) {
-//            config.removeModule(MultiModeDrtConfigGroup.GROUP_NAME);
+//    private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
+//                                            String N_drt, String nReqsString, String mode, String meanOverLString,
+//                                            String deltaMaxString, String seedString, String endTimeString,
+//                                            String diagConnections, String outFolder) throws Exception {
+//        String basicOutPath = config.controler().getOutputDirectory();
+//        if (!outFolder.equals("")) {
+//            basicOutPath = basicOutPath.concat("/" + outFolder);
 //        }
-
-        config.controler().setOutputDirectory(outPath);
-        LOG.info("Running simulation");
-        run(config, false, true);
-        LOG.info("Finished simulation with " + varyParameter + " = " + railInterval * carGridSpacing);
-//        LOG.info("Deleting input directory");
-    }
+//        int railInterval = Integer.parseInt(railIntervalString);
+//        int nReqs = Integer.parseInt(nReqsString);
+//        double carGridSpacing = Double.parseDouble(carGridSpacingString);
+//        double deltaMax = Double.parseDouble(deltaMaxString);
+//        String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
+//        String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
+////        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
+//        String varyParameter = "l_";
+////        String varyParameter = "Ndrt_";
+//        String iterationSpecificPath = Paths.get(nDrtOutPath, varyParameter + (int) (railInterval * carGridSpacing))
+//                .toString();
+////        String iterationSpecificPath = Paths.get(railIntervalOutPath, varyParameter + N_drt)
+////                .toString();
+//        String inputPath = Paths.get(iterationSpecificPath, "input").toString();
+//        String logPath = Paths.get(inputPath, "logfile.log").toString();
+//        String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
+//        String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
+//        String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
+//        String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
+//        String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
+//
+//        // Varying drt grid size w.r.t. pt grid size
+////                int SysOvPt = 10;
+////                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(x*SysOvPt)
+////                        .setSystemSizeOverPtGridSize(SysOvPt).build();
+//        // Varying pt grid size w.r.t. system grid size
+//
+//        config.network().setInputFile(networkPath);
+//        config.plans().setInputFile(populationPath);
+//        config.transit().setTransitScheduleFile(transitSchedulePath);
+//        config.transit().setVehiclesFile(transitVehiclesPath);
+//        MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                .setVehiclesFile(drtFleetPath);
+//
+//        String outPath = null;
+//        if (mode.equals("create-input")) {
+//
+//            OutputDirectoryLogging.initLoggingWithOutputDirectory(inputPath);
+//
+//            double endTime = Double.parseDouble(endTimeString);
+//
+//            ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
+//                    .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
+//                    .setSeed(Long.parseLong(seedString)).setTravelDistanceMeanOverL(Double.parseDouble(meanOverLString))
+//                    .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
+//                    .setDrtOperationEndTime(endTime)
+//                    .setDiagonalConnetions(Boolean.parseBoolean(diagConnections))
+//                    .setSmallLinksCloseToNodes(false).setNDrtVehicles(Integer.parseInt(N_drt)).build();
+//            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
+//            double nu = 1. / scenarioCreator.getRequestEndTime();
+////            double E = scenarioCreator.getnRequests() /
+////                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
+////            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
+//            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMeanOverL() *
+//                    scenarioCreator.getTravelDistanceMeanOverL()));
+//            LOG.info("Creating network");
+//            scenarioCreator.createNetwork(networkPath);
+//            LOG.info("Finished creating network\nCreating population for network");
+//            scenarioCreator.createPopulation(populationPath, networkPath);
+//            LOG.info("Finished creating population\nCreating transit Schedule");
+//            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+//            LOG.info("Finished creating transit schedule\nCreating drt fleet");
+//            scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
+//            LOG.info("Finished creating drt fleet");
+//            return;
+//        } else if (mode.equals("bimodal")) {
+//            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                    .setMaxDetour(deltaMax);
+//            outPath = Paths.get(iterationSpecificPath, mode).toString();
+//        } else if (mode.equals("unimodal")) {
+//            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                    .setMaxDetour(deltaMax);
+//            outPath = Paths.get(nDrtOutPath, mode).toString();
+//            config.transit().setUseTransit(false);
+//        } else if (mode.equals("car")) {
+//            outPath = Paths.get(nReqsOutPath, mode).toString();
+//        }
+//        DrtPlanModifierConfigGroup.get(config).setMode(mode);
+////        if (mode.equals("car")) {
+////            config.removeModule(MultiModeDrtConfigGroup.GROUP_NAME);
+////        }
+//
+//        config.controler().setOutputDirectory(outPath);
+//        LOG.info("Running simulation");
+//        run(config, false, true);
+//        LOG.info("Finished simulation with " + varyParameter + " = " + railInterval * carGridSpacing);
+////        LOG.info("Deleting input directory");
+//    }
 
 
     public static void run(Config config, boolean otfvis, boolean isGridAndPt) throws Exception {
@@ -301,17 +302,17 @@ public class MatsimMain {
 //        controler.configureQSimComponents(components -> {SBBTransitEngineQSimModule.configure(components);});
 
         controler.addOverridingModule(new DrtTrajectoryAnalyzer());
-        DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
-        controler.addOverridingModule(new DrtPlanModifier(drtGroup));
+//        DrtPlanModifierConfigGroup drtGroup = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class);
+//        controler.addOverridingModule(new DrtPlanModifier(drtGroup));
         controler.addOverridingModule(new CustomRoutingModule());
 
-        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
-        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
-                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
-                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
-                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
-                        "org/matsim/core/utils/collections/QuadTree.java" +
-                        "org/matsim/contrib/util/distance/DistanceUtils.java";
+//        double[] netDims = getNetworkDimensionsMinMax(controler.getScenario().getNetwork(), isGridAndPt);
+//        assert (doubleCloseToZero(netDims[0]) && doubleCloseToZero(netDims[1] - 10000)) :
+//                "You have to change L (" + netDims[0] + "," + netDims[1] + ") in: " +
+//                        "org/matsim/core/router/util/LandmarkerPieSlices.java; " +
+//                        "org/matsim/core/utils/geometry/CoordUtils.java; " +
+//                        "org/matsim/core/utils/collections/QuadTree.java" +
+//                        "org/matsim/contrib/util/distance/DistanceUtils.java";
 
         controler.run();
     }

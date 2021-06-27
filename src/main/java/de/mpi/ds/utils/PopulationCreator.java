@@ -25,7 +25,6 @@ public class PopulationCreator implements UtilComponent {
     private Random random;
     private String transportMode;
     private boolean isGridNetwork;
-    private double carGridSpacing;
     private boolean smallLinksCloseToNodes;
     private boolean createTrainLines;
     private String travelDistanceDistribution;
@@ -33,7 +32,7 @@ public class PopulationCreator implements UtilComponent {
     private double systemSize;
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
-                             boolean isGridNetwork, double carGridSpacing, boolean smallLinksCloseToNodes,
+                             boolean isGridNetwork, boolean smallLinksCloseToNodes,
                              boolean createTrainLines, String travelDistanceDistribution,
                              double travelDistanceMeanOverL, double systemSize) {
         this.nRequests = nRequests;
@@ -41,7 +40,6 @@ public class PopulationCreator implements UtilComponent {
         this.random = random;
         this.transportMode = transportMode;
         this.isGridNetwork = isGridNetwork;
-        this.carGridSpacing = carGridSpacing;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
         this.createTrainLines = createTrainLines;
         this.travelDistanceDistribution = travelDistanceDistribution;
@@ -50,10 +48,11 @@ public class PopulationCreator implements UtilComponent {
     }
 
     public static void main(String... args) {
-        String networkPath = "./output/network_circ_rad.xml.gz";
-        PopulationCreator populationCreator = new PopulationCreator(1000, 4 * 3600, new Random(), TransportMode.pt,
-                false, 100, false, true, "Uniform", 1 / 4, 10000);
-        populationCreator.createPopulation("./output/population.xml.gz", networkPath);
+        String networkPath = "scenarios/Manhatten/network_trams.xml";
+        String outputPath = "scenarios/Manhatten/population.xml";
+        PopulationCreator populationCreator = new PopulationCreator(1000, 9 * 3600, new Random(), TransportMode.drt,
+                false, false, true, "Uniform", 1 / 4, 10000);
+        populationCreator.createPopulation(outputPath, networkPath);
     }
 
     public void createPopulation(String outputPopulationPath, String networkPath) {
@@ -102,7 +101,7 @@ public class PopulationCreator implements UtilComponent {
         Link dest_link;
         List<Link> startLinks = null;
         startLinks = net.getLinks().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
 
         for (int j = 0; j < nRequests; j++) {

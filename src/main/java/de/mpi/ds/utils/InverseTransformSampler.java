@@ -19,8 +19,8 @@ public class InverseTransformSampler {
     private Random random;
     private double EPSILON = 0.00001;
 
-    InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
-                            int integrationSteps, Random random) {
+    public InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
+                                   int integrationSteps, Random random) {
         this.function = function;
 
         double arg = 0;
