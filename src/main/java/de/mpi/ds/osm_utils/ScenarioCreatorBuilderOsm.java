@@ -8,16 +8,18 @@ public class ScenarioCreatorBuilderOsm {
 
     private long linkCapacity = 9999999;
     private double freeSpeedCar = 30 / 3.6;
-    private double freeSpeedTrain = 60 / 3.6;
+    private double freeSpeedTrain = 33.3333;
     private double numberOfLanes = 100;
 
     private int requestEndTime = 9 * 3600;
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
+    private double meanTravelDist = 2000;
 
     private double transitEndTime = 10 * 3600;
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
+    private double ptSpacingOverMean = 1;
 
     private int nDrtVehicles = 200;
     private int drtCapacity = 8;
@@ -26,7 +28,6 @@ public class ScenarioCreatorBuilderOsm {
     private long seed = 42;
 
     private String travelDistanceDistribution = "InverseGamma";
-    private double meanTravelDist = 1000;
 
     public ScenarioCreatorBuilderOsm setLinkCapacity(long linkCapacity) {
         this.linkCapacity = linkCapacity;
@@ -118,13 +119,18 @@ public class ScenarioCreatorBuilderOsm {
         return this;
     }
 
+    public ScenarioCreatorBuilderOsm setPtSpacingOverMean(double ptSpacingOverMean) {
+        this.ptSpacingOverMean = ptSpacingOverMean;
+        return this;
+    }
+
     public ScenarioCreatorOsm build() {
         printScenarioInfo();
         return new ScenarioCreatorOsm(linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode,
-                travelDistanceDistribution, meanTravelDist);
+                travelDistanceDistribution, meanTravelDist, ptSpacingOverMean);
     }
 
     private void printScenarioInfo() {
@@ -146,7 +152,9 @@ public class ScenarioCreatorBuilderOsm {
                 "\nseed: " + seed +
                 "\ntransportMode: " + transportMode +
                 "\ntravelDistanceDistribution : " + travelDistanceDistribution +
-                "\ntravelDistanceMean : " + meanTravelDist
+                "\ntravelDistanceMean : " + meanTravelDist +
+                "\nptSpacingOverMean : " + ptSpacingOverMean
         );
     }
+
 }

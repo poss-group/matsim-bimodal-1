@@ -39,6 +39,10 @@ public class GeneralUtils {
         return calculateDistanceNonPeriodic(from.getCoord(), to.getCoord());
     }
 
+    public static double calculateDistanceNonPeriodic(Link from, Link to) {
+        return calculateDistanceNonPeriodic(from.getCoord(), to.getCoord());
+    }
+
     public static double calculateManhattenDistancePeriodicBC(Coord from, Coord to, double L) {
         double deltaX = Math.abs(to.getX() - from.getX());
         double deltaXPeriodic = deltaX < L / 2 ? deltaX : -deltaX + L;

@@ -216,3 +216,4 @@ scenarios/fine_grid/CircRadTest/ptBoardCounts.xml filter=lfs diff=lfs merge=lfs 
 scenarios/fine_grid/CircRadTest/ptOccupancyCounts.xml filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/CircRadTest/transitSchedule.xml.gz filter=lfs diff=lfs merge=lfs -text
 scenarios/fine_grid/CircRadTest/transitVehicles.xml.gz filter=lfs diff=lfs merge=lfs -text
+scenarios/Manhatten/network.xml filter=lfs diff=lfs merge=lfs -text

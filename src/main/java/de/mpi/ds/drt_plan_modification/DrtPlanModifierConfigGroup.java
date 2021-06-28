@@ -6,6 +6,8 @@ import org.matsim.core.config.ReflectiveConfigGroup;
 
 import java.util.Map;
 
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+
 public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
     public final static String NAME = "drtPlanModifier";
 
@@ -13,11 +15,13 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
     //    private final static String DRT_MODE = "drtMode";
     private final static String ZETA_CUT = "zetaCut";
     private final static String MODE = "mode";
+    private final static String PERIODICITY = "periodicity";
 
     private boolean modifyPlans = true;
     //    private String drtMode = "drt";
     private double zetaCut = 0;
     private String mode = "bimodal";
+    private double periodicity = 0.;
 
     public DrtPlanModifierConfigGroup() {
         super(NAME);
@@ -49,6 +53,7 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
                 "Trips with distance longer than gammaCut*l where l is the public transport grid distance do get assigned as pt trips");
         comments.put(MODE,
                 "Transport mode (bimodal/unimodal/car)");
+        comments.put(PERIODICITY, "SystemSize if system has periodic BC, otherwise set to a negative value");
         return comments;
     }
 
@@ -57,6 +62,8 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         super.checkConsistency(config);
         Verify.verify(mode.equals("bimodal") || mode.equals("unimodal") || mode.equals("car"),
                 "Mode must be one of bimodal,unimodal,car");
+        Verify.verify(!doubleCloseToZero(periodicity),
+                "Periodicity should either be positive (periodic BC) or negative (no periodic BC");
     }
 
     @StringGetter(MODIFY_PLANS)
@@ -74,6 +81,11 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         return zetaCut;
     }
 
+    @StringGetter(PERIODICITY)
+    public double getPeriodicity() {
+        return periodicity;
+    }
+
     @StringSetter(ZETA_CUT)
     public void setZetaCut(double gammaCut) {
         this.zetaCut = gammaCut;
@@ -87,5 +99,10 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
     @StringSetter(MODE)
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    @StringSetter(PERIODICITY)
+    public void setPeriodicity(double periodicity) {
+        this.periodicity = periodicity;
     }
 }

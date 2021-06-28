@@ -32,8 +32,7 @@ public class PopulationCreatorOsm implements UtilComponent {
     private double travelMeanDist;
 
     public PopulationCreatorOsm(int nRequests, int requestEndTime, Random random, String transportMode,
-                                String travelDistanceDistribution,
-                                double travelMeanDist) {
+                                String travelDistanceDistribution, double travelMeanDist) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
