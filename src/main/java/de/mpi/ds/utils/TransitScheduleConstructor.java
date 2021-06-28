@@ -91,6 +91,7 @@ public class TransitScheduleConstructor implements UtilComponent {
 //        moveFromTo(linkList, endNode, startNode, transitRouteStopList, direction, false);
             dirAdd = 0;
             lastDepartureTime = 0;
+            //TODO: make first link really start link or already solved by periodicity?
             movePeriodic(linkList, startLink, transitRouteStopList, true);
         } catch (Exception e) {
             e.printStackTrace();

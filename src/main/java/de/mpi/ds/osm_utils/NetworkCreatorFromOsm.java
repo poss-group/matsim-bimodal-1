@@ -44,7 +44,7 @@ import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.vehicles.*;
 import triangulation.*;
 
-import static de.mpi.ds.osm_utils.ScenarioCreatorOsm.IS_START_LINK;
+import static de.mpi.ds.osm_utils.ScenarioCreatorOsm.*;
 import static de.mpi.ds.utils.GeneralUtils.calculateDistanceNonPeriodic;
 
 /**
@@ -64,11 +64,12 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     private double transitEndTime;
     private double departureIntervalTime;
     private int route_counter;
+    private double ptSpacing;
 
     public NetworkCreatorFromOsm(ArrayList<Coord> hull, double linkCapacity,
                                  double freeSpeedTrain, double numberOfLanes,
                                  double freeSpeedCar, double transitStartTime, double transitEndTime,
-                                 double departureIntervalTime) {
+                                 double departureIntervalTime, double ptSpacing) {
         this.hull = hull;
         this.linkCapacity = linkCapacity;
         this.freeSpeedTrain = freeSpeedTrain;
@@ -78,6 +79,7 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         this.transitEndTime = transitEndTime;
         this.departureIntervalTime = departureIntervalTime;
         this.route_counter = 0;
+        this.ptSpacing = ptSpacing;
     }
 
     public static void main(String... args) {
@@ -134,7 +136,8 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         }
     }
 
-    public Network addTramNet(Network net, String path) {
+    public Network addTramNet(Network net, String networkOutPath, String transitScheduleOutPath,
+                              String transitVehiclesOutPath) {
         NetworkFactory fac = net.getFactory();
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -164,8 +167,8 @@ public class NetworkCreatorFromOsm implements UtilComponent {
             e.printStackTrace();
         }
 
-        double deltaPtX = 500;
-        double deltaPtY = 500;
+        double deltaPtX = ptSpacing;
+        double deltaPtY = ptSpacing;
         int nX = (int) (lX / deltaPtX) + 1;
         int nY = (int) (lY / deltaPtY) + 1;
 
@@ -179,6 +182,7 @@ public class NetworkCreatorFromOsm implements UtilComponent {
 //                    Node transitNode = fac.createNode(Id.createNodeId("pt_" + i + "_" + j), transitCoord);
                     Node transitNode = net.getNodes().values().stream().min(Comparator
                             .comparingDouble(n -> calculateDistanceNonPeriodic(n.getCoord(), transitCoord))).get();
+                    transitNode.getAttributes().putAttribute(IS_STATION_NODE, true);
                     if (!containedInMatrix(transitNode, transitNodes)) {
 //                        net.addNode(transitNode);
                         transitNodes[i][j] = transitNode;
@@ -189,10 +193,11 @@ public class NetworkCreatorFromOsm implements UtilComponent {
 
         // Links in y directions
         for (int i = 0; i < transitNodes.length; i++) {
-            ArrayList<Link> transitLinks = new ArrayList<>();
-            ArrayList<Link> transitLinksReverse = new ArrayList<>();
+            ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+            ArrayList<Id<Link>> transitLinksReverse = new ArrayList<>();
             List<TransitRouteStop> transitRouteStops = new ArrayList<>();
             List<TransitRouteStop> transitRouteStopsReverse = new ArrayList<>();
+            Link lastAddedLink = null;
             for (int j = 0; j < transitNodes[0].length - 1; j++) {
                 Node from = transitNodes[i][j];
                 if (from == null) {
@@ -200,28 +205,40 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                 }
                 Node toX = findNextNonNull(transitNodes, i, j, "j");
                 if (toX == null) {
-                    break; //break?
+                    break;
                 }
 
-                Link linkX = fac
+
+                Link linkY = fac
                         .createLink(Id.createLinkId("pt_" + from.getId().toString() + "-" + toX.getId().toString()),
                                 from, toX);
-                Link linkX_r = fac
+
+                Link linkY_r = fac
                         .createLink(Id.createLinkId("pt_" + toX.getId().toString() + "-" + from.getId().toString()),
                                 toX, from);
 
-                addTransitStop(linkX, schedule, transitScheduleFactory, transitRouteStops);
-                addTransitStop(linkX_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
-                transitLinks.add(linkX);
-                transitLinksReverse.add(linkX_r);
+
+                if (transitLinks.size() == 0) {
+                    addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops);
+                    transitLinks.add(linkY_r.getId());
+                }
+                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops);
+                addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
+                transitLinks.add(linkY.getId());
+                transitLinksReverse.add(linkY_r.getId());
+                lastAddedLink = linkY;
 
                 double length = calculateDistanceNonPeriodic(from, toX);
-                setLinkAttributes(linkX, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
-                setLinkAttributes(linkX_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
-                net.addLink(linkX);
-                net.addLink(linkX_r);
+                setLinkAttributes(linkY, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                setLinkAttributes(linkY_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                net.addLink(linkY);
+                net.addLink(linkY_r);
             }
-            if (transitLinks.size() > 1) {
+            if (transitLinks.size() > 0) {
+                addTransitStop(lastAddedLink, schedule,
+                        transitScheduleFactory, transitRouteStopsReverse);
+                transitLinksReverse.add(lastAddedLink.getId());
+
                 TransitLine transitLine = transitScheduleFactory
                         .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
                 addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
@@ -231,17 +248,18 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                         .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
                 Collections.reverse(transitLinksReverse);
                 Collections.reverse(transitRouteStopsReverse);
-                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse, populationFactory,
-                        transitScheduleFactory, schedule);
+                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse,
+                        populationFactory, transitScheduleFactory, schedule);
             }
         }
 
         // Links in x direction
         for (int j = 0; j < transitNodes[0].length; j++) {
-            ArrayList<Link> transitLinks = new ArrayList<>();
-            ArrayList<Link> transitLinksReverse = new ArrayList<>();
+            ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+            ArrayList<Id<Link>> transitLinksReverse = new ArrayList<>();
             List<TransitRouteStop> transitRouteStops = new ArrayList<>();
             List<TransitRouteStop> transitRouteStopsReverse = new ArrayList<>();
+            Link lastAddedLink = null;
             for (int i = 0; i < transitNodes.length - 1; i++) {
                 Node from = transitNodes[i][j];
                 if (from == null) {
@@ -252,25 +270,34 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                     break;
                 }
 
-                Link linkY = fac
+                Link linkX = fac
                         .createLink(Id.createLinkId("pt_" + from.getId().toString() + "-" + toY.getId().toString()),
                                 from, toY);
-                Link linkY_r = fac
+                Link linkX_r = fac
                         .createLink(Id.createLinkId("pt_" + toY.getId().toString() + "-" + from.getId().toString()),
                                 toY, from);
 
-                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops);
-                addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
-                transitLinks.add(linkY);
-                transitLinksReverse.add(linkY_r);
+                if (transitLinks.size() == 0) {
+                    addTransitStop(linkX_r, schedule, transitScheduleFactory, transitRouteStops);
+                    transitLinks.add(linkX_r.getId());
+                }
+                addTransitStop(linkX, schedule, transitScheduleFactory, transitRouteStops);
+                addTransitStop(linkX_r, schedule, transitScheduleFactory, transitRouteStopsReverse);
+                transitLinks.add(linkX.getId());
+                transitLinksReverse.add(linkX_r.getId());
+                lastAddedLink = linkX;
 
                 double length = calculateDistanceNonPeriodic(from, toY);
-                setLinkAttributes(linkY, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
-                setLinkAttributes(linkY_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
-                net.addLink(linkY);
-                net.addLink(linkY_r);
+                setLinkAttributes(linkX, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                setLinkAttributes(linkX_r, linkCapacity, length, freeSpeedTrain, numberOfLanes, true);
+                net.addLink(linkX);
+                net.addLink(linkX_r);
             }
-            if (transitLinks.size() > 1) {
+            if (transitLinks.size() > 0) {
+                addTransitStop(lastAddedLink, schedule,
+                        transitScheduleFactory, transitRouteStopsReverse);
+                transitLinksReverse.add(lastAddedLink.getId());
+
                 TransitLine transitLine = transitScheduleFactory
                         .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
                 addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
@@ -280,24 +307,26 @@ public class NetworkCreatorFromOsm implements UtilComponent {
                         .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
                 Collections.reverse(transitLinksReverse);
                 Collections.reverse(transitRouteStopsReverse);
-                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse, populationFactory,
+                addTransitLineToSchedule(transitLinksReverse, transitRouteStopsReverse, vehicles, transitLineReverse,
+                        populationFactory,
                         transitScheduleFactory, schedule);
             }
         }
 
 
         try {
-            String[] filenameArray = path.split("/");
-            File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_trams.xml"));
-            File outTransitSchedule = new File(
-                    path.replace(filenameArray[filenameArray.length - 1], "transitSchedule.xml"));
-            File outVehicles = new File(path.replace(filenameArray[filenameArray.length - 1], "transitVehicles.xml"));
+//            String[] filenameArray = path.split("/");
+//            File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_trams.xml"));
+//            File outTransitSchedule = new File(
+//                    path.replace(filenameArray[filenameArray.length - 1], "transitSchedule.xml"));
+//            File outVehicles = new File(path.replace(filenameArray[filenameArray.length - 1], "transitVehicles.xml"));
             // create output folder if necessary
+            File outFile = new File(networkOutPath);
             Files.createDirectories(outFile.getParentFile().toPath());
             // write network
             NetworkUtils.writeNetwork(net, outFile.getAbsolutePath());
-            new TransitScheduleWriter(schedule).writeFile(outTransitSchedule.getAbsolutePath());
-            new MatsimVehicleWriter(vehicles).writeFile(outVehicles.getAbsolutePath());
+            new TransitScheduleWriter(schedule).writeFile(transitScheduleOutPath);
+            new MatsimVehicleWriter(vehicles).writeFile(transitVehiclesOutPath);
         } catch (Exception e) {
             System.out.println("Failed to write output...");
             e.printStackTrace();
@@ -307,17 +336,15 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     }
 
 
-    private void addTransitLineToSchedule(ArrayList<Link> transitLinks, List<TransitRouteStop> transitRouteStopList,
+    private void addTransitLineToSchedule(ArrayList<Id<Link>> idLinkList, List<TransitRouteStop> transitRouteStopList,
                                           Vehicles vehicles, TransitLine transitLine,
                                           PopulationFactory populationFactory,
                                           TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule) {
-        //TODO switch to idList from start on
-        List<Id<Link>> idLinkList = transitLinks.stream().map(Identifiable::getId).collect(Collectors.toList());
         Id<TransitRoute> tr_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
         NetworkRoute networkRoute = populationFactory.getRouteFactories()
                 .createRoute(NetworkRoute.class, idLinkList.get(0),
                         idLinkList.get(idLinkList.size() - 1));
-        networkRoute.setLinkIds(idLinkList.get(0), idLinkList.subList(1, transitLinks.size() - 1),
+        networkRoute.setLinkIds(idLinkList.get(0), idLinkList.subList(1, idLinkList.size() - 1),
                 idLinkList.get(idLinkList.size() - 1));
         TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(tr_id, networkRoute,
                 transitRouteStopList, "train");
@@ -329,14 +356,21 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     }
 
     private void addTransitStop(Link link, TransitSchedule schedule,
-                                       TransitScheduleFactory transitScheduleFactory,
-                                       List<TransitRouteStop> transitRouteStopList) {
-        Id<TransitStopFacility> transitStopFacilityId = Id.create(link.getId() + "_trStop", TransitStopFacility.class);
-        TransitStopFacility transitStopFacility = transitScheduleFactory
-                .createTransitStopFacility(transitStopFacilityId, link.getToNode().getCoord(), false);
-        transitStopFacility.setLinkId(link.getId());
-        schedule.addStopFacility(transitStopFacility);
-        TransitRouteStop transitRouteStop = transitScheduleFactory.createTransitRouteStop(transitStopFacility, 0, 0);
+                                TransitScheduleFactory transitScheduleFactory,
+                                List<TransitRouteStop> transitRouteStopList) {
+        Id<TransitStopFacility> transitStopFacilityId = null;
+        TransitStopFacility transitStopFacility = null;
+        transitStopFacilityId = Id
+                .create(link.getId() + "_trStop", TransitStopFacility.class);
+        transitStopFacility = schedule.getFacilities().get(transitStopFacilityId);
+        if (transitStopFacility == null) {
+            transitStopFacility = transitScheduleFactory
+                    .createTransitStopFacility(transitStopFacilityId, link.getToNode().getCoord(), false);
+            transitStopFacility.setLinkId(link.getId());
+            schedule.addStopFacility(transitStopFacility);
+        }
+        TransitRouteStop transitRouteStop = transitScheduleFactory
+                .createTransitRouteStop(transitStopFacility, 0, 0);
         transitRouteStopList.add(transitRouteStop);
     }
 
@@ -467,15 +501,20 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     public static void setLinkAttributes(Link link, double capacity, double freeSpeed, double numberLanes,
                                          boolean trainLink) {
         link.setCapacity(capacity);
-        link.setFreespeed(freeSpeed);
+//        link.setFreespeed(freeSpeed);
         link.setNumberOfLanes(numberLanes);
         Set<String> modes = new HashSet<>();
         if (trainLink) {
-            modes.add(TransportMode.pt);
+            modes.add(TransportMode.train);
+            link.setFreespeed(freeSpeed);
             link.getAttributes().putAttribute(IS_START_LINK, false);
         } else {
             modes.add(TransportMode.car);
-            link.getAttributes().putAttribute(IS_START_LINK, true);
+            if (link.getFreespeed() < 9) {
+                link.getAttributes().putAttribute(IS_START_LINK, true);
+            } else {
+                link.getAttributes().putAttribute(IS_START_LINK, false);
+            }
         }
         link.setAllowedModes(modes);
     }

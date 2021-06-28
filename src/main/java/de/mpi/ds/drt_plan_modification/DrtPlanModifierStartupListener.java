@@ -15,25 +15,32 @@ import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
-import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.GeneralUtils.*;
 import static de.mpi.ds.utils.ScenarioCreator.*;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
     private double zetaCut;
     private String mode;
+    private double periodicity;
+
+    @FunctionalInterface
+    interface Function2<One, Two> {
+        public double apply(One one, Two two);
+    }
 
     DrtPlanModifierStartupListener(DrtPlanModifierConfigGroup configGroup) {
         this.zetaCut = configGroup.getZetaCut();
         this.mode = configGroup.getMode();
+        this.periodicity = configGroup.getPeriodicity();
     }
 
     private static Link searchTransferLink(Link fromLink, Link toLink, List<Link> transitStopLinks,
-                                           String mode, double L) {
+                                           String mode, Function2<Link, Link> calcDist) {
         if (mode.equals("wide_search")) {
             Queue<Link> queue = new LinkedList<>();
             List<Link> visited = new ArrayList<>();
@@ -49,13 +56,13 @@ class DrtPlanModifierStartupListener implements StartupListener {
                 queue.addAll(current.getToNode().getOutLinks().values().stream()
                         .filter(e -> !visited.contains(e))
                         .sorted(Comparator
-                                .comparingDouble(l -> calculateDistancePeriodicBC(l, toLink, L)))
+                                .comparingDouble(l -> calcDist.apply(l, toLink)))
                         .collect(Collectors.toList()));
             }
         } else if (mode.equals("shortest_dist")) {
             Link result = transitStopLinks.stream()
                     .min(Comparator
-                            .comparingDouble(link -> calculateDistancePeriodicBC(link, fromLink, L)))
+                            .comparingDouble(link -> calcDist.apply(link, fromLink)))
                     .orElseThrow();
             return result;
         }
@@ -78,8 +85,19 @@ class DrtPlanModifierStartupListener implements StartupListener {
 //                .collect(Collectors.toList());
         List<Node> transitStopNodes = null;
         List<Link> transitStopInLinks = null;
-        List<Link> transitStopOutLinks = null;
         double trainDelta = Double.MAX_VALUE;
+
+        Function2<Link, Link> calcDist;
+        Function<Link, Boolean> linkPeriodicityFilter;
+        if (periodicity > 0) {
+            double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network, true);
+            calcDist = (l1, l2) -> calculateDistancePeriodicBC(l1, l2, netDimsMinMax[1]);
+            linkPeriodicityFilter = l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false);
+        } else {
+            calcDist = GeneralUtils::calculateDistanceNonPeriodic;
+            // links are never periodic in this case
+            linkPeriodicityFilter = l -> true;
+        }
         if (mode.equals("bimodal")) {
             transitStopNodes = network.getNodes().values().stream()
                     .filter(node -> node.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
@@ -89,36 +107,30 @@ class DrtPlanModifierStartupListener implements StartupListener {
 //                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
 //                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
                     .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
-                    .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                    .collect(Collectors.toList());
-//            transitStopOutLinks = transitStopNodes.stream()
-//                    .flatMap(n -> n.getOutLinks().values().stream())
-////                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
-////                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
-//                    .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
+                    .filter(l -> linkPeriodicityFilter.apply(l))
 //                    .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-//                    .collect(Collectors.toList());
-//            if (transitStopInLinks.size() != transitStopOutLinks.size()) {
-//                transitStopOutLinks = getOppositeDirectionLinks(transitStopInLinks, network);
-//            }
-
-            Node randomNode = network.getNodes().values().stream()
-                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
-                    .findAny().orElseThrow();
-            List<Double> trainDeltas = network.getNodes().values().stream()
-                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
-                    .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
-                    .map(n -> n.getCoord().getX())
-                    .distinct()
-                    .sorted()
-                    .limit(2)
                     .collect(Collectors.toList());
-            trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+
+//            Node randomNode = network.getNodes().values().stream()
+//                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+//                    .findAny().orElseThrow();
+//            List<Double> trainDeltas = network.getNodes().values().stream()
+//                    .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true))
+//                    .filter(n -> n.getCoord().getY() == randomNode.getCoord().getY())
+//                    .map(n -> n.getCoord().getX())
+//                    .distinct()
+//                    .sorted()
+//                    .limit(2)
+//                    .collect(Collectors.toList());
+//            trainDelta = trainDeltas.get(1) - trainDeltas.get(0);
+
+            double[] trainLinkLengths = network.getLinks().values().stream()
+                    .filter(l -> l.getAllowedModes().contains(TransportMode.train)).mapToDouble(Link::getLength)
+                    .toArray();
+            trainDelta = Arrays.stream(trainLinkLengths).average().orElseThrow();
         }
 //        assert trainDelta == 1000 : "Did not find predefined length L=1000, instead found: " + trainDelta;
 
-        //TODO change this
-        double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network, true);
 
         MultiModeDrtConfigGroup multiModeConfGroup = MultiModeDrtConfigGroup.get(sc.getConfig());
         int multiConfSize = multiModeConfGroup.getModalElements().size();
@@ -159,18 +171,18 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         if (middleLeg.getMode().equals(TransportMode.pt)) {
                             Link firstLink = network.getLinks().get(firstAct.getLinkId());
                             Link lastLink = network.getLinks().get(lastAct.getLinkId());
-                            if (calculateDistancePeriodicBC(firstLink, lastLink, netDimsMinMax[1]) >
+                            if (calcDist.apply(firstLink, lastLink) >
                                     zetaCut * trainDelta) {
                                 Link dummyFirstLink = null;
                                 Link dummyLastLink = null;
                                 if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
                                     dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopInLinks,
-                                            "shortest_dist", netDimsMinMax[1]);
+                                            "shortest_dist", calcDist);
                                 }
                                 // Todo ToNode or FromNode?
                                 if (lastLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
                                     dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
-                                            "shortest_dist", netDimsMinMax[1]);
+                                            "shortest_dist", calcDist);
                                 }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
                                 insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink,

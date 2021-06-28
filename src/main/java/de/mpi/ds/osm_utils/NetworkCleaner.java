@@ -15,7 +15,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static de.mpi.ds.osm_utils.NetworkCreatorFromOsm.setLinkAttributes;
+import static de.mpi.ds.osm_utils.ScenarioCreatorOsm.IS_STATION_NODE;
 import static de.mpi.ds.utils.NetworkCreator.copyLinkProperties;
+import static java.lang.Double.NaN;
 
 public class NetworkCleaner {
     private long linkCapacity;
@@ -31,7 +33,7 @@ public class NetworkCleaner {
     public Network cleanNetwork(String path) {
 
         Network net = null;
-        Pattern p = Pattern.compile(".*/network_clean.xml");
+        Pattern p = Pattern.compile(".*network_clean.xml");
         Matcher m = p.matcher(path);
         if (!m.matches()) {
             Network originNet = NetworkUtils.readNetwork(path);
@@ -58,20 +60,23 @@ public class NetworkCleaner {
             Node newNode = net.getFactory().createNode(Id.createNodeId(i),
                     new Coord(oldNode.getCoord().getX() - minX, oldNode.getCoord().getY() - minY));
             oldNewMapping.put(oldNode, newNode);
-        }
-        for (Node n : oldNewMapping.values()) {
-            newNet.addNode(n);
+
+            newNode.getAttributes().putAttribute(IS_STATION_NODE, false);
+            newNet.addNode(newNode);
         }
         for (Link l : oldLinks) {
             Node newFrom = oldNewMapping.get(l.getFromNode());
             Node newTo = oldNewMapping.get(l.getToNode());
-            Link newLink = net.getFactory()
-                    .createLink(Id.createLinkId(newFrom.getId().toString() + "-" + newTo.getId().toString()), newFrom,
-                            newTo);
-            copyLinkProperties(l, newLink);
-            setLinkAttributes(newLink, linkCapacity, freeSpeedCar, numberOfLanes, false);
-            if (!netContainsLink(newNet, newLink)) {
-                newNet.addLink(newLink);
+            if (!newTo.equals(newFrom)) {
+                Link newLink = net.getFactory()
+                        .createLink(Id.createLinkId(newFrom.getId().toString() + "-" + newTo.getId().toString()),
+                                newFrom,
+                                newTo);
+                copyLinkProperties(l, newLink);
+                setLinkAttributes(newLink, linkCapacity, NaN, numberOfLanes, false);
+                if (!netContainsLink(newNet, newLink)) {
+                    newNet.addLink(newLink);
+                }
             }
         }
         return newNet;
