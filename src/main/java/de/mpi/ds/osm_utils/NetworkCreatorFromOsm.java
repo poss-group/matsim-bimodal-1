@@ -83,7 +83,16 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     }
 
     public static void main(String... args) {
-//        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean.xml";
+//        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Berlin/network_clean.xml";
+        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean.xml";
+//        String pathOut = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Berlin/network_test.xml";
+        String pathOut = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_test.xml";
+        Network net = NetworkUtils.readNetwork(path);
+        ArrayList<Coord> hull = new AlphaShape(net.getNodes().values(), 0.1).compute();
+        NetworkCreatorFromOsm networkCreator = new NetworkCreatorFromOsm(hull, 9999, 60 / 3.6, 100, 30 / 3.6, 0,
+                10 * 3600, 15 * 60, 1000);
+        networkCreator.testAlphaShapeCreation(pathOut);
+
 //        ArrayList<Coord> hull = new AlphaShape(path, 0.1).compute();
 //        NetworkCreatorFromOsm networkCreatorFromOsm = new NetworkCreatorFromOsm(hull, 9999999, 60 / 3.6, 100, 30.6, 0,
 //                10 * 3600, 15 * 3600);
@@ -91,18 +100,7 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     }
 
     public void testAlphaShapeCreation(String path) {
-        Network net = NetworkUtils.readNetwork(path);
-        NetworkFactory fac = net.getFactory();
         Network newNet = NetworkUtils.createNetwork();
-
-        double minX = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).min().getAsDouble();
-        double maxX = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).max().getAsDouble();
-        double minY = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).min().getAsDouble();
-        double maxY = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).max().getAsDouble();
-
-        for (Node node : net.getNodes().values()) {
-            node.setCoord(new Coord(node.getCoord().getX() - minX, node.getCoord().getY() - minY));
-        }
 
         addCoordsToNet(newNet, hull, "hull", true);
 //        ArrayList<Edge2D> hull = new AlphaShape(
@@ -112,8 +110,8 @@ public class NetworkCreatorFromOsm implements UtilComponent {
 //        addEdgesToNet(newNet, hull, "hull", false);
 
         try {
-            String[] filenameArray = path.split("/");
-            File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_trams.xml"));
+//            String[] filenameArray = path.split("/");
+            File outFile = new File(path);
             Files.createDirectories(outFile.getParentFile().toPath());
             NetworkUtils.writeNetwork(newNet, outFile.getAbsolutePath());
         } catch (Exception e) {
