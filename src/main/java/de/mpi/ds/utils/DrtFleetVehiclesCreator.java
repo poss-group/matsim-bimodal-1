@@ -19,9 +19,6 @@
 
 package de.mpi.ds.utils;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -34,7 +31,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.DoubleToIntFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -53,6 +49,7 @@ import org.apache.commons.math3.analysis.integration.*;
  * The vehicles are distributed randomly in the network.
  */
 public class DrtFleetVehiclesCreator implements UtilComponent {
+    private static final double BETA = 0.382597858232;
 
     /**
      * Adjust these variables and paths to your need.
@@ -61,17 +58,20 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     private double operationStartTime;
     private double operationEndTime;
     private double meanDistance;
+    private double ptSpacing;
     private Random random;
     private Function<Double, Double> travelDistanceDistribution;
 
     public DrtFleetVehiclesCreator(int seatsPerDrtVehicle, double operationStartTime, double operationEndTime,
-                                   Random random, Function<Double, Double> travelDistanceDistribution, double meanDistance) {
+                                   Random random, Function<Double, Double> travelDistanceDistribution,
+                                   double meanDistance, double ptSpacing) {
         this.seatsPerDrtVehicle = seatsPerDrtVehicle;
         this.operationStartTime = operationStartTime;
         this.operationEndTime = operationEndTime;
         this.random = random;
         this.travelDistanceDistribution = travelDistanceDistribution;
         this.meanDistance = meanDistance;
+        this.ptSpacing = ptSpacing;
     }
 
     public static void main(String[] args) {
@@ -95,13 +95,16 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
         double boundedNorm = integrator
                 .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1), 0.0001, netDimsMinMax[1]);
         double avDistFracToDCut = integrator
-                .integrate(1000000, x -> x * taxiDistDistribution(x, 2000, 3.1) / boundedNorm, 0.0001, dCut);
+                .integrate(1000000, x -> x * taxiDistDistribution(x, meanDistance, 3.1) / boundedNorm, 0.0001, dCut);
         double avDistFracFromDCut = integrator
-                .integrate(1000000, x -> x * taxiDistDistribution(x, 2000, 3.1) / boundedNorm, dCut, netDimsMinMax[1]);
+                .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1) / boundedNorm, dCut, netDimsMinMax[1]) * 2 *
+                BETA * ptSpacing;
         int fleetSizeBimodal = (int) Math
                 .round(drtFleetSize * avDistFracToDCut / (avDistFracToDCut + avDistFracFromDCut));
         int fleetSizeUnimodal = drtFleetSize - fleetSizeBimodal;
 
+//        fleetSizeUnimodal = drtFleetSize/2;
+//        fleetSizeBimodal = drtFleetSize - fleetSizeUnimodal;
         run(net, outputUnimPath, fleetSizeUnimodal, "unim_");
         run(net, outputBimPath, fleetSizeBimodal, "bim_");
     }

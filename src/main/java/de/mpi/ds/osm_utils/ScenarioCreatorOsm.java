@@ -138,13 +138,13 @@ public class ScenarioCreatorOsm {
 
     public void generateDrtVehicles(String drtOuputPath) {
         new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime, drtOperationEndTime, rand,
-                travelDistanceDistribution, meanTravelDist)
+                travelDistanceDistribution, meanTravelDist, ptSpacingOverMean*meanTravelDist)
                 .run(net, drtOuputPath, drtFleetSize);
     }
 
     public void generateDrtVehicles(String drtOuputPath, String drtOutputBimPath, double zetaCut) {
         new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime, drtOperationEndTime, rand,
-                travelDistanceDistribution, meanTravelDist)
+                travelDistanceDistribution, meanTravelDist, ptSpacingOverMean*meanTravelDist)
                 .run(net, drtOuputPath, drtOutputBimPath, zetaCut, drtFleetSize);
     }
 

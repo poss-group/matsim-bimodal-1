@@ -112,7 +112,7 @@ public class ScenarioCreator {
                 effectiveFreeTrainSpeed,
                 transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, random, this.travelDistanceDistribution, meanTravelDist);
+                drtOperationEndTime, random, this.travelDistanceDistribution, meanTravelDist, railInterval*carGridSpacing);
     }
 
 
