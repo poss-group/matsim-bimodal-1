@@ -65,11 +65,11 @@ public class MatsimMain {
 
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
-            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
+//            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
 //            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,6 +6,7 @@
         <param name="modifyPlans" value="true"/>
         <param name="zetaCut" value="1"/>
         <param name="mode" value="bimodal"/>
+        <param name="periodicity" value="10000"/>
     </module>
 
     <module name="global">
@@ -152,15 +153,15 @@
             <parameterset type="ExtensiveInsertionSearch"/>
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-<!--            <param name="maxTravelTimeAlpha" value="1.5"/>-->
-<!--            <param name="maxTravelTimeBeta" value="1200.0"/>-->
-<!--            <param name="maxWaitTime" value="1200.0"/>-->
+            <param name="maxTravelTimeAlpha" value="1.5"/>
+            <param name="maxTravelTimeBeta" value="1200.0"/>
+            <param name="maxWaitTime" value="1200.0"/>
 
-            <param name="maxTravelTimeAlpha" value="3.0"/>
-            <param name="maxTravelTimeBeta" value="0."/>
-            <param name="maxWaitTime" value="99999999.0"/>
+<!--            <param name="maxTravelTimeAlpha" value="3.0"/>-->
+<!--            <param name="maxTravelTimeBeta" value="0."/>-->
+<!--            <param name="maxWaitTime" value="99999999.0"/>-->
             <param name="operationalScheme" value="door2door"/>
-            <param name="stopDuration" value="0.0"/>
+            <param name="stopDuration" value="1.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
             <param name="maxDetour" value="1.5"/>
             <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
