@@ -23,6 +23,11 @@ public class NetworkCleaner {
     private long linkCapacity;
     private double freeSpeedCar;
     private double numberOfLanes;
+    
+    public static void main(String... args) {
+        NetworkCleaner nc = new NetworkCleaner(1000, 30/3.6, 100);
+        nc.cleanNetwork("scenarios/Berlin/network.xml");
+    }
 
     public NetworkCleaner(long linkCapacity, double freeSpeedCar, double numberOfLanes) {
         this.linkCapacity = linkCapacity;

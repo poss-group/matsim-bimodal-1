@@ -1,10 +1,13 @@
 package de.mpi.ds.utils;
 
+import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.special.Gamma;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -18,6 +21,8 @@ public class InverseTransformSampler {
     private int N;
     private Random random;
     private double EPSILON = 0.00001;
+    public static int counter = 0;
+    private static final Map<Double, Double> map = new HashMap<>();
 
     public InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
                                    int integrationSteps, Random random) {
@@ -111,7 +116,18 @@ public class InverseTransformSampler {
 
     public static double taxiDistDistributionNotNormalized(double x, double mean, double k) {
         double z = x / mean;
-        return Math.exp(-(k-2)/z) * Math.pow(z, -k);
+        double prob =  Math.exp(-(k-2)/z) * Math.pow(z, -k);
+        return prob/mean;
+    }
+
+    public static double taxiDistDistribution(double x, double mean, double k) {
+        Double N = map.get(k);
+        if (N == null) {
+            N = Math.pow(k - 2, k - 1) / Gamma.gamma(k - 1);
+            map.put(k,N);
+        }
+        counter++;
+        return N * taxiDistDistributionNotNormalized(x,mean,k);
     }
 
     public static double normalDist(double x, double mu, double sig) {

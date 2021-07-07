@@ -21,7 +21,7 @@ public class ScenarioCreatorBuilderOsm {
     private double transitStopLength = 0;
     private double ptSpacingOverMean = 1;
 
-    private int nDrtVehicles = 200;
+    private int drtFleetSize = 200;
     private int drtCapacity = 8;
     private double drtOperationStartTime = 0;
     private double drtOperationEndTime = 10 * 3600;
@@ -79,8 +79,8 @@ public class ScenarioCreatorBuilderOsm {
         return this;
     }
 
-    public ScenarioCreatorBuilderOsm setNDrtVehicles(int nDrtVehicles) {
-        this.nDrtVehicles = nDrtVehicles;
+    public ScenarioCreatorBuilderOsm setdrtFleetSize(int drtFleetSize) {
+        this.drtFleetSize = drtFleetSize;
         return this;
     }
 
@@ -128,7 +128,7 @@ public class ScenarioCreatorBuilderOsm {
         printScenarioInfo();
         return new ScenarioCreatorOsm(linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
-                departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
+                departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode,
                 travelDistanceDistribution, meanTravelDist, ptSpacingOverMean);
     }
@@ -144,7 +144,7 @@ public class ScenarioCreatorBuilderOsm {
                 "\ntransitEndTime: " + transitEndTime +
                 "\ndepartureIntervalTime: " + departureIntervalTime +
                 "\ntransitStopLength: " + transitStopLength +
-                "\nnDrtVehicles: " + nDrtVehicles +
+                "\ndrtFleetSize: " + drtFleetSize +
                 "\ndrtCapacity: " + drtCapacity +
                 "\ndrtOperationStartTime: " + drtOperationStartTime +
                 "\ndrtOperationEndTime: " + drtOperationEndTime +

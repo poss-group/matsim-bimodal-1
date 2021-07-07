@@ -23,7 +23,7 @@ public class ScenarioCreatorBuilder {
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
 
-    private int nDrtVehicles = 200;
+    private int drtFleetSize = 200;
     private int drtCapacity = 8;
     private double drtOperationStartTime = 0;
     private double drtOperationEndTime = 10 * 3600;
@@ -102,8 +102,8 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
-    public ScenarioCreatorBuilder setNDrtVehicles(int nDrtVehicles) {
-        this.nDrtVehicles = nDrtVehicles;
+    public ScenarioCreatorBuilder setdrtFleetSize(int drtFleetSize) {
+        this.drtFleetSize = drtFleetSize;
         return this;
     }
 
@@ -166,7 +166,7 @@ public class ScenarioCreatorBuilder {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
-                departureIntervalTime, transitStopLength, nDrtVehicles, drtCapacity, drtOperationStartTime,
+                departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
                 createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL);
     }
@@ -185,7 +185,7 @@ public class ScenarioCreatorBuilder {
                 "\ntransitEndTime: " + transitEndTime +
                 "\ndepartureIntervalTime: " + departureIntervalTime +
                 "\ntransitStopLength: " + transitStopLength +
-                "\nnDrtVehicles: " + nDrtVehicles +
+                "\ndrtFleetSize: " + drtFleetSize +
                 "\ndrtCapacity: " + drtCapacity +
                 "\ndrtOperationStartTime: " + drtOperationStartTime +
                 "\ndrtOperationEndTime: " + drtOperationEndTime +

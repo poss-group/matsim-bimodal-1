@@ -172,11 +172,12 @@ def getPtOccupancy(paths):
 
 def getDrtTrips(paths):
     path = paths["drt_trips"]
-    df = pd.read_csv(path, sep=";").loc[:, ["personId", "travelDistance_m", "waitTime"]]
+    df = pd.read_csv(path, sep=";").loc[:, ["personId", "travelDistance_m", "waitTime", "travelTime"]]
     df.set_index("personId", inplace=True)
     df = df.groupby("personId").agg(
         {
             "waitTime": np.sum,
+            "travelTime": np.sum,
             "travelDistance_m": np.sum,
         }
     )

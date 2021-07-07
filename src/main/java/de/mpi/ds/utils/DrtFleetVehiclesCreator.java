@@ -19,30 +19,33 @@
 
 package de.mpi.ds.utils;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.*;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.scenario.ScenarioUtils;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.mpi.ds.utils.CreateScenarioElements.compressGzipFile;
 import static de.mpi.ds.utils.CreateScenarioElements.deleteFile;
+import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
+import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistribution;
+
+import org.apache.commons.math3.analysis.integration.*;
 
 /**
  * @author jbischoff
@@ -57,31 +60,62 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     private int seatsPerDrtVehicle;
     private double operationStartTime;
     private double operationEndTime;
-    private int nDrtVehicles;
+    private double meanDistance;
     private Random random;
+    private Function<Double, Double> travelDistanceDistribution;
 
     public DrtFleetVehiclesCreator(int seatsPerDrtVehicle, double operationStartTime, double operationEndTime,
-                                   int nDrtVehicles, Random random) {
+                                   Random random, Function<Double, Double> travelDistanceDistribution, double meanDistance) {
         this.seatsPerDrtVehicle = seatsPerDrtVehicle;
         this.operationStartTime = operationStartTime;
         this.operationEndTime = operationEndTime;
-        this.nDrtVehicles = nDrtVehicles;
         this.random = random;
+        this.travelDistanceDistribution = travelDistanceDistribution;
+        this.meanDistance = meanDistance;
     }
 
     public static void main(String[] args) {
 
-        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 10, new Random())
-                .run("scenarios/Manhatten/network_trams.xml", "scenarios/Manhatten/drtvehicles.xml");
+//        new DrtFleetVehiclesCreator(4, 0, 26 * 3600, 10, new Random(), travelDistanceDistribution)
+//                .run("scenarios/Manhatten/network_trams.xml", "scenarios/Manhatten/drtvehicles.xml");
 //        new CreateDrtFleetVehicles().runModifyForDoubleFleet(
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }
 
-    public void run(String networkPath, String outputDrtVehiclesPath) {
-        Network net = NetworkUtils.readNetwork(networkPath);
-        run(net, outputDrtVehiclesPath);
+    public void run(String inputNetworkPath, String outputUnimPath, String outputBimPath, double dCut,
+                    int drtFleetSize) {
+        Network net = NetworkUtils.readNetwork(inputNetworkPath);
+        run(net, outputUnimPath, outputBimPath, dCut, drtFleetSize);
     }
-    public void run(Network net, String outputDrtVehiclesPath) {
+
+    // If dCut method is called with dCut split fleets
+    public void run(Network net, String outputUnimPath, String outputBimPath, double dCut, int drtFleetSize) {
+        UnivariateIntegrator integrator = new RombergIntegrator();
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, false);
+        double boundedNorm = integrator
+                .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1), 0.0001, netDimsMinMax[1]);
+        double avDistFracToDCut = integrator
+                .integrate(1000000, x -> x * taxiDistDistribution(x, 2000, 3.1) / boundedNorm, 0.0001, dCut);
+        double avDistFracFromDCut = integrator
+                .integrate(1000000, x -> x * taxiDistDistribution(x, 2000, 3.1) / boundedNorm, dCut, netDimsMinMax[1]);
+        int fleetSizeBimodal = (int) Math
+                .round(drtFleetSize * avDistFracToDCut / (avDistFracToDCut + avDistFracFromDCut));
+        int fleetSizeUnimodal = drtFleetSize - fleetSizeBimodal;
+
+        run(net, outputUnimPath, fleetSizeUnimodal, "unim_");
+        run(net, outputBimPath, fleetSizeBimodal, "bim_");
+    }
+
+    public void run(String networkPath, String outputPath, int drtFleetSize) {
+        Network net = NetworkUtils.readNetwork(networkPath);
+        run(net, outputPath, drtFleetSize, "");
+    }
+
+    public void run(Network net, String outputPath, int drtFleetSize) {
+        run(net, outputPath, drtFleetSize, "");
+    }
+
+    public void run(Network net, String outputPath, int drtFleetSize, String prefix) {
 
 //        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 //        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
@@ -95,16 +129,16 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
         Collections.shuffle(linkList, random);
 
         Stream<DvrpVehicleSpecification> vehicleSpecificationStream = linkList.stream()
-                .limit(nDrtVehicles) // select the first *numberOfVehicles* links
+                .limit(drtFleetSize) // select the first *numberOfVehicles* links
                 .map(entry -> ImmutableDvrpVehicleSpecification.newBuilder()
-                        .id(Id.create("drt_" + i[0]++, DvrpVehicle.class))
+                        .id(Id.create(prefix + "drt_" + i[0]++, DvrpVehicle.class))
                         .startLinkId(entry.getKey())
                         .capacity(seatsPerDrtVehicle)
                         .serviceBeginTime(operationStartTime)
                         .serviceEndTime(operationEndTime)
                         .build());
 
-        new FleetWriter(vehicleSpecificationStream).write(outputDrtVehiclesPath.toString());
+        new FleetWriter(vehicleSpecificationStream).write(outputPath.toString());
         System.out.println("Wrote drt vehicles");
     }
 

@@ -1,9 +1,11 @@
 package de.mpi.ds.utils;
 
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
 
 import java.util.Random;
+import java.util.function.Function;
+
+import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistributionNotNormalized;
 
 public class ScenarioCreator {
     private final static Logger LOG = Logger.getLogger(ScenarioCreator.class.getName());
@@ -32,7 +34,7 @@ public class ScenarioCreator {
     private double transitEndTime;
     private double departureIntervalTime;
     private double transitStopLength;
-    private int nDrtVehicles;
+    private int drtFleetSize;
     private int drtCapacity;
     private double drtOperationStartTime;
     private double drtOperationEndTime;
@@ -42,7 +44,7 @@ public class ScenarioCreator {
     private boolean diagonalConnections;
     private boolean smallLinksCloseToStations;
     private boolean createTrainLines;
-    private String travelDistanceDistribution;
+    private Function<Double, Double> travelDistanceDistribution;
     private double travelDistanceMeanOverL;
     private double effectiveFreeTrainSpeed;
 
@@ -50,7 +52,7 @@ public class ScenarioCreator {
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
                            double numberOfLanes, int requestEndTime, int nRequests,
                            double transitEndTime, double departureIntervalTime, double transitStopLength,
-                           int nDrtVehicles, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
+                           int drtFleetSize, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
                            String travelDistanceDistribution, double travelDistanceMeanOverL) {
@@ -67,7 +69,7 @@ public class ScenarioCreator {
         this.transitEndTime = transitEndTime;
         this.departureIntervalTime = departureIntervalTime;
         this.transitStopLength = transitStopLength;
-        this.nDrtVehicles = nDrtVehicles;
+        this.drtFleetSize = drtFleetSize;
         this.drtCapacity = drtCapacity;
         this.drtOperationStartTime = drtOperationStartTime;
         this.drtOperationEndTime = drtOperationEndTime;
@@ -77,8 +79,14 @@ public class ScenarioCreator {
         this.diagonalConnections = diagonalConnections;
         this.smallLinksCloseToStations = smallLinksCloseToStations;
         this.createTrainLines = createTrainLines;
-        this.travelDistanceDistribution = travelDistanceDistribution;
         this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+
+        double meanTravelDist = travelDistanceMeanOverL*systemSize;
+        if (travelDistanceDistribution.equals("InverseGamma")) {
+            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, meanTravelDist, 3.1);
+        } else if (travelDistanceDistribution.equals("Uniform")) {
+            this.travelDistanceDistribution = x -> x < meanTravelDist * 2 ? 1 / meanTravelDist * 2 : 0;
+        }
 
         // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
 //        int numberOfStopsPerLine = (int) (systemSize/carGridSpacing)/railInterval;
@@ -104,7 +112,7 @@ public class ScenarioCreator {
                 effectiveFreeTrainSpeed,
                 transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, nDrtVehicles, random);
+                drtOperationEndTime, random, this.travelDistanceDistribution, meanTravelDist);
     }
 
 
@@ -113,7 +121,7 @@ public class ScenarioCreator {
 
         String netPath = "./output/network_diag.xml.gz";
         String popPath = "./output/population.xml.gz";
-        String drtFleetPath = "output/drtvehicles.xml";
+        String drtFleetPath = "./output/drtvehicles.xml";
         String transitSchedulePath = "output/transitSchedule_15min.xml.gz";
         String transitVehiclesPath = "output/transitVehicles_15min.xml.gz";
         scenarioCreator.createNetwork(netPath);
@@ -134,8 +142,12 @@ public class ScenarioCreator {
         transitScheduleCreator.runTransitScheduleUtil(networkPath, outputSchedulePath, outputVehiclePath);
     }
 
-    public void createDrtFleet(String networkPath, String outputPath) {
-        drtFleetVehiclesCreator.run(networkPath, outputPath);
+    public void createDrtFleet(String networkPath, String ouputPath) {
+        drtFleetVehiclesCreator.run(networkPath, ouputPath, drtFleetSize);
+    }
+
+    public void createDrtFleet(String networkPath, String outputUnimPath, String outputBimPath, double zetacut) {
+        drtFleetVehiclesCreator.run(networkPath, outputUnimPath, outputBimPath, zetacut, drtFleetSize);
     }
 
     public double getSystemSize() {
@@ -190,8 +202,8 @@ public class ScenarioCreator {
         return transitStopLength;
     }
 
-    public int getnDrtVehicles() {
-        return nDrtVehicles;
+    public int getdrtFleetSize() {
+        return drtFleetSize;
     }
 
     public int getDrtCapacity() {
@@ -230,7 +242,7 @@ public class ScenarioCreator {
         return createTrainLines;
     }
 
-    public String getTravelDistanceDistribution() {
+    public Function<Double, Double> getTravelDistanceDistribution() {
         return travelDistanceDistribution;
     }
 

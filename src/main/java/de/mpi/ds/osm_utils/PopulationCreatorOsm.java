@@ -28,11 +28,11 @@ public class PopulationCreatorOsm implements UtilComponent {
     private int requestEndTime;
     private Random random;
     private String transportMode;
-    private String travelDistanceDistribution;
+    private Function<Double, Double> travelDistanceDistribution;
     private double travelMeanDist;
 
     public PopulationCreatorOsm(int nRequests, int requestEndTime, Random random, String transportMode,
-                                String travelDistanceDistribution, double travelMeanDist) {
+                                Function<Double, Double> travelDistanceDistribution, double travelMeanDist) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
@@ -63,19 +63,10 @@ public class PopulationCreatorOsm implements UtilComponent {
         double x1 = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).max().getAsDouble();
         double y0 = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).min().getAsDouble();
         double y1 = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).max().getAsDouble();
-        double systemSize = xy_1 - xy_0;
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
 
-        Function<Double, Double> probabilityDensityDist = null;
-        if (travelDistanceDistribution.equals("InverseGamma")) {
-            probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelMeanDist,
-                    3.1);
-        } else if (travelDistanceDistribution.equals("Uniform")) {
-            probabilityDensityDist = x -> x < travelMeanDist * 2 ? 1 / (travelMeanDist * 2 - xy_0) : 0;
-        }
-
         InverseTransformSampler sampler = new InverseTransformSampler(
-                probabilityDensityDist,
+                travelDistanceDistribution,
                 false,
                 xy_0 + 1e-3,
                 Math.abs(xy_1 - xy_0),
