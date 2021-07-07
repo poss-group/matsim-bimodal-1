@@ -7,7 +7,7 @@
 # -pe mvapich2-titan 40
 #$ -j yes
 #$ -N out_matsim_drt
-#$ -t 1-100
+#$ -t 1-40
 
 railInterval="50"
 #Ndrt=(`seq 450 5 650`)
@@ -44,7 +44,7 @@ done
 #nReqs=${nReqsList[$div40]}
 #Ndrt=$(printf %.$2f $(bc <<< "0.00456*$nReqs+18+$diff-400"))
 #((Ndrt=600+5*$mod40))
-((nReqs=99910+10*idx))
+((nReqs=105000+100*idx))
 
 if [[ ! " ${existing_sims[@]} " =~ " $nReqs " ]]; then
     #echo "Creating Input for railInterval =" $railInterval ", mode =" $mode ", N_drt =" $Ndrt ", carGridSpacing =" $carGridSpacing ", and N_reqs = " $nReqs
