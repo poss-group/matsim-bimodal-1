@@ -6,7 +6,7 @@ import org.matsim.api.core.v01.TransportMode;
 public class ScenarioCreatorBuilder {
     private final static Logger LOG = Logger.getLogger(ScenarioCreatorBuilder.class.getName());
 
-    private double systemSize = 10000;
+    private double systemSizeOverMeanDist = 4;
     //    private double railGridSpacing = 1000;
     private int railInterval = 5;
     private double carGridSpacing = 100;
@@ -35,15 +35,15 @@ public class ScenarioCreatorBuilder {
     private boolean createTrainLines = true;
 
     private String travelDistanceDistribution = "InverseGamma";
-    private double travelDistanceMeanOverL = 1/4;
+    private double travelDistanceMean = 2500;
 
     public ScenarioCreatorBuilder setRailInterval(int railInterval) {
         this.railInterval = railInterval;
         return this;
     }
 
-    public ScenarioCreatorBuilder setSystemSize(double systemSize) {
-        this.systemSize = systemSize;
+    public ScenarioCreatorBuilder setSystemSizeOverMeanDist(double systemSizeOverMeanDist) {
+        this.systemSizeOverMeanDist = systemSizeOverMeanDist;
         return this;
     }
 
@@ -157,23 +157,23 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
-    public ScenarioCreatorBuilder setTravelDistanceMeanOverL(double travelDistanceMeanOverL) {
-        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+    public ScenarioCreatorBuilder setTravelDistanceMean(double travelDistanceMean) {
+        this.travelDistanceMean = travelDistanceMean;
         return this;
     }
 
     public ScenarioCreator build() {
         printScenarioInfo();
-        return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
+        return new ScenarioCreator(systemSizeOverMeanDist, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
-                createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL);
+                createTrainLines, travelDistanceDistribution, travelDistanceMean);
     }
 
     private void printScenarioInfo() {
         LOG.info("Building Scenario with Specifications:" +
-                "\nsystemSize: " + systemSize +
+                "\nsystemSize: " + systemSizeOverMeanDist +
                 "\nrailInterval: " + railInterval +
                 "\ncarGridSpacing: " + carGridSpacing +
                 "\nlinkCapacity: " + linkCapacity +
@@ -197,7 +197,7 @@ public class ScenarioCreatorBuilder {
                 "\nsmallLinksCloseToNodes : " + smallLinksCloseToNodes +
                 "\ncreateTrainLines : " + createTrainLines +
                 "\ntravelDistanceDistribution : " + travelDistanceDistribution +
-                "\ntravelDistanceMeanOverL : " + travelDistanceMeanOverL
+                "\ntravelDistanceMeanOverL : " + travelDistanceMean
         );
     }
 }

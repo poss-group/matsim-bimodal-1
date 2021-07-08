@@ -12,36 +12,21 @@ import de.mpi.ds.parking_vehicles_tracker.ParkingVehicleTracker;
 import de.mpi.ds.utils.ScenarioCreator;
 import de.mpi.ds.utils.ScenarioCreatorBuilder;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
-import org.matsim.contrib.osm.networkReader.SupersonicOsmNetworkReader;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryLogging;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.algorithms.NetworkCleaner;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.core.utils.io.OsmNetworkReader;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.math.RoundingMode;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
-import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 
 public class MatsimMain {
 
@@ -65,7 +50,7 @@ public class MatsimMain {
 
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]);
+            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
@@ -208,7 +193,7 @@ public class MatsimMain {
         if (drtConfigGroups.size() == 2) {
             drtConfigGroups.get(1).setVehiclesFile(drtFleetPath2);
         }
-        double zetaCut = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).getZetaCut();
+        double zetaCut = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).getdCut();
 
         String outPath = null;
         if (mode.equals("create-input")) {
@@ -261,9 +246,9 @@ public class MatsimMain {
     }
 
     private static void runMultipleNetworks(Config config, String railIntervalString, String carGridSpacingString,
-                                            String N_drt, String nReqsString, String mode, String meanOverLString,
+                                            String N_drt, String nReqsString, String mode, String travelDistMeanString,
                                             String deltaMaxString, String seedString, String endTimeString,
-                                            String diagConnections, String outFolder) throws Exception {
+                                            String diagConnections, String dCutOverMeanDistString, String outFolder) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
@@ -272,28 +257,21 @@ public class MatsimMain {
         int nReqs = Integer.parseInt(nReqsString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
         double deltaMax = Double.parseDouble(deltaMaxString);
+        double dCutOverMeanDist = Double.parseDouble(dCutOverMeanDistString);
+        double travelDistMean = Double.parseDouble(travelDistMeanString);
+        //if system size is not modified
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
         String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
-//        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
+        String dCutOutPath = Paths.get(nDrtOutPath, dCutOverMeanDistString.concat("dcut")).toString();
         String varyParameter = "l_";
-//        String varyParameter = "Ndrt_";
-        String iterationSpecificPath = Paths.get(nDrtOutPath, varyParameter + (int) (railInterval * carGridSpacing))
+        String iterationSpecificPath = Paths.get(dCutOutPath, varyParameter + (int) (railInterval * carGridSpacing))
                 .toString();
-//        String iterationSpecificPath = Paths.get(railIntervalOutPath, varyParameter + N_drt)
-//                .toString();
         String inputPath = Paths.get(iterationSpecificPath, "input").toString();
-        String logPath = Paths.get(inputPath, "logfile.log").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
         String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
         String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
         String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
-
-        // Varying drt grid size w.r.t. pt grid size
-//                int SysOvPt = 10;
-//                ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setSystemSizeOverGridSize(x*SysOvPt)
-//                        .setSystemSizeOverPtGridSize(SysOvPt).build();
-        // Varying pt grid size w.r.t. system grid size
 
         config.network().setInputFile(networkPath);
         config.plans().setInputFile(populationPath);
@@ -311,7 +289,7 @@ public class MatsimMain {
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
-                    .setSeed(Long.parseLong(seedString)).setTravelDistanceMeanOverL(Double.parseDouble(meanOverLString))
+                    .setSeed(Long.parseLong(seedString)).setTravelDistanceMean(travelDistMean)
                     .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
                     .setDrtOperationEndTime(endTime)
                     .setDiagonalConnetions(Boolean.parseBoolean(diagConnections))
@@ -321,8 +299,8 @@ public class MatsimMain {
 //            double E = scenarioCreator.getnRequests() /
 //                    (scenarioCreator.getSystemSize() * scenarioCreator.getSystemSize());
 //            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
-            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMeanOverL() *
-                    scenarioCreator.getTravelDistanceMeanOverL()));
+            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMean() *
+                    scenarioCreator.getTravelDistanceMean()));
             LOG.info("Creating network");
             scenarioCreator.createNetwork(networkPath);
             LOG.info("Finished creating network\nCreating population for network");
@@ -336,6 +314,7 @@ public class MatsimMain {
         } else if (mode.equals("bimodal")) {
             MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
                     .setMaxDetour(deltaMax);
+            ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).setdCut(dCutOverMeanDist*travelDistMean);
             outPath = Paths.get(iterationSpecificPath, mode).toString();
         } else if (mode.equals("unimodal")) {
             MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
@@ -420,7 +399,7 @@ public class MatsimMain {
             assert modalElements.size() == 1 : "Only one drt modal element expected in config file";
             modalElements.stream().findFirst().get().setVehiclesFile(drtPath);
 
-            ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).setZetaCut(Double.parseDouble(zeta));
+            ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).setdCut(Double.parseDouble(zeta));
             config.controler()
                     .setOutputDirectory(Paths.get("./output".concat(appendOutDir), "zeta".concat(zeta)).toString());
             System.out.println(populationPath);

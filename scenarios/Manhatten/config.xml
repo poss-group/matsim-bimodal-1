@@ -180,17 +180,17 @@
             <!--				<param name="cellSize" value="1000"/>-->
             <!--			</parameterset>-->
         </parameterset>
-        <parameterset type="drt">
-            <parameterset type="ExtensiveInsertionSearch"/>
-            <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-            <param name="mode" value="acc_egr_drt"/>
-            <param name="maxTravelTimeAlpha" value="1.5"/>
-            <param name="maxTravelTimeBeta" value="1200.0"/>
-            <param name="maxWaitTime" value="1200.0"/>
-            <param name="operationalScheme" value="door2door"/>
-            <param name="stopDuration" value="1.0"/>
-            <param name="vehiclesFile" value="test.xml"/>
-        </parameterset>
+<!--        <parameterset type="drt">-->
+<!--            <parameterset type="ExtensiveInsertionSearch"/>-->
+<!--            &lt;!&ndash;			<param name="estimatedDrtSpeed" value="8.333333333333334"/>&ndash;&gt;-->
+<!--            <param name="mode" value="acc_egr_drt"/>-->
+<!--            <param name="maxTravelTimeAlpha" value="1.5"/>-->
+<!--            <param name="maxTravelTimeBeta" value="1200.0"/>-->
+<!--            <param name="maxWaitTime" value="1200.0"/>-->
+<!--            <param name="operationalScheme" value="door2door"/>-->
+<!--            <param name="stopDuration" value="1.0"/>-->
+<!--            <param name="vehiclesFile" value="test.xml"/>-->
+<!--        </parameterset>-->
     </module>
 
     <module name="dvrp">

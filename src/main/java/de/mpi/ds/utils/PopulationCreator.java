@@ -27,14 +27,13 @@ public class PopulationCreator implements UtilComponent {
     private boolean isGridNetwork;
     private boolean smallLinksCloseToNodes;
     private boolean createTrainLines;
-    private String travelDistanceDistribution;
-    private double travelDistanceMeanOverL;
-    private double systemSize;
+    private Function<Double, Double> travelDistanceDistribution;
+    private double travelDistanceMean;
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
                              boolean isGridNetwork, boolean smallLinksCloseToNodes,
-                             boolean createTrainLines, String travelDistanceDistribution,
-                             double travelDistanceMeanOverL, double systemSize) {
+                             boolean createTrainLines, Function<Double, Double> travelDistanceDistribution,
+                             double travelDistanceMean) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
@@ -43,15 +42,14 @@ public class PopulationCreator implements UtilComponent {
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
         this.createTrainLines = createTrainLines;
         this.travelDistanceDistribution = travelDistanceDistribution;
-        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
-        this.systemSize = systemSize;
+        this.travelDistanceMean = travelDistanceMean;
     }
 
     public static void main(String... args) {
         String networkPath = "scenarios/Manhatten/network_trams.xml";
         String outputPath = "scenarios/Manhatten/population.xml";
         PopulationCreator populationCreator = new PopulationCreator(1000, 9 * 3600, new Random(), TransportMode.drt,
-                false, false, true, "Uniform", 1 / 4, 10000);
+                false, false, true, x -> (double) ((x < 5000) ? 1 / 5000 : 0), 2500);
         populationCreator.createPopulation(outputPath, networkPath);
     }
 
@@ -67,18 +65,8 @@ public class PopulationCreator implements UtilComponent {
         double xy_1 = netDimsMinMax[1];
         System.out.println("Network dimensions (min, max): " + Arrays.toString(netDimsMinMax));
 
-        Function<Double, Double> probabilityDensityDist = null;
-        if (travelDistanceDistribution.equals("InverseGamma")) {
-            probabilityDensityDist = x -> taxiDistDistributionNotNormalized(x, travelDistanceMeanOverL * systemSize,
-                    3.1);
-        } else if (travelDistanceDistribution.equals("Uniform")) {
-            probabilityDensityDist = x ->
-                    x < travelDistanceMeanOverL * systemSize * 2 ?
-                            1 / (travelDistanceMeanOverL * systemSize * 2 - xy_0) : 0;
-        }
-
         InverseTransformSampler sampler = new InverseTransformSampler(
-                probabilityDensityDist,
+                travelDistanceDistribution,
                 false,
                 xy_0 + 1e-3,
                 // xy_1/2 -> periodic BC

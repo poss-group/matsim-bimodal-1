@@ -22,7 +22,7 @@ public class ScenarioCreator {
     private DrtFleetVehiclesCreator drtFleetVehiclesCreator;
     private Random random;
 
-    private double systemSize;
+    private double systemSizeOverMeanDist;
     private int railInterval;
     private double carGridSpacing;
     private long linkCapacity;
@@ -45,19 +45,19 @@ public class ScenarioCreator {
     private boolean smallLinksCloseToStations;
     private boolean createTrainLines;
     private Function<Double, Double> travelDistanceDistribution;
-    private double travelDistanceMeanOverL;
+    private double travelDistanceMean;
     private double effectiveFreeTrainSpeed;
 
-    public ScenarioCreator(double systemSize, int railInterval, double carGridSpacing,
+    public ScenarioCreator(double systemSizeOverMeanDist, int railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
                            double numberOfLanes, int requestEndTime, int nRequests,
                            double transitEndTime, double departureIntervalTime, double transitStopLength,
                            int drtFleetSize, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
-                           String travelDistanceDistribution, double travelDistanceMeanOverL) {
+                           String travelDistanceDistribution, double travelDistanceMean) {
 
-        this.systemSize = systemSize;
+        this.systemSizeOverMeanDist = systemSizeOverMeanDist;
         this.railInterval = railInterval;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
@@ -79,13 +79,12 @@ public class ScenarioCreator {
         this.diagonalConnections = diagonalConnections;
         this.smallLinksCloseToStations = smallLinksCloseToStations;
         this.createTrainLines = createTrainLines;
-        this.travelDistanceMeanOverL = travelDistanceMeanOverL;
+        this.travelDistanceMean = travelDistanceMean;
 
-        double meanTravelDist = travelDistanceMeanOverL*systemSize;
         if (travelDistanceDistribution.equals("InverseGamma")) {
-            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, meanTravelDist, 3.1);
+            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, travelDistanceMean, 3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            this.travelDistanceDistribution = x -> x < meanTravelDist * 2 ? 1 / meanTravelDist * 2 : 0;
+            this.travelDistanceDistribution = x -> x < travelDistanceMean * 2 ? 1 / travelDistanceMean * 2 : 0;
         }
 
         // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
@@ -94,7 +93,7 @@ public class ScenarioCreator {
         this.effectiveFreeTrainSpeed = freeSpeedTrain;
 
         assert railInterval > 0 : "Pt grid spacing must be bigger than drt grid spacing";
-        assert carGridSpacing * railInterval < systemSize : "Rail interval bigger than sysem size";
+        assert carGridSpacing * railInterval < this.systemSizeOverMeanDist*travelDistanceMean : "Rail interval bigger than system size";
 //        assert railGridSpacing % carGridSpacing == 0 :
 //                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
@@ -102,17 +101,15 @@ public class ScenarioCreator {
 //        for (int i=0; i<10;i++) {
 //            System.out.println(random.nextInt());
 //        }
-        this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
+        this.networkCreator = new NetworkCreator(systemSizeOverMeanDist*travelDistanceMean, railInterval, carGridSpacing, linkCapacity,
                 effectiveFreeTrainSpeed, numberOfLanes, freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                smallLinksCloseToStations, createTrainLines, travelDistanceDistribution, travelDistanceMeanOverL,
-                systemSize);
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
-                effectiveFreeTrainSpeed,
-                transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
+                smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, travelDistanceMean);
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSizeOverMeanDist*travelDistanceMean, railInterval, freeSpeedTrain,
+                effectiveFreeTrainSpeed, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, random, this.travelDistanceDistribution, meanTravelDist, railInterval*carGridSpacing);
+                drtOperationEndTime, random, this.travelDistanceDistribution, travelDistanceMean, railInterval*carGridSpacing);
     }
 
 
@@ -150,8 +147,8 @@ public class ScenarioCreator {
         drtFleetVehiclesCreator.run(networkPath, outputUnimPath, outputBimPath, zetacut, drtFleetSize);
     }
 
-    public double getSystemSize() {
-        return systemSize;
+    public double getSystemSizeOverMeanDist() {
+        return systemSizeOverMeanDist;
     }
 
     public int getRailInterval() {
@@ -246,7 +243,7 @@ public class ScenarioCreator {
         return travelDistanceDistribution;
     }
 
-    public double getTravelDistanceMeanOverL() {
-        return travelDistanceMeanOverL;
+    public double getTravelDistanceMean() {
+        return travelDistanceMean;
     }
 }

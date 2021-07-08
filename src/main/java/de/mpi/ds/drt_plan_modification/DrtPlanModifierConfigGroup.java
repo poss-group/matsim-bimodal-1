@@ -13,13 +13,13 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
 
     private final static String MODIFY_PLANS = "modifyPlans";
     //    private final static String DRT_MODE = "drtMode";
-    private final static String ZETA_CUT = "zetaCut";
+    private final static String D_CUT = "dCut";
     private final static String MODE = "mode";
     private final static String PERIODICITY = "periodicity";
 
     private boolean modifyPlans = true;
     //    private String drtMode = "drt";
-    private double zetaCut = 0;
+    private double dCut = 0;
     private String mode = "bimodal";
     private double periodicity = 0.;
 
@@ -49,8 +49,8 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         Map<String, String> comments = super.getComments();
         comments.put(MODIFY_PLANS, "true if module should modify initial plans, false (default) if not");
 //        comments.put(DRT_MODE, "Defaults to drt, for multimode scenarios it should be smth. else like acc_egr_drt");
-        comments.put(ZETA_CUT,
-                "Trips with distance longer than gammaCut*l where l is the public transport grid distance do get assigned as pt trips");
+        comments.put(D_CUT,
+                "Trips with distance longer than dCut do get assigned as bimodal trips");
         comments.put(MODE,
                 "Transport mode (bimodal/unimodal/car)");
         comments.put(PERIODICITY, "SystemSize if system has periodic BC, otherwise set to a negative value");
@@ -76,9 +76,9 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         this.modifyPlans = modifyPlans;
     }
 
-    @StringGetter(ZETA_CUT)
-    public double getZetaCut() {
-        return zetaCut;
+    @StringGetter(D_CUT)
+    public double getdCut() {
+        return dCut;
     }
 
     @StringGetter(PERIODICITY)
@@ -86,9 +86,9 @@ public class DrtPlanModifierConfigGroup extends ReflectiveConfigGroup {
         return periodicity;
     }
 
-    @StringSetter(ZETA_CUT)
-    public void setZetaCut(double gammaCut) {
-        this.zetaCut = gammaCut;
+    @StringSetter(D_CUT)
+    public void setdCut(double gammaCut) {
+        this.dCut = gammaCut;
     }
 
     @StringGetter(MODE)

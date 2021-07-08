@@ -2,7 +2,6 @@ package de.mpi.ds.drt_plan_modification;
 
 import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -24,7 +23,7 @@ import static de.mpi.ds.utils.ScenarioCreator.*;
 
 class DrtPlanModifierStartupListener implements StartupListener {
     private final static Logger LOG = Logger.getLogger(DrtPlanModifierStartupListener.class.getName());
-    private double zetaCut;
+    private double dCut;
     private String mode;
     private double periodicity;
 
@@ -34,7 +33,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
     }
 
     DrtPlanModifierStartupListener(DrtPlanModifierConfigGroup configGroup) {
-        this.zetaCut = configGroup.getZetaCut();
+        this.dCut = configGroup.getdCut();
         this.mode = configGroup.getMode();
         this.periodicity = configGroup.getPeriodicity();
     }
@@ -107,7 +106,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
 //                    .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
 //                    .filter(l -> doubleCloseToZero(l.getLength() - 100))
                     .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
-                    .filter(l -> linkPeriodicityFilter.apply(l))
+                    .filter(linkPeriodicityFilter::apply)
 //                    .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
                     .collect(Collectors.toList());
 
@@ -171,8 +170,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         if (middleLeg.getMode().equals(TransportMode.pt)) {
                             Link firstLink = network.getLinks().get(firstAct.getLinkId());
                             Link lastLink = network.getLinks().get(lastAct.getLinkId());
-                            if (calcDist.apply(firstLink, lastLink) >
-                                    zetaCut * trainDelta) {
+                            if (calcDist.apply(firstLink, lastLink) > dCut) {
                                 Link dummyFirstLink = null;
                                 Link dummyLastLink = null;
                                 if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
