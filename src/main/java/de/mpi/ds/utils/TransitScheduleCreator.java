@@ -105,6 +105,25 @@ public class TransitScheduleCreator implements UtilComponent {
         // !doubleCloseToZeroCondition for Periodic BC, otherwise two trains would share one line effectively at the
         // borders or just delete last element of each list
 //        List<Link> startLinksXDir =
+        List<Link> test = stationNodes.stream()
+                .filter(n -> n.getCoord().getX() == 0)
+                // Should be more general:
+//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+//                .firstEntry().getValue().stream()
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .collect(Collectors.toList());
+
+        List<Link> test2 = stationNodes.stream()
+                .filter(n -> n.getCoord().getX() == 0)
+                // Should be more general:
+//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
+//                .firstEntry().getValue().stream()
+                .flatMap(n -> n.getOutLinks().values().stream())
+                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
+                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
+                .collect(Collectors.toList());
+
         List<Link> startLinksXDir = stationNodes.stream()
                 .filter(n -> n.getCoord().getX() == 0)
                 // Should be more general:

@@ -91,7 +91,7 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     // If dCut method is called with dCut split fleets
     public void run(Network net, String outputUnimPath, String outputBimPath, double dCut, int drtFleetSize) {
         UnivariateIntegrator integrator = new RombergIntegrator();
-        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, false);
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
         double boundedNorm = integrator
                 .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1), 0.0001, netDimsMinMax[1]);
         double avDistFracToDCut = integrator

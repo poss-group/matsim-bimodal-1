@@ -56,7 +56,7 @@ public class PopulationCreatorOsm implements UtilComponent {
 
     public void createPopulation(String outputPopulationPath, Network net, ArrayList<Coord> hull) {
 
-        double[] netDimsMinMax = getNetworkDimensionsMinMax(net, false);
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
         double xy_0 = netDimsMinMax[0];
         double xy_1 = netDimsMinMax[1];
         double x0 = net.getNodes().values().stream().mapToDouble(n -> n.getCoord().getX()).min().getAsDouble();

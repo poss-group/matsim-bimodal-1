@@ -1,7 +1,9 @@
 package de.mpi.ds.drt_plan_modification;
 
+import de.mpi.ds.parking_vehicles_tracker.ParkingVehicleLogger;
 import de.mpi.ds.utils.GeneralUtils;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -13,10 +15,12 @@ import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
 
+import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 import static de.mpi.ds.utils.GeneralUtils.*;
 import static de.mpi.ds.utils.ScenarioCreator.*;
@@ -89,7 +93,7 @@ class DrtPlanModifierStartupListener implements StartupListener {
         Function2<Link, Link> calcDist;
         Function<Link, Boolean> linkPeriodicityFilter;
         if (periodicity > 0) {
-            double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network, true);
+            double[] netDimsMinMax = GeneralUtils.getNetworkDimensionsMinMax(network);
             calcDist = (l1, l2) -> calculateDistancePeriodicBC(l1, l2, netDimsMinMax[1]);
             linkPeriodicityFilter = l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false);
         } else {
@@ -142,8 +146,12 @@ class DrtPlanModifierStartupListener implements StartupListener {
         } else
             LOG.error("MultiModeDrtConfigGroup size expected to be 1 or 2");
 
+
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("end_x;end_y\n");
         int count = 0;
-        for (Person person : sc.getPopulation().getPersons().values()) {
+        List<Person> persons = new ArrayList<>(sc.getPopulation().getPersons().values());
+        for (Person person : persons) {
             if (count % 10000 == 0) {
                 LOG.info("Person" + count);
             }
@@ -171,20 +179,25 @@ class DrtPlanModifierStartupListener implements StartupListener {
                             Link firstLink = network.getLinks().get(firstAct.getLinkId());
                             Link lastLink = network.getLinks().get(lastAct.getLinkId());
                             if (calcDist.apply(firstLink, lastLink) > dCut) {
+//                                sc.getPopulation().removePerson(person.getId());
+//                                break outer;
                                 Link dummyFirstLink = null;
                                 Link dummyLastLink = null;
                                 if (firstLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
                                     dummyFirstLink = searchTransferLink(firstLink, lastLink, transitStopInLinks,
                                             "shortest_dist", calcDist);
                                 }
-                                // Todo ToNode or FromNode?
                                 if (lastLink.getToNode().getAttributes().getAttribute(IS_STATION_NODE).equals(false)) {
                                     dummyLastLink = searchTransferLink(lastLink, firstLink, transitStopInLinks,
                                             "shortest_dist", calcDist);
                                 }
 //                        insertTransferStops(plan, sc.getPopulation(), dummyFirstCoord, dummyLastCoord, splittedFleet);
+//                                if (!dummyFirstLink.equals(dummyLastLink)) {
                                 insertTransferStops(plan, sc.getPopulation(), dummyFirstLink, dummyLastLink,
                                         splittedFleet);
+//                                } else {
+//                                    middleLeg.setMode(TransportMode.drt);
+//                                }
 //                        middleLeg.setMode(TransportMode.car);
                             } else {
                                 middleLeg.setMode(TransportMode.drt);
@@ -198,8 +211,22 @@ class DrtPlanModifierStartupListener implements StartupListener {
                         middleLeg.setMode(TransportMode.drt);
                         break;
                 }
+//                Activity bla = (Activity) plan.getPlanElements().get(plan.getPlanElements().size()-1);
+//                Coord bla2 = bla.getCoord();
+//                sb.append(bla2.getX()).append(";").append(bla2.getY()).append("\n");
             }
         }
+
+//        try (OutputStream outputStream = new FileOutputStream(event.getServices().getControlerIO().getOutputPath()
+//                .concat("/modified_end_points.xml.gz"))) {
+//            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+//            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
+//                writer.write(sb.toString());
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         // To get resulting plans in output directory
         PopulationWriter populationWriter = new PopulationWriter(sc.getPopulation(), sc.getNetwork());
         String outputPath = event.getServices().getControlerIO().getOutputPath()

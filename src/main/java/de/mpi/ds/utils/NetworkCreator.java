@@ -103,8 +103,10 @@ public class NetworkCreator implements UtilComponent {
         int n_x = (int) (systemSize / carGridSpacing + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
         int n_y = (int) (systemSize / carGridSpacing + 1);
-        int n_xPt = n_x / railInterval + 1;
-        int n_yPt = n_y / railInterval + 1;
+        int n_xPt = n_x / railInterval;
+        n_xPt += ((n_x-1) % railInterval == 0) ? 0 : 1;
+        int n_yPt = n_y / railInterval;
+        n_yPt += ((n_y-1) % railInterval == 0) ? 0 : 1;
         assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
         //TODO make possible to have just 2 stations
 //        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
@@ -116,7 +118,8 @@ public class NetworkCreator implements UtilComponent {
                 String newNodeId = i + "_" + j;
                 boolean newNodeStationAtrribute = false;
                 if (createTrainLines) {
-                    if ((i % railInterval == 0) && (j % railInterval == 0)) {
+                    // n_xy - 1 because stations are not wanted at last stop
+                    if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
 //                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
                         newNodeStationAtrribute = true;
@@ -155,24 +158,32 @@ public class NetworkCreator implements UtilComponent {
             }
         }
         if (createTrainLines) {
-            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
-            int iterToY = n_yPt > 2 ? n_yPt : 1;
-            for (int i = 0; i < iterToX; i++) {
-                for (int j = 0; j < iterToY; j++) {
+//            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
+//            int iterToY = n_yPt > 2 ? n_yPt : 1;
+            for (int i = 0; i < n_xPt; i++) {
+                for (int j = 0; j < n_yPt; j++) {
                     int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
                     int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
 
                     Node to = nodes[stationNodesX[i]][stationNodesY[j]];
+                    double length = 0;
 
-                    Node from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
-                    double length = calculateDistancePeriodicBC(from, to, systemSize);
-                    length = doubleCloseToZero(length) ? periodicLength : length;
-                    insertTrainLinks(net, fac, from, to, length, i == 0);
+                    Node from = null;
+                    if (!(n_xPt == 2 && i != 0)) {
+                        from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
+                        length = calculateDistancePeriodicBC(from, to, systemSize);
+                        boolean periodic = doubleCloseToZero(length);
+                        length = periodic ? periodicLength : length;
+                        insertTrainLinks(net, fac, from, to, length, periodic);
+                    }
 
-                    from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
-                    length = calculateDistancePeriodicBC(from, to, systemSize);
-                    length = doubleCloseToZero(length) ? periodicLength : length;
-                    insertTrainLinks(net, fac, from, to, length, j == 0);
+                    if (!(n_yPt == 2 && j != 0)) {
+                        from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
+                        length = calculateDistancePeriodicBC(from, to, systemSize);
+                        boolean periodic = doubleCloseToZero(length);
+                        length = periodic ? periodicLength : length;
+                        insertTrainLinks(net, fac, from, to, length, periodic);
+                    }
                 }
             }
         }

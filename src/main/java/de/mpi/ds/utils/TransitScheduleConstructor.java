@@ -50,6 +50,7 @@ public class TransitScheduleConstructor implements UtilComponent {
                                       Vehicles vehicles, double departure_delay, double stop_length,
                                       double transitStartTime, double transitEndTime, double transitIntervalTime,
                                       double effectiveFreeSpeedTrain, double departureIntervalTime, String mode) {
+        //TODO: connect this to network creator
         this.transitScheduleFactory = tsf;
         this.transitEndTime = transitEndTime;
         this.transitIntervalTime = transitIntervalTime;
@@ -131,13 +132,15 @@ public class TransitScheduleConstructor implements UtilComponent {
 //        Node lastNode = getPredecessor(startNode, direction, forwardBackwardDetermination);
 //        Node lastNode = forwardBackwardIndicatorNode; // Because Periodic BC
         Link currLink = startLink;
+        List<Link> startLinkReverseCandidates = startLink.getToNode().getOutLinks().values().stream()
+                .filter(l -> l.getToNode().equals(startLink.getFromNode()))
+                .collect(Collectors.toList());
+        assert startLinkReverseCandidates.size() == 1 : "Expecting only one reverse link";
+        Link startLinkReverse = startLinkReverseCandidates.get(0);
         // Create first stop
-//        Link startLinkInverted = startLink.getFromNode().getInLinks().values().stream()
-//                .filter(l -> doubleCloseToZero(apprModulo(getPositiveAngle(getDirectionOfLink(startLink)) -
-//                        getPositiveAngle(getDirectionOfLink(l)) + Math.PI, 2 * Math.PI)))
-//                .findAny().orElseThrow();
+        createStop(transitRouteStopList, startLinkReverse, 0, 0);
+        linkList.add(startLinkReverse);
         createStop(transitRouteStopList, startLink, 0, 0);
-//        linkList.add(startLinkInverted);
         linkList.add(startLink);
         do {
             currLink = moveToNextLinkPeriodic(linkList, startLink, currLink, transitRouteStopList, addAsTransitStop);

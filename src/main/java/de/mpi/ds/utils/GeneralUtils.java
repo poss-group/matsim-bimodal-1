@@ -51,19 +51,19 @@ public class GeneralUtils {
         return Math.abs(deltaXPeriodic) + Math.abs(deltaYPeriodic);
     }
 
-    public static double[] getNetworkDimensionsMinMax(Network net, boolean isGridAndPt) {
+    public static double[] getNetworkDimensionsMinMax(Network net) {
         // This method calculates the network dimensions in terms of link lengths; this is neccessary because of
         // Periodic BC, otherwise it would suffice to take the distance btw. nodes
-        if (isGridAndPt) {
-            double maxLinkDist = net.getNodes().values().stream()
-                    .filter(n -> n.getCoord().getY() == 0)
-                    .flatMap(n -> n.getInLinks().values().stream())
-                    .filter(l -> l.getFromNode().getCoord().getY() == 0)
-                    .filter(l -> l.getAllowedModes().contains(TransportMode.train))
-                    .reduce(0., (subtotal, l) -> (subtotal + l.getLength()), Double::sum) / 2;
-
-            return new double[]{0, maxLinkDist};
-        } else {
+//        if (isGridAndPt) {
+//            double maxLinkDist = net.getNodes().values().stream()
+//                    .filter(n -> n.getCoord().getY() == 0)
+//                    .flatMap(n -> n.getInLinks().values().stream())
+//                    .filter(l -> l.getFromNode().getCoord().getY() == 0)
+//                    .filter(l -> !l.getAllowedModes().contains(TransportMode.train))
+//                    .reduce(0., (subtotal, l) -> (subtotal + l.getLength()), Double::sum) / 2;
+//
+//            return new double[]{0, maxLinkDist};
+//        } else {
             // Standard method
             List<Double> xCoords = net.getNodes().values().stream().map(n -> n.getCoord().getX())
                     .collect(Collectors.toList());
@@ -75,7 +75,7 @@ public class GeneralUtils {
             double ymax = Collections.max(yCoords);
 
             return new double[]{Math.min(xmin, ymin), Math.max(xmax, ymax)};
-        }
+//        }
     }
 
     public static boolean doubleCloseToZero(double x) {
