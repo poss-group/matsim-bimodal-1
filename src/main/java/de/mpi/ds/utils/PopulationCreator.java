@@ -65,10 +65,6 @@ public class PopulationCreator implements UtilComponent {
 
     public void createPopulation(String outputPopulationPath, Network net) {
 
-        double xy_0 = 0;
-        double xy_1 = systemSize;
-        LOG.info("Network dimensions (min, max): ".concat(String.valueOf(xy_0)).concat(", " + String.valueOf(xy_1)));
-
         InverseTransformSampler sampler = new InverseTransformSampler(
                 travelDistanceDistribution,
                 false,
@@ -80,7 +76,7 @@ public class PopulationCreator implements UtilComponent {
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
-        generatePopulation(population, net, nRequests, sampler, xy_1);
+        generatePopulation(population, net, nRequests, sampler, systemSize);
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);

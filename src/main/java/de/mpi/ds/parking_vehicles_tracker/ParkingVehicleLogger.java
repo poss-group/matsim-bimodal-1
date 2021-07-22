@@ -44,24 +44,28 @@ public class ParkingVehicleLogger implements VehicleEntersTrafficEventHandler, V
 
     @Override
     public void handleEvent(VehicleEntersTrafficEvent event) {
-        ParkEvent parkEvent = currentlyParkingMap.remove(event.getVehicleId());
-        Coord coord = sc.getNetwork().getLinks().get(event.getLinkId()).getCoord();
-        if (parkEvent != null) {
-            parkEvent.endTime = event.getTime();
-            if (parkEvent.coord == null) {
-                parkEvent.coord = coord;
+        if (event.getVehicleId().toString().contains("drt")) {
+            ParkEvent parkEvent = currentlyParkingMap.remove(event.getVehicleId());
+            Coord coord = sc.getNetwork().getLinks().get(event.getLinkId()).getCoord();
+            if (parkEvent != null) {
+                parkEvent.endTime = event.getTime();
+                if (parkEvent.coord == null) {
+                    parkEvent.coord = coord;
+                }
+            } else {
+                parkEvent = new ParkEvent(event.getVehicleId(), coord, 0, event.getTime());
             }
-        } else {
-            parkEvent = new ParkEvent(event.getVehicleId(), coord,0, event.getTime());
+            parkEvents.add(parkEvent);
         }
-        parkEvents.add(parkEvent);
     }
 
     @Override
     public void handleEvent(VehicleLeavesTrafficEvent event) {
-        ParkEvent parkEvent = new ParkEvent(event.getVehicleId(),
-                sc.getNetwork().getLinks().get(event.getLinkId()).getCoord(), event.getTime(), -1);
-        currentlyParkingMap.put(event.getVehicleId(), parkEvent);
+        if (event.getVehicleId().toString().contains("drt")) {
+            ParkEvent parkEvent = new ParkEvent(event.getVehicleId(),
+                    sc.getNetwork().getLinks().get(event.getLinkId()).getCoord(), event.getTime(), -1);
+            currentlyParkingMap.put(event.getVehicleId(), parkEvent);
+        }
     }
 
     @Override

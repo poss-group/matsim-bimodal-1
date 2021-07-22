@@ -62,8 +62,8 @@ public class ScenarioCreator {
         this.railInterval = railInterval;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
-        this.freeSpeedCar = freeSpeedCar/meanAndSpeedScaleFactor;
-        this.freeSpeedTrain = freeSpeedTrain/meanAndSpeedScaleFactor;
+        this.freeSpeedCar = freeSpeedCar*meanAndSpeedScaleFactor;
+        this.freeSpeedTrain = freeSpeedTrain*meanAndSpeedScaleFactor;
         this.numberOfLanes = numberOfLanes;
         this.requestEndTime = requestEndTime;
         this.nRequests = nRequests;
@@ -80,12 +80,12 @@ public class ScenarioCreator {
         this.diagonalConnections = diagonalConnections;
         this.smallLinksCloseToStations = smallLinksCloseToStations;
         this.createTrainLines = createTrainLines;
-        this.travelDistanceMean = travelDistanceMean/meanAndSpeedScaleFactor;
+        this.travelDistanceMean = travelDistanceMean*meanAndSpeedScaleFactor;
 
         if (travelDistanceDistribution.equals("InverseGamma")) {
-            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, travelDistanceMean, 3.1);
+            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, this.travelDistanceMean, 3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            this.travelDistanceDistribution = x -> x < travelDistanceMean * 2 ? 1 / travelDistanceMean * 2 : 0;
+            this.travelDistanceDistribution = x -> x < this.travelDistanceMean * 2 ? 1 / this.travelDistanceMean * 2 : 0;
         }
 
         // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
