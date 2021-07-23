@@ -16,6 +16,7 @@ public class ScenarioCreatorBuilderOsm {
     private String transportMode = TransportMode.pt;
     private double meanTravelDist = 2000;
 
+    private double transitStartTime = 0;
     private double transitEndTime = 10 * 3600;
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
@@ -124,10 +125,15 @@ public class ScenarioCreatorBuilderOsm {
         return this;
     }
 
+    public ScenarioCreatorBuilderOsm setTransitStartTime(double transitStartTime) {
+        this.transitStartTime = transitStartTime;
+        return this;
+    }
+
     public ScenarioCreatorOsm build() {
         printScenarioInfo();
         return new ScenarioCreatorOsm(linkCapacity, freeSpeedCar,
-                freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
+                freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitStartTime, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode,
                 travelDistanceDistribution, meanTravelDist, ptSpacingOverMean);
@@ -156,5 +162,4 @@ public class ScenarioCreatorBuilderOsm {
                 "\nptSpacingOverMean : " + ptSpacingOverMean
         );
     }
-
 }

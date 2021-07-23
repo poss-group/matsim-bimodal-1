@@ -32,6 +32,7 @@ public class ScenarioCreator {
     private double numberOfLanes;
     private int requestEndTime;
     private int nRequests;
+    private double transitStartTime;
     private double transitEndTime;
     private double departureIntervalTime;
     private double transitStopLength;
@@ -52,7 +53,7 @@ public class ScenarioCreator {
     public ScenarioCreator(double systemSize, int railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
                            double numberOfLanes, int requestEndTime, int nRequests,
-                           double transitEndTime, double departureIntervalTime, double transitStopLength,
+                           double transitStartTime, double transitEndTime, double departureIntervalTime, double transitStopLength,
                            int drtFleetSize, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
@@ -67,6 +68,7 @@ public class ScenarioCreator {
         this.numberOfLanes = numberOfLanes;
         this.requestEndTime = requestEndTime;
         this.nRequests = nRequests;
+        this.transitStartTime = transitStartTime;
         this.transitEndTime = transitEndTime;
         this.departureIntervalTime = departureIntervalTime;
         this.transitStopLength = transitStopLength;
@@ -105,13 +107,13 @@ public class ScenarioCreator {
         if (!doubleCloseToZero(systemSize - 10000)) {
             LOG.error("Periodicity is fixed to 10000m, the simulated system has another size however: " + systemSize);
         }
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
+                transitStartTime, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing, linkCapacity, numberOfLanes);
         this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
                 effectiveFreeTrainSpeed, numberOfLanes, freeSpeedCar, diagonalConnections,
-                smallLinksCloseToStations, createTrainLines);
+                smallLinksCloseToStations, createTrainLines, transitScheduleCreator);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
                 smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize);
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
-                effectiveFreeTrainSpeed, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, random, this.travelDistanceDistribution, travelDistanceMean, railInterval*carGridSpacing);
     }
@@ -125,23 +127,23 @@ public class ScenarioCreator {
         String drtFleetPath = "./output/drtvehicles.xml";
         String transitSchedulePath = "output/transitSchedule_15min.xml.gz";
         String transitVehiclesPath = "output/transitVehicles_15min.xml.gz";
-        scenarioCreator.createNetwork(netPath);
+        scenarioCreator.createNetwork(netPath, transitSchedulePath, transitVehiclesPath);
         scenarioCreator.createPopulation(popPath, netPath);
         scenarioCreator.createDrtFleet(netPath, drtFleetPath);
-        scenarioCreator.createTransitSchedule(netPath, transitSchedulePath, transitVehiclesPath);
+//        scenarioCreator.createTransitSchedule(netPath, transitSchedulePath, transitVehiclesPath);
     }
 
-    public void createNetwork(String outputPath) {
-        networkCreator.createGridNetwork(outputPath);
+    public void createNetwork(String outputPathNet, String outputPathSchedule, String outputPathVehicles) {
+        networkCreator.createGridNetwork(outputPathNet, outputPathSchedule, outputPathVehicles);
     }
 
     public void createPopulation(String outputPopulationPath, String networkPath) {
         populationCreator.createPopulation(outputPopulationPath, networkPath);
     }
 
-    public void createTransitSchedule(String networkPath, String outputSchedulePath, String outputVehiclePath) {
-        transitScheduleCreator.runTransitScheduleUtil(networkPath, outputSchedulePath, outputVehiclePath);
-    }
+//    public void createTransitSchedule(String networkPath, String outputSchedulePath, String outputVehiclePath) {
+//        transitScheduleCreator.runTransitScheduleUtil(networkPath, outputSchedulePath, outputVehiclePath);
+//    }
 
     public void createDrtFleet(String networkPath, String ouputPath) {
         drtFleetVehiclesCreator.run(networkPath, ouputPath, drtFleetSize);

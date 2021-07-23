@@ -24,23 +24,22 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
-import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.matsim.vehicles.MatsimVehicleWriter;
-import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
+import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.vehicles.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
+import static de.mpi.ds.utils.GeneralUtils.calculateDistancePeriodicBC;
+import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.NetworkCreator.setLinkAttributes;
+import static de.mpi.ds.utils.NetworkCreator.setLinkModes;
 import static de.mpi.ds.utils.ScenarioCreator.*;
 
 public class TransitScheduleCreator implements UtilComponent {
@@ -51,24 +50,31 @@ public class TransitScheduleCreator implements UtilComponent {
 
     private double freeSpeedTrain;
     private double systemSize;
+    private double transitStartTime;
     private double transitEndTime;
     private int railInterval;
     private double transitStopLength;
     private double departureIntervalTime;
     private double carGridSpacing;
-    private double effectiveFreeSpeedTrain;
+    private double linkCapacity;
+    private double numberOfLanes;
+    private int route_counter;
 
-    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain, double effectiveFreeSpeedTrain,
-                                  double transitEndTime, double transitStopLength,
-                                  double departureIntervalTime, double carGridSpacing) {
+    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain,
+                                  double transitStartTime, double transitEndTime, double transitStopLength,
+                                  double departureIntervalTime, double carGridSpacing, double linkCapacity,
+                                  double numberOfLanes) {
         this.railInterval = railInterval;
         this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
+        this.transitStartTime = transitStartTime;
         this.transitEndTime = transitEndTime;
         this.transitStopLength = transitStopLength;
         this.departureIntervalTime = departureIntervalTime;
         this.carGridSpacing = carGridSpacing;
-        this.effectiveFreeSpeedTrain = effectiveFreeSpeedTrain;
+        this.linkCapacity = linkCapacity;
+        this.numberOfLanes = numberOfLanes;
+        this.route_counter = 0;
     }
 
     public static void main(String[] args) {
@@ -77,117 +83,191 @@ public class TransitScheduleCreator implements UtilComponent {
 //                "./output/transitVehicles" + suffix + ".xml");
     }
 
-    public void runTransitScheduleUtil(String networkPath, String outputSchedulePath, String outputVehiclesPath) {
+    public void createPtLinksVehiclesSchedule(Network net, Node[][] transitNodes, String transitScheduleOutPath,
+                                              String transitVehiclesOutPath) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         TransitSchedule schedule = scenario.getTransitSchedule();
-        TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
-        PopulationFactory populationFactory = scenario.getPopulation().getFactory();
-        Network net = NetworkUtils.readNetwork(networkPath);
-        Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-//        Vehicles vehicles = createVehicles();
+        Vehicles vehicles = createVehicles();
 
-        createTransitSchedule(transitScheduleFactory, schedule, populationFactory, net, vehicles);
+        generateLinesInYDir(transitNodes, scenario, schedule, net, vehicles);
+        transitNodes = switchYDirMatrix(transitNodes);
+        generateLinesInYDir(transitNodes, scenario, schedule, net, vehicles);
+        transitNodes = transposeMatrix(transitNodes);
+        generateLinesInYDir(transitNodes, scenario, schedule, net, vehicles);
+        transitNodes = switchYDirMatrix(transitNodes);
+        generateLinesInYDir(transitNodes, scenario, schedule, net, vehicles);
 
-        new TransitScheduleWriter(schedule).writeFile(outputSchedulePath);
-        new MatsimVehicleWriter(vehicles).writeFile(outputVehiclesPath);
-//        compressGzipFile(outputSchedulePath, outputSchedulePath.concat(".gz"));
-//        compressGzipFile(outputVehiclesPath, outputVehiclesPath.concat(".gz"));
-//        deleteFile(outputSchedulePath);
-//        deleteFile(outputVehiclesPath);
-    }
-
-    public void createTransitSchedule(TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule,
-                                      PopulationFactory populationFactory, Network net, Vehicles vehicles) {
-
-        List<Node> stationNodes = net.getNodes().values().stream()
-                .filter(n -> n.getAttributes().getAttribute(IS_STATION_NODE).equals(true)).collect(Collectors.toList());
-
-        // !doubleCloseToZeroCondition for Periodic BC, otherwise two trains would share one line effectively at the
-        // borders or just delete last element of each list
-//        List<Link> startLinksXDir =
-        List<Link> test = stationNodes.stream()
-                .filter(n -> n.getCoord().getX() == 0)
-                // Should be more general:
-//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
-//                .firstEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .collect(Collectors.toList());
-
-        List<Link> test2 = stationNodes.stream()
-                .filter(n -> n.getCoord().getX() == 0)
-                // Should be more general:
-//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
-//                .firstEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .collect(Collectors.toList());
-
-        List<Link> startLinksXDir = stationNodes.stream()
-                .filter(n -> n.getCoord().getX() == 0)
-                // Should be more general:
-//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
-//                .firstEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> l.getToNode().getCoord().getX() > l.getFromNode().getCoord().getX())
-                .filter(l -> l.getCoord().getY() != systemSize)
-                .collect(Collectors.toList());
-        List<Link> startLinksXDecDir = stationNodes.stream()
-                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
-                .lastEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> l.getToNode().getCoord().getX() < l.getFromNode().getCoord().getX())
-                .filter(l -> l.getCoord().getY() != systemSize)
-                .collect(Collectors.toList());
-
-        List<Link> startLinksYDir = stationNodes.stream()
-                .filter(n -> n.getCoord().getY() == 0)
-                // Should be more general:
-//                .collect(Collectors.groupingBy(n -> n.getCoord().getX(), TreeMap::new, Collectors.toList()))
-//                .firstEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> l.getToNode().getCoord().getY() > l.getFromNode().getCoord().getY())
-                .filter(l -> l.getCoord().getX() != systemSize)
-                .collect(Collectors.toList());
-        List<Link> startLinksYDecDir = stationNodes.stream()
-                .collect(Collectors.groupingBy(n -> n.getCoord().getY(), TreeMap::new, Collectors.toList()))
-                .lastEntry().getValue().stream()
-                .flatMap(n -> n.getOutLinks().values().stream())
-                .filter(l -> l.getAllowedModes().contains(NETWORK_MODE_TRAIN))
-                .filter(l -> l.getAttributes().getAttribute(PERIODIC_LINK).equals(false))
-                .filter(l -> l.getToNode().getCoord().getY() < l.getFromNode().getCoord().getY())
-                .filter(l -> l.getCoord().getX() != systemSize)
-                .collect(Collectors.toList());
-
-        TransitScheduleConstructor transitScheduleConstructor = new TransitScheduleConstructor(transitScheduleFactory,
-                populationFactory, net, schedule, vehicles, railInterval*carGridSpacing / freeSpeedTrain, transitStopLength, 0,
-                transitEndTime, systemSize / freeSpeedTrain, effectiveFreeSpeedTrain, departureIntervalTime, "Manhatten");
-
-//        LOG.info(
-//                "Transit time station-station: " + delta_xy * pt_interval / FREE_SPEED_TRAIN + "\nStop time @ " +
-//                        "station: " + transitStopLength + "\nTransit Interval Time: " + transitIntervalTime +
-//                        "\nTransit time grid start - grid end: " + (startNodesXDec.get(0).getCoord()
-//                        .getX() - startNodesX
-//                        .get(0).getCoord().getX()) / FREE_SPEED_TRAIN);
-
-        LOG.info("Rail grid spacing: " + railInterval*carGridSpacing);
-        LOG.info(startLinksXDir.size());
-        LOG.info(startLinksXDecDir.size());
-        LOG.info(startLinksYDir.size());
-        LOG.info(startLinksYDecDir.size());
-        for (int i = 0; i < startLinksXDir.size(); i++) {
-            transitScheduleConstructor.createLine(startLinksXDir.get(i));
-            transitScheduleConstructor.createLine(startLinksXDecDir.get(i));
-            transitScheduleConstructor.createLine(startLinksYDir.get(i));
-            transitScheduleConstructor.createLine(startLinksYDecDir.get(i));
+        try {
+            new TransitScheduleWriter(schedule).writeFile(transitScheduleOutPath);
+            new MatsimVehicleWriter(vehicles).writeFile(transitVehiclesOutPath);
+        } catch (Exception e) {
+            System.out.println("Failed to write output...");
+            e.printStackTrace();
         }
     }
-}
 
+
+    private void generateLinesInYDir(Node[][] transitNodes, Scenario scenario,
+                                     TransitSchedule schedule, Network net, Vehicles vehicles) {
+        NetworkFactory fac = net.getFactory();
+        TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
+        PopulationFactory populationFactory = scenario.getPopulation().getFactory();
+
+        int nX = transitNodes.length;
+        int nY = transitNodes[0].length;
+        for (int i = 0; i < nX; i++) {
+            ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+            List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+            for (int j = 0; j < nY; j++) {
+                Node from = transitNodes[i][j];
+                Node toY = transitNodes[i][(j + 1) % nY];
+
+                Link linkY = getOrCreateLink(from, toY, net);
+
+                if (transitLinks.size() == 0) {
+                    Link linkY_r = getOrCreateLink(toY, from, net);
+                    addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
+                    transitLinks.add(linkY_r.getId());
+                }
+
+                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
+                transitLinks.add(linkY.getId());
+            }
+            if (transitLinks.size() > 0) {
+
+                TransitLine transitLine = transitScheduleFactory
+                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
+                        transitScheduleFactory, schedule);
+            }
+        }
+    }
+
+    private Link getOrCreateLink(Node from, Node toY, Network net) {
+        Id<Link> linkYId =  Id.createLinkId("pt_" + from.getId().toString() + "-" + toY.getId().toString());
+        Link linkY = net.getLinks().get(linkYId);
+        if (linkY == null) {
+            linkY = net.getFactory().createLink(linkYId, from, toY);
+            double length = calculateDistancePeriodicBC(from, toY, systemSize);
+            setLinkAttributes(linkY, linkCapacity, length, freeSpeedTrain, numberOfLanes, doubleCloseToZero(length),
+                    false);
+            setLinkModes(linkY, NETWORK_MODE_TRAIN);
+            net.addLink(linkY);
+        }
+        return linkY;
+    }
+
+    private void addTransitLineToSchedule(ArrayList<Id<Link>> idLinkList, List<TransitRouteStop> transitRouteStopList,
+                                          Vehicles vehicles, TransitLine transitLine,
+                                          PopulationFactory populationFactory,
+                                          TransitScheduleFactory transitScheduleFactory, TransitSchedule schedule) {
+        Id<TransitRoute> tr_id = Id.create(String.valueOf(route_counter), TransitRoute.class);
+        NetworkRoute networkRoute = populationFactory.getRouteFactories()
+                .createRoute(NetworkRoute.class, idLinkList.get(0),
+                        idLinkList.get(idLinkList.size() - 1));
+        networkRoute.setLinkIds(idLinkList.get(0), idLinkList.subList(1, idLinkList.size() - 1),
+                idLinkList.get(idLinkList.size() - 1));
+        TransitRoute transitRoute = transitScheduleFactory.createTransitRoute(tr_id, networkRoute,
+                transitRouteStopList, "train");
+        createDepartures(transitRoute, transitScheduleFactory, vehicles);
+        transitLine.addRoute(transitRoute);
+
+        schedule.addTransitLine(transitLine);
+        route_counter++;
+    }
+
+    private void addTransitStop(Link link, TransitSchedule schedule,
+                                TransitScheduleFactory transitScheduleFactory,
+                                List<TransitRouteStop> transitRouteStopList, boolean atStart) {
+        Id<TransitStopFacility> transitStopFacilityId = null;
+        TransitStopFacility transitStopFacility = null;
+        transitStopFacilityId = Id
+                .create(link.getId() + "_trStop", TransitStopFacility.class);
+        transitStopFacility = schedule.getFacilities().get(transitStopFacilityId);
+        if (transitStopFacility == null) {
+            transitStopFacility = transitScheduleFactory
+                    .createTransitStopFacility(transitStopFacilityId, link.getToNode().getCoord(), false);
+            transitStopFacility.setLinkId(link.getId());
+            schedule.addStopFacility(transitStopFacility);
+        }
+        TransitRouteStop transitRouteStop = transitScheduleFactory
+                .createTransitRouteStop(transitStopFacility, 0, 0);
+        if (atStart) {
+            transitRouteStopList.add(0, transitRouteStop);
+        } else {
+            transitRouteStopList.add(transitRouteStop);
+        }
+    }
+
+    private void createDepartures(TransitRoute transitRoute, TransitScheduleFactory transitScheduleFactory,
+                                  Vehicles vehicles) {
+        double time = transitStartTime;
+        int i = 0;
+        while (time < transitEndTime) {
+            Departure dep = transitScheduleFactory.createDeparture(Id.create(String.valueOf(i), Departure.class), time);
+            Id<Vehicle> vehicleId =
+                    Id.create("tr_".concat(String.valueOf(route_counter).concat("_").concat(String.valueOf(i))),
+                            Vehicle.class);
+            dep.setVehicleId(vehicleId);
+            if (!vehicles.getVehicles().containsKey(vehicleId)) {
+                vehicles.addVehicle(VehicleUtils.createVehicle(Id.create(vehicleId, Vehicle.class),
+                        vehicles.getVehicleTypes().entrySet().iterator().next().getValue()));
+            }
+            transitRoute.addDeparture(dep);
+            i++;
+
+            time += departureIntervalTime;
+        }
+    }
+
+    private Node findNextNonNull(Node[][] transitNodes, int i, int j, String direction) {
+        if (direction.equals("i")) {
+            Node next = transitNodes[i + 1][j];
+            while (next == null) {
+                i = (i + 1) % transitNodes.length;
+                next = transitNodes[i + 1][j];
+            }
+            return next;
+        } else if (direction.equals("j")) {
+            Node next = transitNodes[i][j + 1];
+            while (next == null && j + 1 < transitNodes[0].length - 1) {
+                j = (j + 1) % transitNodes[0].length;
+                next = transitNodes[i][j + 1];
+            }
+            return next;
+        } else {
+            return null;
+        }
+    }
+
+    public Vehicles createVehicles() {
+        VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create("1", VehicleType.class));
+        vehicleType.setDescription("train");
+        vehicleType.setNetworkMode("train");
+        vehicleType.setMaximumVelocity(freeSpeedTrain);
+        vehicleType.setLength(10);
+        vehicleType.getCapacity().setSeats(10000);
+        vehicleType.getCapacity().setStandingRoom(0);
+        Vehicles result = VehicleUtils.createVehiclesContainer();
+        result.addVehicleType(vehicleType);
+        return result;
+    }
+
+    public static Node[][] transposeMatrix(Node[][] m) {
+        Node[][] temp = new Node[m[0].length][m.length];
+        for (int i = 0; i < m.length; i++)
+            for (int j = 0; j < m[0].length; j++)
+                temp[j][i] = m[i][j];
+        return temp;
+    }
+
+    public static Node[][] switchYDirMatrix(Node[][] m) {
+        int nx = m.length;
+        int ny = m[0].length;
+        Node[][] temp = new Node[nx][ny];
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny; j++)
+                temp[i][ny-j-1] = m[i][j];
+        return temp;
+    }
+}

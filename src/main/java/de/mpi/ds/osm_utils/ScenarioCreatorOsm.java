@@ -34,6 +34,7 @@ public class ScenarioCreatorOsm {
     private double numberOfLanes;
     private int requestEndTime;
     private int nRequests;
+    private double transitStartTime;
     private double transitEndTime;
     private double departureIntervalTime;
     private double transitStopLength;
@@ -57,7 +58,7 @@ public class ScenarioCreatorOsm {
             "Berlin", 0.15);
 
     public ScenarioCreatorOsm(long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
-                              double numberOfLanes, int requestEndTime, int nRequests,
+                              double numberOfLanes, int requestEndTime, int nRequests, double transitStartTime,
                               double transitEndTime, double departureIntervalTime, double transitStopLength,
                               int drtFleetSize, int drtCapacity, double drtOperationStartTime,
                               double drtOperationEndTime,
@@ -70,6 +71,7 @@ public class ScenarioCreatorOsm {
         this.numberOfLanes = numberOfLanes;
         this.requestEndTime = requestEndTime;
         this.nRequests = nRequests;
+        this.transitStartTime = transitStartTime;
         this.transitEndTime = transitEndTime;
         this.departureIntervalTime = departureIntervalTime;
         this.transitStopLength = transitStopLength;
@@ -162,7 +164,7 @@ public class ScenarioCreatorOsm {
         hull = new AlphaShape(net.getNodes().values(), normAlpha).compute();
 
         NetworkCreatorFromOsm networkCreatorFromOsm = new NetworkCreatorFromOsm(hull, linkCapacity, freeSpeedTrain,
-                numberOfLanes, freeSpeedCar, 0,
+                numberOfLanes, freeSpeedCar, transitStartTime,
                 transitEndTime, departureIntervalTime, ptSpacingOverMean * meanTravelDist);
         net = networkCreatorFromOsm.addTramNet(net, networkOutPath, transitScheduleOutPath, transitVehiclesOutPath);
     }

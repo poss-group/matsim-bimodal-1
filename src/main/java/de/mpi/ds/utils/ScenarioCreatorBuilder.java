@@ -19,6 +19,7 @@ public class ScenarioCreatorBuilder {
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
 
+    private double transitStartTime = 0;
     private double transitEndTime = 10 * 3600;
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
@@ -169,10 +170,15 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setTransitStartTime(double transitStartTime) {
+        this.transitStartTime = transitStartTime;
+        return this;
+    }
+
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
-                freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitEndTime,
+                freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitStartTime, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
                 createTrainLines, travelDistanceDistribution, travelDistanceMean, meanAndSpeedScaleFactor);

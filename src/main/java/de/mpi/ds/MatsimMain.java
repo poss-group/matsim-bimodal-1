@@ -327,11 +327,11 @@ public class MatsimMain {
             LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMean() *
                     scenarioCreator.getTravelDistanceMean()));
             LOG.info("Creating network");
-            scenarioCreator.createNetwork(networkPath);
+            scenarioCreator.createNetwork(networkPath, transitSchedulePath, transitVehiclesPath);
             LOG.info("Finished creating network\nCreating population for network");
             scenarioCreator.createPopulation(populationPath, networkPath);
             LOG.info("Finished creating population\nCreating transit Schedule");
-            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
+//            scenarioCreator.createTransitSchedule(networkPath, transitSchedulePath, transitVehiclesPath);
             LOG.info("Finished creating transit schedule\nCreating drt fleet");
             scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
             LOG.info("Finished creating drt fleet");

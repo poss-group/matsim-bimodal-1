@@ -63,11 +63,12 @@ public class NetworkCreator implements UtilComponent {
     private boolean diagonalConnections;
     private boolean smallLinksCloseToNodes;
     private boolean createTrainLines;
+    private TransitScheduleCreator transitScheduleCreator;
 
     public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
                           double linkCapacity, double effectiveFreeSpeedTrain, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections,
-                          boolean smallLinksCloseToNodes, boolean createTrainLines) {
+                          boolean smallLinksCloseToNodes, boolean createTrainLines, TransitScheduleCreator transitScheduleCreator) {
         this.systemSize = systemSize;
 //        this.railGridSpacing = railGridSpacing;
         this.carGridSpacing = carGridSpacing;
@@ -79,6 +80,7 @@ public class NetworkCreator implements UtilComponent {
         this.railInterval = railInterval;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
         this.createTrainLines = createTrainLines;
+        this.transitScheduleCreator = transitScheduleCreator;
     }
 
     public static void main(String... args) {
@@ -94,7 +96,7 @@ public class NetworkCreator implements UtilComponent {
 //                numberOfLanes, freeSpeedCar, true).createGridNetwork(path, true);
     }
 
-    public void createGridNetwork(String path) {
+    public void createGridNetwork(String outputPathNet, String outputPathSchedule, String outputPathVehicles) {
         // create an empty network
         Network net = NetworkUtils.createNetwork();
         NetworkFactory fac = net.getFactory();
@@ -107,6 +109,7 @@ public class NetworkCreator implements UtilComponent {
         n_xPt += ((n_x-1) % railInterval == 0) ? 0 : 1;
         int n_yPt = n_y / railInterval;
         n_yPt += ((n_y-1) % railInterval == 0) ? 0 : 1;
+        Node[][] ptNodes = new Node[n_xPt][n_yPt];
         assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
         //TODO make possible to have just 2 stations
 //        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
@@ -117,19 +120,20 @@ public class NetworkCreator implements UtilComponent {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
                 boolean newNodeStationAtrribute = false;
+                Node n = fac.createNode(Id.createNodeId(newNodeId),
+                        new Coord(i * carGridSpacing, j * carGridSpacing));
                 if (createTrainLines) {
                     // n_xy - 1 because stations are not wanted at last stop
                     if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
 //                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
                         newNodeStationAtrribute = true;
+                        ptNodes[i/railInterval][j/railInterval] = n;
                         stationNodesX[i / railInterval] = i;
                         stationNodesY[j / railInterval] = j;
                     }
                 }
 
-                Node n = fac.createNode(Id.createNodeId(newNodeId),
-                        new Coord(i * carGridSpacing, j * carGridSpacing));
                 n.getAttributes().putAttribute(IS_STATION_NODE, newNodeStationAtrribute);
                 nodes[i][j] = n;
                 net.addNode(n);
@@ -158,34 +162,39 @@ public class NetworkCreator implements UtilComponent {
             }
         }
         if (createTrainLines) {
+            transitScheduleCreator.createPtLinksVehiclesSchedule(net, ptNodes, outputPathSchedule, outputPathVehicles);
 //            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
 //            int iterToY = n_yPt > 2 ? n_yPt : 1;
-            for (int i = 0; i < n_xPt; i++) {
-                for (int j = 0; j < n_yPt; j++) {
-                    int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
-                    int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
 
-                    Node to = nodes[stationNodesX[i]][stationNodesY[j]];
-                    double length = 0;
-
-                    Node from = null;
-                    if (!(n_xPt == 2 && i != 0)) {
-                        from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
-                        length = calculateDistancePeriodicBC(from, to, systemSize);
-                        boolean periodic = doubleCloseToZero(length);
-                        length = periodic ? periodicLength : length;
-                        insertTrainLinks(net, fac, from, to, length, periodic);
-                    }
-
-                    if (!(n_yPt == 2 && j != 0)) {
-                        from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
-                        length = calculateDistancePeriodicBC(from, to, systemSize);
-                        boolean periodic = doubleCloseToZero(length);
-                        length = periodic ? periodicLength : length;
-                        insertTrainLinks(net, fac, from, to, length, periodic);
-                    }
-                }
-            }
+//            for (int i = 0; i < n_xPt; i++) {
+//                for (int j = 0; j < n_yPt; j++) {
+//                    int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
+//                    int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
+//
+////                    Node to = nodes[stationNodesX[i]][stationNodesY[j]];
+//                    Node to = ptNodes[i][j];
+//                    double length = 0;
+//
+//                    Node from = null;
+//                    if (!(n_xPt == 2 && i != 0)) {
+////                        from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
+//                        from = ptNodes[i_minus1_periodic][j];
+//                        length = calculateDistancePeriodicBC(from, to, systemSize);
+//                        boolean periodic = doubleCloseToZero(length);
+//                        length = periodic ? periodicLength : length;
+//                        insertTrainLinks(net, fac, from, to, length, periodic);
+//                    }
+//
+//                    if (!(n_yPt == 2 && j != 0)) {
+////                        from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
+//                        from = ptNodes[i][j_minus1_periodic];
+//                        length = calculateDistancePeriodicBC(from, to, systemSize);
+//                        boolean periodic = doubleCloseToZero(length);
+//                        length = periodic ? periodicLength : length;
+//                        insertTrainLinks(net, fac, from, to, length, periodic);
+//                    }
+//                }
+//            }
         }
 
         if (diagonalConnections) {
@@ -195,7 +204,7 @@ public class NetworkCreator implements UtilComponent {
         // this has to be done second because diagonal connections where also introduced before
 //        putNodesCloseToStations(net, fac);
         try {
-            File outFile = new File(path);
+            File outFile = new File(outputPathNet);
             // create output folder if necessary
             Files.createDirectories(outFile.getParentFile().toPath());
             // write network
@@ -541,7 +550,7 @@ public class NetworkCreator implements UtilComponent {
         }
     }
 
-    private void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes,
+     static void setLinkAttributes(Link link, double capacity, double length, double freeSpeed, double numberLanes,
                                    boolean isPeriodic, boolean isStartLink) {
         link.setCapacity(capacity);
         link.setLength(length);
@@ -551,7 +560,7 @@ public class NetworkCreator implements UtilComponent {
         link.getAttributes().putAttribute(IS_START_LINK, isStartLink);
     }
 
-    private void setLinkModes(Link link, String modes) {
+    static void setLinkModes(Link link, String modes) {
         HashSet<String> hashSet = new HashSet<String>();
         hashSet.add(modes);
         link.setAllowedModes(hashSet);

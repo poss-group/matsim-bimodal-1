@@ -184,4 +184,9 @@ public class PopulationCreator implements UtilComponent {
                         .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();
     }
+
+    private double getAverageDrtDist(double dCut, double ell) {
+//        travelDistanceDistribution
+        return 32.;
+    }
 }
