@@ -33,7 +33,10 @@ def sortOutIdlePd(series, transit_interval):
 
 def getAverageTimeSeries(series):
     time_diff = series.index.values[1:] - series.index.values[:-1]
-    return (time_diff * series.values[:-1]).sum() / time_diff.sum()
+    if len(time_diff) > 0:
+        return (time_diff * series.values[:-1]).sum() / time_diff.sum()
+    else:
+        return None
 
 
 def getPtOccupancies(path, transit_interval):

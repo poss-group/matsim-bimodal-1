@@ -4,22 +4,35 @@ import os
 from HelperFunctions import *
 from PtOccupancyFunctions import *
 
+def getBimDirsVaryDCut(directory, ndrt):
+    result = []
+    if ndrt:
+        ndrt = str(ndrt) + "drt"
+        path = os.path.join(directory, ndrt)
+    else:
+        path = directory
+    sdirs = [sdir.path for sdir in os.scandir(path) if sdir.is_dir() and "dcut" in sdir.name and "error" not in sdir.name]
+    for sdir in sorted(sdirs, key=lambda x: float(x.split("/")[-1].replace("dcut",""))):
+        result.append(getBimDirs(sdir, None))
+
+    return result
+
 def getBimDirs(directory, ndrt):
     result = []
     if ndrt:
         ndrt = str(ndrt) + "drt"
-        bimdir = os.path.join(directory, ndrt)
+        ndrt_dir = os.path.join(directory, ndrt)
     else:
-        bimdir = directory
+        ndrt_dir = directory
     sub_dirs = []
     sdirs = [
         sdir.path
         for sdir in
-            os.scandir(bimdir)
-        if sdir.is_dir() and "l_" in sdir.name and "error" not in sdir.name
+            os.scandir(ndrt_dir)
+        if sdir.is_dir() and "l" in sdir.name and "error" not in sdir.name and "unimodal" not in sdir.name
     ]
 
-    for sdir in sorted(sdirs, key=lambda x: int(x.split("/")[-1].split("_")[-1])):
+    for sdir in sorted(sdirs, key=lambda x: int(re.search(".*/(\d*\.?\d*)l", x)[1])):
         subresult = {}
         subresult["root"] = sdir
         for root, subdirs, files in os.walk(sdir):
@@ -44,9 +57,11 @@ def getBimDirs(directory, ndrt):
                     subresult["ph_modestats"] = os.path.join(root, file)
                 if file=="pkm_modestats.txt" and "unimodal" not in root:
                     subresult["pkm_modestats"] = os.path.join(root, file)
-                    
+                if file=="output_persons.csv.gz" and "unimodal" not in root:
+                    subresult["persons"] = os.path.join(root, file)
+
         result.append(subresult)
-    
+
     return result
 
 def getCarDir(directory):
@@ -123,8 +138,11 @@ def getTrips(paths, mode):
         )
         return df
     
+# def getEll(path):
+    # return path.split("/")[-1].split("_")[-1]
+
 def getEll(path):
-    return path.split("/")[-1].split("_")[-1]
+        return re.search(".*/(\d*\.?\d*)l", path)[1]
 
 def getModeStats(paths, columns_ph, columns_pkm):
     path_ph = paths["ph_modestats"]
@@ -160,6 +178,7 @@ def getDrtOccupandyAndStandingFrac(paths, exclude_empty_vehicles, count_idle_veh
 
 def getPtOccupancy(paths):
     path = paths["pt_occupancy"]
+    #TODO generalize (no 600)
     av_pt_occ, av_pt_occ_sq, n_pt = getPtOccupancies(
         path, 600
     )
@@ -173,20 +192,31 @@ def getPtOccupancy(paths):
 def getDrtTrips(paths):
     path = paths["drt_trips"]
     df = pd.read_csv(path, sep=";").loc[:, ["personId", "travelDistance_m", "waitTime", "travelTime"]]
-    df.set_index("personId", inplace=True)
-    df = df.groupby("personId").agg(
+    df_perperson = df.set_index("personId")
+    df_perperson = df.groupby("personId").agg(
         {
             "waitTime": np.sum,
             "travelTime": np.sum,
             "travelDistance_m": np.sum,
         }
     )
-    return df
+    return df, df_perperson
 
 def getDrtDetours(paths):
     path = paths["drt_detours"]
-    df = pd.read_csv(path, sep=";").loc[
-        :, "distanceDetour"
-    ]
-    df = df[df < 10]
+    df = pd.read_csv(path, sep=";").loc[:, ["person", "distanceDetour", "unsharedTime"]]
+    # df = df[df < 10]
+    return df
+
+def getPersons(paths):
+    path = paths["persons"]
+    system_size = 10000
+    makePeriodic = lambda x: x if x < system_size/2 else system_size - x
+    columns = ["first_act_x", "first_act_y", "last_act_x", "last_act_y"]
+    df = pd.read_csv(path, sep=";").loc[:,columns]
+    diffX = np.abs(df["last_act_x"] - df["first_act_x"])
+    diffX = diffX.apply(makePeriodic)
+    diffY = np.abs(df["last_act_y"] - df["first_act_y"])
+    diffY = diffY.apply(makePeriodic)
+    df["mean_dist"] = np.sqrt(diffX**2 + diffY**2)
     return df
