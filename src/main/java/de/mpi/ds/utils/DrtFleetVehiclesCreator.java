@@ -57,21 +57,19 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
     private int seatsPerDrtVehicle;
     private double operationStartTime;
     private double operationEndTime;
-    private double meanDistance;
-    private double ptSpacing;
     private Random random;
-    private Function<Double, Double> travelDistanceDistribution;
+    private double avDistFracToDCut;
+    private double avDistFracFromDCut;
 
     public DrtFleetVehiclesCreator(int seatsPerDrtVehicle, double operationStartTime, double operationEndTime,
-                                   Random random, Function<Double, Double> travelDistanceDistribution,
-                                   double meanDistance, double ptSpacing) {
+                                   Random random, double avDistFracToDCut,
+                                   double avDistFracFromDCut) {
         this.seatsPerDrtVehicle = seatsPerDrtVehicle;
         this.operationStartTime = operationStartTime;
         this.operationEndTime = operationEndTime;
         this.random = random;
-        this.travelDistanceDistribution = travelDistanceDistribution;
-        this.meanDistance = meanDistance;
-        this.ptSpacing = ptSpacing;
+        this.avDistFracToDCut = avDistFracToDCut;
+        this.avDistFracFromDCut = avDistFracFromDCut;
     }
 
     public static void main(String[] args) {
@@ -90,21 +88,10 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
 
     // If dCut method is called with dCut split fleets
     public void run(Network net, String outputUnimPath, String outputBimPath, double dCut, int drtFleetSize) {
-        UnivariateIntegrator integrator = new RombergIntegrator();
-        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
-        double boundedNorm = integrator
-                .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1), 0.0001, netDimsMinMax[1]);
-        double avDistFracToDCut = integrator
-                .integrate(1000000, x -> x * taxiDistDistribution(x, meanDistance, 3.1) / boundedNorm, 0.0001, dCut);
-        double avDistFracFromDCut = integrator
-                .integrate(1000000, x -> taxiDistDistribution(x, meanDistance, 3.1) / boundedNorm, dCut, netDimsMinMax[1]) * 2 *
-                BETA * ptSpacing;
         int fleetSizeBimodal = (int) Math
-                .round(drtFleetSize * avDistFracToDCut / (avDistFracToDCut + avDistFracFromDCut));
+                .round(drtFleetSize * avDistFracFromDCut / (avDistFracToDCut + avDistFracFromDCut));
         int fleetSizeUnimodal = drtFleetSize - fleetSizeBimodal;
 
-//        fleetSizeUnimodal = drtFleetSize/2;
-//        fleetSizeBimodal = drtFleetSize - fleetSizeUnimodal;
         run(net, outputUnimPath, fleetSizeUnimodal, "unim_");
         run(net, outputBimPath, fleetSizeBimodal, "bim_");
     }

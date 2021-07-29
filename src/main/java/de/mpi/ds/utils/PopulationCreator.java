@@ -32,13 +32,14 @@ public class PopulationCreator implements UtilComponent {
     private boolean createTrainLines;
     private Function<Double, Double> travelDistanceDistribution;
     private double systemSize;
+    private double avDrtDist;
 
     private static final Logger LOG = Logger.getLogger(PopulationCreator.class.getName());
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
                              boolean isGridNetwork, boolean smallLinksCloseToNodes,
                              boolean createTrainLines, Function<Double, Double> travelDistanceDistribution,
-                             double systemSize) {
+                             double systemSize, double avDrtDist) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
@@ -48,22 +49,24 @@ public class PopulationCreator implements UtilComponent {
         this.createTrainLines = createTrainLines;
         this.travelDistanceDistribution = travelDistanceDistribution;
         this.systemSize = systemSize;
+        this.avDrtDist = avDrtDist;
+
     }
 
     public static void main(String... args) {
         String networkPath = "scenarios/Manhatten/network_trams.xml";
         String outputPath = "scenarios/Manhatten/population.xml";
         PopulationCreator populationCreator = new PopulationCreator(1000, 9 * 3600, new Random(), TransportMode.drt,
-                false, false, true, x -> (double) ((x < 5000) ? 1 / 5000 : 0), 2500);
-        populationCreator.createPopulation(outputPath, networkPath);
+                false, false, true, x -> (double) ((x < 5000) ? 1 / 5000 : 0), 2500, 1234);
+        populationCreator.createPopulation(outputPath, networkPath, false);
     }
 
-    public void createPopulation(String outputPopulationPath, String networkPath) {
+    public void createPopulation(String outputPopulationPath, String networkPath, boolean constDrtDemand) {
         Network net = NetworkUtils.readNetwork(networkPath);
-        createPopulation(outputPopulationPath, net);
+        createPopulation(outputPopulationPath, net, constDrtDemand);
     }
 
-    public void createPopulation(String outputPopulationPath, Network net) {
+    public void createPopulation(String outputPopulationPath, Network net, boolean constDrtDemand) {
 
         InverseTransformSampler sampler = new InverseTransformSampler(
                 travelDistanceDistribution,
@@ -74,9 +77,15 @@ public class PopulationCreator implements UtilComponent {
                 (int) 1e7,
                 random);
 
+
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
-        generatePopulation(population, net, nRequests, sampler, systemSize);
+        int reqsToGenerate = nRequests;
+        if (constDrtDemand) {
+            reqsToGenerate /= avDrtDist;
+        }
+        LOG.info("Generating " + reqsToGenerate + " Requests...");
+        generatePopulation(population, net, reqsToGenerate, sampler, systemSize);
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
@@ -87,21 +96,21 @@ public class PopulationCreator implements UtilComponent {
                                     InverseTransformSampler sampler, double L) {
         Link orig_link;
         Link dest_link;
-        List<Link> startLinks = null;
-        startLinks = net.getLinks().values().stream()
+        List<Link> startLinks = net.getLinks().values().stream()
                 .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
 
 //        StringBuilder sb = new StringBuilder();
 //        sb.append("x;y\n");
-//        double preDistAverage = 0;
-//        double resultingDistAverage = 0;
+        ClosestLinkFinder closestLinkFinder = new ClosestLinkFinder(net, 10, startLinks, L);
+        double preDistAverage = 0;
+        double resultingDistAverage = 0;
         for (int j = 0; j < nRequests; j++) {
             do {
                 double newX = random.nextDouble() * L;
                 double newY = random.nextDouble() * L;
                 Coord pre_target = new Coord(newX, newY);
-                orig_link = getClosestDestLink(pre_target, startLinks, L);
+                orig_link = closestLinkFinder.findClosestLink(pre_target);
                 if (sampler != null) {
                     double dist = 0;
                     try {
@@ -114,17 +123,17 @@ public class PopulationCreator implements UtilComponent {
                     newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
                     newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     pre_target = new Coord(newX, newY);
-                    dest_link = getClosestDestLink(pre_target, startLinks, L);
-
-//                    if (!dest_link.equals(orig_link)) {
-//                        preDistAverage += dist;
-//                        resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
-//                    }
+                    dest_link = closestLinkFinder.findClosestLink(pre_target);
+                    if (!dest_link.equals(orig_link)) {
+                        preDistAverage += dist;
+                        resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
+                    }
                 } else {
                     newX = random.nextDouble() * L;
                     newY = random.nextDouble() * L;
                     pre_target = new Coord(newX, newY);
                     dest_link = getClosestDestLink(pre_target, startLinks, L);
+//                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
                 }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             } while (dest_link.equals(orig_link));
@@ -134,8 +143,8 @@ public class PopulationCreator implements UtilComponent {
 //        for (Link l: net.getLinks().values()) {
 //            sb.append(l.getCoord().getX()).append(";").append(l.getCoord().getY()).append("\n");
 //        }
-//        System.out.println("preDistAverage: " + preDistAverage/nRequests);
-//        System.out.println("resultingDistAverage: " + resultingDistAverage/nRequests);
+        LOG.info("preDistAverage: " + preDistAverage / nRequests);
+        LOG.info("resultingDistAverage: " + resultingDistAverage / nRequests);
 //        try (OutputStream outputStream = new FileOutputStream("test.xml.gz")) {
 //            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
 //            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
@@ -180,8 +189,7 @@ public class PopulationCreator implements UtilComponent {
 
     private Link getClosestDestLink(Coord coord, List<Link> outLinks, double L) {
         return outLinks.stream()
-                .min(Comparator
-                        .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
+                .min(Comparator.comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();
     }
 

@@ -21,7 +21,6 @@ public class InverseTransformSampler {
     private int N;
     private Random random;
     private double EPSILON = 0.00001;
-    public static int counter = 0;
     private static final Map<Double, Double> map = new HashMap<>();
 
     public InverseTransformSampler(Function<Double, Double> function, boolean isNormalized, double x0, double x1,
@@ -99,7 +98,7 @@ public class InverseTransformSampler {
 //                    10000,
 //                    10000);
             InverseTransformSampler sampler = new InverseTransformSampler(
-                    x -> taxiDistDistributionNotNormalized(x, 500, 3.1), false, 0.001, 5000, (int) 1e7, new Random());
+                    x -> taxiDistDistributionNotNormalized(x, 1000, 3.1), false, 1e-3, 5000, (int) 1e7, new Random());
 //            List<Double> probabilities = new ArrayList<>(sampler.probs.values());
             StringBuilder testout = new StringBuilder();
             for (int i = 0; i < (int) 1E5; i++) {
@@ -126,7 +125,6 @@ public class InverseTransformSampler {
             N = Math.pow(k - 2, k - 1) / Gamma.gamma(k - 1);
             map.put(k,N);
         }
-        counter++;
         return N * taxiDistDistributionNotNormalized(x,mean,k);
     }
 
