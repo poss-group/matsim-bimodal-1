@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
-import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistribution;
+import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
 import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistributionNotNormalized;
 
 public class ScenarioCreatorOsm {
@@ -21,8 +21,9 @@ public class ScenarioCreatorOsm {
 
     public final static String IS_START_LINK = "isStartLink";
     public final static String IS_STATION_NODE = "isStation";
-//    public final static String NETWORK_MODE_TRAIN = "train";
+    //    public final static String NETWORK_MODE_TRAIN = "train";
 //    public final static String NETWORK_MODE_CAR = "car";
+    private final static double BETA = 0.382597858232;
 
     private NetworkCreatorFromOsm networkCreatorFromOsm;
 //    private PopulationCreator populationCreator;
@@ -49,7 +50,8 @@ public class ScenarioCreatorOsm {
     private Function<Double, Double> travelDistanceDistribution;
     private double travelDistanceMean;
     private double effectiveFreeTrainSpeed;
-    private double ptSpacingOverMean;
+    private double ptSpacing;
+    private double cutoffDistance;
     private Network net = null;
     private ArrayList<Coord> hull = null;
     private Random rand;
@@ -68,7 +70,7 @@ public class ScenarioCreatorOsm {
                               int drtFleetSize, int drtCapacity, double drtOperationStartTime,
                               double drtOperationEndTime,
                               long seed, String transportMode, String travelDistanceDistribution,
-                              double travelDistanceMean, double ptSpacingOverMean) {
+                              double travelDistanceMean, double ptSpacing, double cutoffDistance) {
 
         this.linkCapacity = linkCapacity;
         this.freeSpeedCar = freeSpeedCar;
@@ -87,29 +89,17 @@ public class ScenarioCreatorOsm {
         this.seed = seed;
         this.transportMode = transportMode;
         this.travelDistanceMean = travelDistanceMean;
-        this.ptSpacingOverMean = ptSpacingOverMean;
+        this.ptSpacing = ptSpacing;
         this.effectiveFreeTrainSpeed = freeSpeedTrain;
         this.rand = new Random(seed);
+        this.cutoffDistance = cutoffDistance;
         if (travelDistanceDistribution.equals("InverseGamma")) {
-            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, travelDistanceMean, 3.1);
+            this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, this.travelDistanceMean, 3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            this.travelDistanceDistribution = x -> x < travelDistanceMean * 2 ? 1 / travelDistanceMean * 2 : 0;
+            this.travelDistanceDistribution = x ->
+                    x < this.travelDistanceMean * 2 ? 1 / this.travelDistanceMean * 2 : 0;
         }
 
-        //TODO fix this
-        double avDistFracToDCut = 3;
-        double avDistFracFromDCut = 3;
-//        UnivariateIntegrator integrator = new RombergIntegrator();
-//        double boundedNorm = integrator
-//                .integrate(1000000, x -> taxiDistDistribution(x, this.travelDistanceMean, 3.1), 0.0001,
-//                        this.systemSize);
-//        double avDistFracToDCut = integrator
-//                .integrate(1000000, x -> x * taxiDistDistribution(x, this.travelDistanceMean, 3.1) / boundedNorm,
-//                        0.0001, this.cutoffDistance);
-//        double avDistFracFromDCut = integrator
-//                .integrate(1000000, x -> taxiDistDistribution(x, this.travelDistanceMean, 3.1) / boundedNorm,
-//                        cutoffDistance, this.systemSize)
-//                * 2 * BETA * ptSpacingOverMean * travelDistanceMean;
 
         // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
 //        int numberOfStopsPerLine = (int) (systemSize/carGridSpacing)/railInterval;
@@ -125,8 +115,6 @@ public class ScenarioCreatorOsm {
 //        this.networkCreatorFromOsm = new NetworkCreatorFromOsm(linkCapacity, effectiveFreeTrainSpeed, numberOfLanes,
 //                freeSpeedCar);
 
-        this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, rand, avDistFracToDCut, avDistFracFromDCut);
         this.populationCreatorOsm = new PopulationCreatorOsm(nRequests, requestEndTime, rand,
                 transportMode, this.travelDistanceDistribution, travelDistanceMean);
     }
@@ -164,11 +152,28 @@ public class ScenarioCreatorOsm {
     }
 
     public void generateDrtVehicles(String drtOuputPath) {
+        this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
+                drtOperationEndTime, rand, 0, 0);
         this.drtFleetVehiclesCreator.run(net, drtOuputPath, drtFleetSize);
     }
 
-    public void generateDrtVehicles(String drtOuputPath, String drtOutputBimPath, double zetaCut) {
-        this.drtFleetVehiclesCreator.run(net, drtOuputPath, drtOutputBimPath, zetaCut, drtFleetSize);
+    public void generateDrtVehicles(String drtOuputPath, String drtOutputBimPath, double dCut) {
+        double[] netDimsMinMax = getNetworkDimensionsMinMax(net);
+        UnivariateIntegrator integrator = new RombergIntegrator();
+        double boundedNorm = integrator
+                .integrate(1000000, x -> this.travelDistanceDistribution.apply(x), 0.0001,
+                        netDimsMinMax[1] / 2);
+        double avDistFracToDCut = integrator
+                .integrate(1000000, x -> x * this.travelDistanceDistribution.apply(x) / boundedNorm,
+                        0.0001, this.cutoffDistance);
+        double avDistFracFromDCut = integrator
+                .integrate(1000000, x -> this.travelDistanceDistribution.apply(x) / boundedNorm,
+                        this.cutoffDistance, netDimsMinMax[1] / 2)
+                * 2 * BETA * ptSpacing * travelDistanceMean;
+
+        this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
+                drtOperationEndTime, rand, avDistFracToDCut, avDistFracFromDCut);
+        this.drtFleetVehiclesCreator.runSplitted(net, drtOuputPath, drtOutputBimPath, drtFleetSize);
     }
 
     public void generatePopulation(String outPath) {
@@ -184,7 +189,7 @@ public class ScenarioCreatorOsm {
 
         NetworkCreatorFromOsm networkCreatorFromOsm = new NetworkCreatorFromOsm(hull, linkCapacity, freeSpeedTrain,
                 numberOfLanes, freeSpeedCar, transitStartTime,
-                transitEndTime, departureIntervalTime, ptSpacingOverMean * travelDistanceMean);
+                transitEndTime, departureIntervalTime, ptSpacing);
         net = networkCreatorFromOsm.addTramNet(net, networkOutPath, transitScheduleOutPath, transitVehiclesOutPath);
     }
 
@@ -265,8 +270,8 @@ public class ScenarioCreatorOsm {
         return effectiveFreeTrainSpeed;
     }
 
-    public double getPtSpacingOverMean() {
-        return ptSpacingOverMean;
+    public double getPtSpacing() {
+        return ptSpacing;
     }
 
     public Network getNet() {

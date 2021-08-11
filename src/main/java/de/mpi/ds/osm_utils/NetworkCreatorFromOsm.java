@@ -152,18 +152,19 @@ public class NetworkCreatorFromOsm implements UtilComponent {
         double lY = maxY - minY;
 
 //        addCoordsToNet(net, hull, "hull", true);
+        //TODO: implement matrix transpose mirror method here as well
 
-        try {
-            List<Vector2D> pointSet = net.getNodes().values().stream()
-                    .map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(
-                            Collectors.toList());
-            DelaunayTriangulator delaunyTriangulator = new DelaunayTriangulator(pointSet);
-            delaunyTriangulator.triangulate();
-
-            List<Triangle2D> triangles = delaunyTriangulator.getTriangles();
-        } catch (NotEnoughPointsException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            List<Vector2D> pointSet = net.getNodes().values().stream()
+//                    .map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(
+//                            Collectors.toList());
+//            DelaunayTriangulator delaunyTriangulator = new DelaunayTriangulator(pointSet);
+//            delaunyTriangulator.triangulate();
+//
+//            List<Triangle2D> triangles = delaunyTriangulator.getTriangles();
+//        } catch (NotEnoughPointsException e) {
+//            e.printStackTrace();
+//        }
 
         double deltaPtX = ptSpacing;
         double deltaPtY = ptSpacing;

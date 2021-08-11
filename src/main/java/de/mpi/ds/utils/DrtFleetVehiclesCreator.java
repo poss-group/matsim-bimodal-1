@@ -80,14 +80,13 @@ public class DrtFleetVehiclesCreator implements UtilComponent {
 //                "scenarios/fine_grid/drtvehicles/drtvehicles_optDrtCount_diag/");
     }
 
-    public void run(String inputNetworkPath, String outputUnimPath, String outputBimPath, double dCut,
-                    int drtFleetSize) {
+    public void runSplitted(String inputNetworkPath, String outputUnimPath, String outputBimPath, int drtFleetSize) {
         Network net = NetworkUtils.readNetwork(inputNetworkPath);
-        run(net, outputUnimPath, outputBimPath, dCut, drtFleetSize);
+        runSplitted(net, outputUnimPath, outputBimPath, drtFleetSize);
     }
 
     // If dCut method is called with dCut split fleets
-    public void run(Network net, String outputUnimPath, String outputBimPath, double dCut, int drtFleetSize) {
+    public void runSplitted(Network net, String outputUnimPath, String outputBimPath, int drtFleetSize) {
         int fleetSizeBimodal = (int) Math
                 .round(drtFleetSize * avDistFracFromDCut / (avDistFracToDCut + avDistFracFromDCut));
         int fleetSizeUnimodal = drtFleetSize - fleetSizeBimodal;

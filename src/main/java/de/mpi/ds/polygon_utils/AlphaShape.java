@@ -46,7 +46,8 @@ public class AlphaShape {
 //    }
 
     public AlphaShape(Collection<? extends Node> nodes, double normalizedAlpha) {
-        points = nodes.stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY())).collect(Collectors.toList());
+        points = nodes.stream().map(n -> new Vector2D(n.getCoord().getX(), n.getCoord().getY()))
+                .collect(Collectors.toList());
         double minR = Double.MAX_VALUE;
         double maxR = -Double.MAX_VALUE;
 
@@ -71,20 +72,17 @@ public class AlphaShape {
     public ArrayList<Coord> compute() {
         List<Vector2D> resultPolygon = new ArrayList<>();
 
-
-        // Working data
+        computeAllNeighbours(triangulation);
         List<Vector2D> cur = new ArrayList<>();
         Map<Triangle2D, Boolean> flagged = triangulation.stream().collect(Collectors.toMap(tri -> tri, tri -> false));
-        computeAllNeighbours(triangulation);
 
         for (Triangle2D tri : triangulation) {
             if (!flagged.get(tri)) {
                 flagged.replace(tri, true);
                 if (tri.r2 <= alpha * alpha) {
-                    // Check neighbors
-                    processNeighbor(cur, flagged, tri, tri.nab, tri.b);
-                    processNeighbor(cur, flagged, tri, tri.nbc, tri.c);
-                    processNeighbor(cur, flagged, tri, tri.nca, tri.a);
+                    processNeighbor(cur, flagged, tri, tri.nab, tri.a, tri.b);
+                    processNeighbor(cur, flagged, tri, tri.nbc, tri.b, tri.c);
+                    processNeighbor(cur, flagged, tri, tri.nca, tri.c, tri.a);
                 }
                 if (cur.size() > 0) {
                     resultPolygon.addAll(cur);
@@ -94,6 +92,20 @@ public class AlphaShape {
         }
 
 
+//        for (Triangle2D tri: triangulation) {
+//            if (tri.nab == null) {
+//                resultPolygon.add(tri.a);
+//                resultPolygon.add(tri.b);
+//            }
+//            if (tri.nbc == null) {
+//                resultPolygon.add(tri.b);
+//                resultPolygon.add(tri.c);
+//            }
+//            if (tri.nca == null) {
+//                resultPolygon.add(tri.c);
+//                resultPolygon.add(tri.a);
+//            }
+//        }
         return TwoOpt.alternate(
                 (ArrayList<Coord>) resultPolygon.stream().map(v -> new Coord(v.x, v.y)).collect(Collectors.toList()));
 //        return (ArrayList<Edge2D>) triangulation.stream().flatMap(t -> Stream.of(t.ab, t.bc, t.ca)).collect(
@@ -103,7 +115,7 @@ public class AlphaShape {
     }
 
     private void processNeighbor(List<Vector2D> cur, Map<Triangle2D, Boolean> flagged, Triangle2D tri, Triangle2D ab,
-                                 Vector2D b) {
+                                 Vector2D b, Vector2D c) {
         if (ab != null) {
             if (flagged.get(ab)) {
                 return;
@@ -111,19 +123,20 @@ public class AlphaShape {
             flagged.replace(ab, true);
             if (ab.r2 < alpha * alpha) {
                 if (ab.nab != null && ab.nab.equals(tri)) {
-                    processNeighbor(cur, flagged, ab, ab.nbc, ab.c);
-                    processNeighbor(cur, flagged, ab, ab.nca, ab.a);
+                    processNeighbor(cur, flagged, ab, ab.nbc, ab.b, ab.c);
+                    processNeighbor(cur, flagged, ab, ab.nca, ab.c, ab.a);
                 } else if (ab.nbc != null && ab.nbc.equals(tri)) {
-                    processNeighbor(cur, flagged, ab, ab.nca, ab.a);
-                    processNeighbor(cur, flagged, ab, ab.nab, ab.b);
+                    processNeighbor(cur, flagged, ab, ab.nca, ab.c, ab.a);
+                    processNeighbor(cur, flagged, ab, ab.nab, ab.a, ab.b);
                 } else if (ab.nca != null && ab.nca.equals(tri)) {
-                    processNeighbor(cur, flagged, ab, ab.nab, ab.b);
-                    processNeighbor(cur, flagged, ab, ab.nbc, ab.c);
+                    processNeighbor(cur, flagged, ab, ab.nab, ab.a, ab.b);
+                    processNeighbor(cur, flagged, ab, ab.nbc, ab.b, ab.c);
                 }
                 return;
             }
         }
         cur.add(b);
+        cur.add(c);
     }
 
     private void computeAllNeighbours(List<Triangle2D> triangulation) {

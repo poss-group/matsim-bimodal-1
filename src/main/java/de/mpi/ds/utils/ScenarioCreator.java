@@ -61,6 +61,7 @@ public class ScenarioCreator {
     private double effectiveFreeTrainSpeed;
     private final double cutoffDistance;
     private boolean constDrtDemand;
+    private double fracWithcommonOrigDest;
 
     public ScenarioCreator(double systemSize, int railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
@@ -71,7 +72,7 @@ public class ScenarioCreator {
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
                            String travelDistanceDistribution, double travelDistanceMean, double meanAndSpeedScaleFactor,
-                           double cutoffDistance, boolean constDrtDemand) {
+                           double cutoffDistance, boolean constDrtDemand, double fracWithcommonOrigDest) {
 
         this.systemSize = systemSize;
         this.railInterval = railInterval;
@@ -99,6 +100,7 @@ public class ScenarioCreator {
         this.travelDistanceMean = travelDistanceMean * meanAndSpeedScaleFactor;
         this.cutoffDistance = cutoffDistance;
         this.constDrtDemand = constDrtDemand;
+        this.fracWithcommonOrigDest = fracWithcommonOrigDest;
 
         if (travelDistanceDistribution.equals("InverseGamma")) {
             this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, this.travelDistanceMean, 3.1);
@@ -140,14 +142,14 @@ public class ScenarioCreator {
             LOG.info("Mean drt dist: " + avDrtDist);
             LOG.info("creating " + (int) (nRequests / avDrtDist) + " requests");
 
-            try (FileOutputStream fos = new FileOutputStream("request_dists.csv", true)) {
-//                String toWrite = cutoffDistance + "," + avDistFracToDCut + "," + avDistFracFromDCut + "," +
-//                        avDrtDist + "," + (int) (nRequests / avDrtDist) + "\n";
-                String toWrite = cutoffDistance + "," +(int) (nRequests / avDrtDist) + "\n";
-                fos.write(toWrite.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try (FileOutputStream fos = new FileOutputStream("request_dists.csv", true)) {
+////                String toWrite = cutoffDistance + "," + avDistFracToDCut + "," + avDistFracFromDCut + "," +
+////                        avDrtDist + "," + (int) (nRequests / avDrtDist) + "\n";
+//                String toWrite = cutoffDistance + "," +(int) (nRequests / avDrtDist) + "\n";
+//                fos.write(toWrite.getBytes());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
 
         this.effectiveFreeTrainSpeed = this.freeSpeedTrain;
@@ -168,7 +170,8 @@ public class ScenarioCreator {
                 effectiveFreeTrainSpeed, numberOfLanes, this.freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines, transitScheduleCreator);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize, avDrtDist);
+                smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize, avDrtDist,
+                this.fracWithcommonOrigDest);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, random, avDistFracToDCut, avDistFracFromDCut);
     }
@@ -204,8 +207,8 @@ public class ScenarioCreator {
         drtFleetVehiclesCreator.run(networkPath, ouputPath, drtFleetSize);
     }
 
-    public void createDrtFleet(String networkPath, String outputUnimPath, String outputBimPath, double zetacut) {
-        drtFleetVehiclesCreator.run(networkPath, outputUnimPath, outputBimPath, zetacut, drtFleetSize);
+    public void createDrtFleet(String networkPath, String outputUnimPath, String outputBimPath) {
+        drtFleetVehiclesCreator.runSplitted(networkPath, outputUnimPath, outputBimPath, drtFleetSize);
     }
 
     public double getSystemSize() {

@@ -54,7 +54,8 @@ public class MatsimMain {
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
-//            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
+//            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
+//                    args[9], args[10]);
 //            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,41 +151,42 @@ public class MatsimMain {
 //        }
 
         for (double dcut = 200; dcut < 5000; dcut += 200) {
-            for (int railInt = 2; railInt < 50; railInt +=2) {
+            for (int railInt = 2; railInt < 50; railInt += 2) {
                 for (String mode : new String[]{"create-input"}) {
                     Config config = ConfigUtils
                             .loadConfig(configPath, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
                                     new DrtPlanModifierConfigGroup(), new OTFVisConfigGroup());
 //                runMultipleNetworks(config, mode, "2000", "0.5", "100", "20", "20", String.valueOf(reqs),
 //                        "234", "36000", "true", "false", "1", "multi");
-                    runMultipleNetworks(config, mode, "1000", String.valueOf(dcut), "100",String.valueOf(railInt), "1000",
+                    runMultipleNetworks(config, mode, "1000", String.valueOf(dcut), "100", String.valueOf(railInt),
+                            "1000",
                             "20000000", "42", "36000", "true", "true", "1", "CIConstDrtDemand");
                 }
             }
         }
     }
 
-    private static void runRealWorldScenario(Config config, String ptSpacingOverMeanString, String N_drt,
-                                             String nReqsString, String mode, String meanDistString,
-                                             String deltaMaxString, String seedString, String endTimeString,
-                                             String trainDepartureInterval, String outFolder) throws Exception {
+    private static void runRealWorldScenario(Config config, String mode, String meanDistString, String dCutString,
+                                             String ptSpacingString, String nDrtString, String nReqsString,
+                                             String seedString, String endTimeString, String trainDepartureInterval,
+                                             String outFolder) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
         }
-        double ptSpacingOverMean = Double.parseDouble(ptSpacingOverMeanString);
+        double ptSpacing = Double.parseDouble(ptSpacingString);
         int nReqs = Integer.parseInt(nReqsString);
-        double deltaMax = Double.parseDouble(deltaMaxString);
         double meanDist = Double.parseDouble(meanDistString);
         double trainFreq = Double.parseDouble(trainDepartureInterval);
+        double dCut = Double.parseDouble(dCutString);
+        int nDrt = Integer.parseInt(nDrtString);
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
-        String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
-//        String railIntervalOutPath = Paths.get(basicOutPath, "l_" + (int) (railInterval*carGridSpacing)).toString();
-//        String varyParameter = "Ndrt_";
-        String iterationSpecificPath = Paths.get(nDrtOutPath, ptSpacingOverMeanString + "l").toString();
-//        String iterationSpecificPath = Paths.get(railIntervalOutPath, varyParameter + N_drt)
-//                .toString();
-        String inputPath = Paths.get(iterationSpecificPath, "input").toString();
+        String meanDistOutPath = Paths.get(nReqsOutPath, meanDistString.concat("dist")).toString();
+        String nDrtOutPath = Paths.get(meanDistOutPath, nDrtString.concat("drt")).toString();
+        String dCutOutPath = Paths.get(nDrtOutPath, dCutString.concat("dcut")).toString();
+        String lOutPaht = Paths.get(dCutOutPath, ptSpacingString.concat("l")).toString();
+
+        String inputPath = Paths.get(lOutPaht, "input").toString();
         String networkPathIn = "network_clean.xml";
         String networkPathOut = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
@@ -203,7 +205,6 @@ public class MatsimMain {
         if (drtConfigGroups.size() == 2) {
             drtConfigGroups.get(1).setVehiclesFile(drtFleetPath2);
         }
-        double zetaCut = ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class).getdCut();
 
         String outPath = null;
         if (mode.equals("create-input")) {
@@ -216,8 +217,9 @@ public class MatsimMain {
                     .setNRequests(nReqs).setTravelDistanceDistribution("InverseGamma")
                     .setSeed(Long.parseLong(seedString)).setMeanTravelDist(meanDist)
                     .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
-                    .setDrtOperationEndTime(endTime).setPtSpacingOverMean(ptSpacingOverMean)
-                    .setdrtFleetSize(Integer.parseInt(N_drt)).setDepartureIntervalTime(trainFreq).build();
+                    .setDrtOperationEndTime(endTime).setPtSpacing(ptSpacing)
+                    .setCutoffDistance(dCut)
+                    .setdrtFleetSize(nDrt).setDepartureIntervalTime(trainFreq).build();
             double mu = 1. / scenarioCreatorOsm.getDepartureIntervalTime();
             double nu = 1. / scenarioCreatorOsm.getRequestEndTime();
             LOG.info("Q: " + mu / (nu * scenarioCreatorOsm.getnRequests() * scenarioCreatorOsm.getTravelDistanceMean() *
@@ -231,21 +233,23 @@ public class MatsimMain {
             if (drtConfigGroups.size() == 1) {
                 scenarioCreatorOsm.generateDrtVehicles(drtFleetPath);
             } else if (drtConfigGroups.size() == 2) {
-                scenarioCreatorOsm.generateDrtVehicles(drtFleetPath, drtFleetPath2, zetaCut * meanDist);
+                scenarioCreatorOsm.generateDrtVehicles(drtFleetPath, drtFleetPath2, dCut);
             }
             LOG.info("Finished creating drt fleet");
             return;
         } else if (mode.equals("bimodal")) {
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setMaxDetour(deltaMax);
-            outPath = Paths.get(iterationSpecificPath, mode).toString();
+            ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class)
+                    .setdCut(dCut);
+//            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                    .setMaxDetour(deltaMax);
+            outPath = Paths.get(lOutPaht, mode).toString();
         } else if (mode.equals("unimodal")) {
-            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
-                    .setMaxDetour(deltaMax);
+//            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
+//                    .setMaxDetour(deltaMax);
             outPath = Paths.get(nDrtOutPath, mode).toString();
             config.transit().setUseTransit(false);
         } else if (mode.equals("car")) {
-            outPath = Paths.get(nReqsOutPath, mode).toString();
+            outPath = Paths.get(meanDistOutPath, mode).toString();
             config.transit().setUseTransit(false);
         }
         DrtPlanModifierConfigGroup.get(config).setMode(mode);
@@ -277,12 +281,20 @@ public class MatsimMain {
         double meanAndSpeedScaleFactor = Double.parseDouble(meanAndSpeedScaleFactorString);
         boolean constDrtDemand = Boolean.parseBoolean(constDrtDemandString);
         //if system size is not modified
+//        String iterationSpecificPath = Paths.get(basicOutPath,
+//                nReqsString.concat("reqs"),
+//                N_drt.concat("drt"),
+//                dCutString.concat("dcut"),
+//                travelDistMeanString.concat("dist"),
+//                (int) (railInterval * carGridSpacing) + "l")
+//                .toString();
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
-        String nDrtOutPath = Paths.get(nReqsOutPath, N_drt.concat("drt")).toString();
+        String meanDistOutPath = Paths.get(nReqsOutPath, travelDistMeanString.concat("dist")).toString();
+        String nDrtOutPath = Paths.get(meanDistOutPath, N_drt.concat("drt")).toString();
         String dCutOutPath = Paths.get(nDrtOutPath, dCutString.concat("dcut")).toString();
-        String iterationSpecificPath = Paths.get(dCutOutPath, (int) (railInterval * carGridSpacing) + "l")
-                .toString();
-        String inputPath = Paths.get(iterationSpecificPath, "input").toString();
+        String lOutPaht = Paths.get(dCutOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
+
+        String inputPath = Paths.get(lOutPaht, "input").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
         String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
@@ -312,6 +324,7 @@ public class MatsimMain {
                     .setMeanAndSpeedScaleFactor(meanAndSpeedScaleFactor)
                     .setConstDrtDemand(constDrtDemand)
                     .setCutoffDistance(dCut)
+                    .setFracWithCommonOrigDest(1)
                     .setSmallLinksCloseToNodes(false).setdrtFleetSize(Integer.parseInt(N_drt)).build();
 //            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
 //            double nu = 1. / scenarioCreator.getRequestEndTime();
@@ -335,14 +348,14 @@ public class MatsimMain {
 //                    .setMaxDetour(deltaMax);
             ConfigUtils.addOrGetModule(config, DrtPlanModifierConfigGroup.class)
                     .setdCut(dCut);
-            outPath = Paths.get(iterationSpecificPath, mode).toString();
+            outPath = Paths.get(lOutPaht, mode).toString();
         } else if (mode.equals("unimodal")) {
 //            MultiModeDrtConfigGroup.get(config).getModalElements().stream().findFirst().orElseThrow()
 //                    .setMaxDetour(deltaMax);
             outPath = Paths.get(nDrtOutPath, mode).toString();
             config.transit().setUseTransit(false);
         } else if (mode.equals("car")) {
-            outPath = Paths.get(nReqsOutPath, mode).toString();
+            outPath = Paths.get(meanDistOutPath, mode).toString();
         }
         DrtPlanModifierConfigGroup.get(config).setMode(mode);
 //        if (mode.equals("car")) {
