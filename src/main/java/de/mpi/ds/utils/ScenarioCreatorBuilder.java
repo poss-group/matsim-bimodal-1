@@ -232,7 +232,8 @@ public class ScenarioCreatorBuilder {
                 "\ntravelDistanceMean : " + travelDistanceMean +
                 "\nmeanAndSpeedScaleFactor : " + meanAndSpeedScaleFactor +
                 "\ncutoffDistance : " + cutoffDistance +
-                "\nconstDrtDemand : " + constDrtDemand
+                "\nconstDrtDemand : " + constDrtDemand +
+                "\nfracWithCommonOrigDest" + fracWithCommonOrigDest
         );
     }
 }
