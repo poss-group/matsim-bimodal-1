@@ -153,9 +153,9 @@
             <parameterset type="ExtensiveInsertionSearch"/>
             <param name="mode" value="drt"/>
             <!--			<param name="estimatedDrtSpeed" value="8.333333333333334"/>-->
-            <param name="maxTravelTimeAlpha" value="1.5"/>
-            <param name="maxTravelTimeBeta" value="1200.0"/>
-            <param name="maxWaitTime" value="1200.0"/>
+            <param name="maxTravelTimeAlpha" value="3.0"/>
+            <param name="maxTravelTimeBeta" value="900.0"/>
+            <param name="maxWaitTime" value="9999999"/>
 
 <!--            <param name="maxTravelTimeAlpha" value="3.0"/>-->
 <!--            <param name="maxTravelTimeBeta" value="0."/>-->

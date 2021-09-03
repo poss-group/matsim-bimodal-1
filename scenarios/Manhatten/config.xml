@@ -4,7 +4,7 @@
 <config>
     <module name="drtPlanModifier">
         <param name="modifyPlans" value="true"/>
-        <param name="zetaCut" value="1"/>
+        <param name="dCut" value="1"/>
         <param name="mode" value="bimodal"/>
         <param name="periodicity" value="-1"/>
     </module>

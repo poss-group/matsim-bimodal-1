@@ -53,3 +53,9 @@ def getStandingFraction(df):
     pass_sum = df.sum(axis=1)
     standing_fraction = (df["STAY"] / pass_sum).mean()
     return standing_fraction
+
+def isParetoEfficient(costs):
+    is_efficient = np.ones(costs.shape[0], dtype = bool)
+    for i, c in enumerate(costs):
+        is_efficient[i] = np.all(np.any(costs[:i]>c, axis=1)) and np.all(np.any(costs[i+1:]>c, axis=1))
+    return is_efficient

@@ -17,52 +17,46 @@ def getBimDirsVaryDCut(directory, ndrt):
 
     return result
 
-def getBimDirs(directory, ndrt):
-    result = []
-    if ndrt:
-        ndrt = str(ndrt) + "drt"
-        ndrt_dir = os.path.join(directory, ndrt)
-    else:
-        ndrt_dir = directory
-    sub_dirs = []
-    sdirs = [
-        sdir.path
-        for sdir in
-            os.scandir(ndrt_dir)
-        if sdir.is_dir() and "l" in sdir.name and "error" not in sdir.name and "unimodal" not in sdir.name
-    ]
+def getDirs(directory, keys, constrVals):
+    sims = []
+    pattern = ".*/" + "/".join([("("+constrVals[i]+")" if constrVals[i] else"(\d*\.?\d*)")+keys[i] for i in range(len(keys))]) + "$"
+    
+    for root, subdirs, files in os.walk(directory):
+        vals = re.search(pattern, root)
+        if vals != None:
+            subresult = {}
+            subresult["root"] = root
+            for root2, subdirs2, files2 in os.walk(root):
+                for file2 in files2:
+                    if file2=="0.trips.csv.gz":
+                        subresult["trips"] = os.path.join(root2, file2)
+                    if file2=="0.vehicleDistanceStats_drt.csv":
+                        subresult["drt_dists"] = os.path.join(root2, file2)
+                    if file2=="trip_success.csv.gz":
+                        subresult["trip_success"] = os.path.join(root2, file2)
+                    if file2=="0.CummulativePtDistance.txt":
+                        subresult["pt_dist"] = os.path.join(root2, file2)
+                    if file2=="0.drt_occupancy_time_profiles_drt.txt":
+                        subresult["drt_occupancy"] = os.path.join(root2, file2)
+                    if file2=="0.occupancyAnalysis.txt":
+                        subresult["pt_occupancy"] = os.path.join(root2, file2)
+                    if file2=="0.drt_trips_drt.csv":
+                        subresult["drt_trips"] = os.path.join(root2, file2)
+                    if file2=="0.drt_detours_drt.csv":
+                        subresult["drt_detours"] = os.path.join(root2, file2)
+                    if file2=="ph_modestats.txt":
+                        subresult["ph_modestats"] = os.path.join(root2, file2)
+                    if file2=="pkm_modestats.txt":
+                        subresult["pkm_modestats"] = os.path.join(root2, file2)
+                    if file2=="output_persons.csv.gz":
+                        subresult["persons"] = os.path.join(root2, file2)
+                
+            sim = [float(val) for val in vals.groups() if val]
+            sim.append(subresult)
+            sims.append(sim)
+            continue
 
-    for sdir in sorted(sdirs, key=lambda x: int(re.search(".*/(\d*\.?\d*)l", x)[1])):
-        subresult = {}
-        subresult["root"] = sdir
-        for root, subdirs, files in os.walk(sdir):
-            for file in files:
-                if file=="0.trips.csv.gz" and "unimodal" not in root:
-                    subresult["trips"] = os.path.join(root, file)
-                if file=="0.vehicleDistanceStats_drt.csv" and "unimodal" not in root:
-                    subresult["drt_dists"] = os.path.join(root, file)
-                if file=="trip_success.csv.gz" and "unimodal" not in root:
-                    subresult["trip_success"] = os.path.join(root, file)
-                if file=="0.CummulativePtDistance.txt" and "unimodal" not in root:
-                    subresult["pt_dist"] = os.path.join(root, file)
-                if file=="0.drt_occupancy_time_profiles_drt.txt" and "unimodal" not in root:
-                    subresult["drt_occupancy"] = os.path.join(root, file)
-                if file=="0.occupancyAnalysis.txt" and "unimodal" not in root:
-                    subresult["pt_occupancy"] = os.path.join(root, file)
-                if file=="0.drt_trips_drt.csv" and "unimodal" not in root:
-                    subresult["drt_trips"] = os.path.join(root, file)
-                if file=="0.drt_detours_drt.csv" and "unimodal" not in root:
-                    subresult["drt_detours"] = os.path.join(root, file)
-                if file=="ph_modestats.txt" and "unimodal" not in root:
-                    subresult["ph_modestats"] = os.path.join(root, file)
-                if file=="pkm_modestats.txt" and "unimodal" not in root:
-                    subresult["pkm_modestats"] = os.path.join(root, file)
-                if file=="output_persons.csv.gz" and "unimodal" not in root:
-                    subresult["persons"] = os.path.join(root, file)
-
-        result.append(subresult)
-
-    return result
+    return sims
 
 def getCarDir(directory):
     result = {}
@@ -191,7 +185,7 @@ def getPtOccupancy(paths):
 
 def getDrtTrips(paths):
     path = paths["drt_trips"]
-    df = pd.read_csv(path, sep=";").loc[:, ["personId", "travelDistance_m", "waitTime", "travelTime"]]
+    df = pd.read_csv(path, sep=";").loc[:, ["personId", "waitTime", "travelTime", "travelDistance_m", "direcTravelDistance_m"]]
     df_perperson = df.set_index("personId")
     df_perperson = df.groupby("personId").agg(
         {
