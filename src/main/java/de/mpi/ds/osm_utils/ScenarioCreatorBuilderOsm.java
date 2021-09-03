@@ -20,7 +20,8 @@ public class ScenarioCreatorBuilderOsm {
     private double transitEndTime = 10 * 3600;
     private double departureIntervalTime = 15 * 60;
     private double transitStopLength = 0;
-    private double ptSpacingOverMean = 1;
+    private double ptSpacing = 2000;
+    private double cutoffDistance = 2000;
 
     private int drtFleetSize = 200;
     private int drtCapacity = 8;
@@ -120,13 +121,18 @@ public class ScenarioCreatorBuilderOsm {
         return this;
     }
 
-    public ScenarioCreatorBuilderOsm setPtSpacingOverMean(double ptSpacingOverMean) {
-        this.ptSpacingOverMean = ptSpacingOverMean;
+    public ScenarioCreatorBuilderOsm setPtSpacing(double ptSpacing) {
+        this.ptSpacing = ptSpacing;
         return this;
     }
 
     public ScenarioCreatorBuilderOsm setTransitStartTime(double transitStartTime) {
         this.transitStartTime = transitStartTime;
+        return this;
+    }
+
+    public ScenarioCreatorBuilderOsm setCutoffDistance(double dCut) {
+        this.cutoffDistance = dCut;
         return this;
     }
 
@@ -136,7 +142,7 @@ public class ScenarioCreatorBuilderOsm {
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitStartTime, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode,
-                travelDistanceDistribution, meanTravelDist, ptSpacingOverMean);
+                travelDistanceDistribution, meanTravelDist, ptSpacing, cutoffDistance);
     }
 
     private void printScenarioInfo() {
@@ -159,7 +165,8 @@ public class ScenarioCreatorBuilderOsm {
                 "\ntransportMode: " + transportMode +
                 "\ntravelDistanceDistribution : " + travelDistanceDistribution +
                 "\ntravelDistanceMean : " + meanTravelDist +
-                "\nptSpacingOverMean : " + ptSpacingOverMean
+                "\nptSpacing : " + ptSpacing +
+                "\ncutoffDistance : " + cutoffDistance
         );
     }
 }

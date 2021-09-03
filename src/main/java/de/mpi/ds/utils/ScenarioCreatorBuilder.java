@@ -18,6 +18,8 @@ public class ScenarioCreatorBuilder {
     private int requestEndTime = 9 * 3600;
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
+    private Boolean constDrtDemand = false;
+    private double fracWithCommonOrigDest = 0;
 
     private double transitStartTime = 0;
     private double transitEndTime = 10 * 3600;
@@ -39,6 +41,7 @@ public class ScenarioCreatorBuilder {
     private double travelDistanceMean = 2500;
 
     private double meanAndSpeedScaleFactor = 1;
+    private double cutoffDistance = 1;
 
     public ScenarioCreatorBuilder setRailInterval(int railInterval) {
         this.railInterval = railInterval;
@@ -175,13 +178,29 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setCutoffDistance(double cutoffDistance) {
+        this.cutoffDistance = cutoffDistance;
+        return this;
+    }
+
+    public ScenarioCreatorBuilder setConstDrtDemand(Boolean constDrtDemand) {
+        this.constDrtDemand = constDrtDemand;
+        return this;
+    }
+
+    public ScenarioCreatorBuilder setFracWithCommonOrigDest(double fracWithCommonOrigDest) {
+        this.fracWithCommonOrigDest = fracWithCommonOrigDest;
+        return this;
+    }
+
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitStartTime, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
-                createTrainLines, travelDistanceDistribution, travelDistanceMean, meanAndSpeedScaleFactor);
+                createTrainLines, travelDistanceDistribution, travelDistanceMean, meanAndSpeedScaleFactor,
+                cutoffDistance, constDrtDemand, fracWithCommonOrigDest);
     }
 
     private void printScenarioInfo() {
@@ -211,7 +230,10 @@ public class ScenarioCreatorBuilder {
                 "\ncreateTrainLines : " + createTrainLines +
                 "\ntravelDistanceDistribution : " + travelDistanceDistribution +
                 "\ntravelDistanceMean : " + travelDistanceMean +
-                "\nmeanAndSpeedScaleFactor" + meanAndSpeedScaleFactor
+                "\nmeanAndSpeedScaleFactor : " + meanAndSpeedScaleFactor +
+                "\ncutoffDistance : " + cutoffDistance +
+                "\nconstDrtDemand : " + constDrtDemand +
+                "\nfracWithCommonOrigDest" + fracWithCommonOrigDest
         );
     }
 }

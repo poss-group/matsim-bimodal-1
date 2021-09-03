@@ -32,13 +32,15 @@ public class PopulationCreator implements UtilComponent {
     private boolean createTrainLines;
     private Function<Double, Double> travelDistanceDistribution;
     private double systemSize;
+    private double avDrtDist;
+    private double fracWithCommonOrigDest;
 
     private static final Logger LOG = Logger.getLogger(PopulationCreator.class.getName());
 
     public PopulationCreator(int nRequests, int requestEndTime, Random random, String transportMode,
                              boolean isGridNetwork, boolean smallLinksCloseToNodes,
                              boolean createTrainLines, Function<Double, Double> travelDistanceDistribution,
-                             double systemSize) {
+                             double systemSize, double avDrtDist, double fracWithCommonOrigDest) {
         this.nRequests = nRequests;
         this.requestEndTime = requestEndTime;
         this.random = random;
@@ -48,22 +50,25 @@ public class PopulationCreator implements UtilComponent {
         this.createTrainLines = createTrainLines;
         this.travelDistanceDistribution = travelDistanceDistribution;
         this.systemSize = systemSize;
+        this.avDrtDist = avDrtDist;
+        this.fracWithCommonOrigDest = fracWithCommonOrigDest;
+
     }
 
     public static void main(String... args) {
         String networkPath = "scenarios/Manhatten/network_trams.xml";
         String outputPath = "scenarios/Manhatten/population.xml";
         PopulationCreator populationCreator = new PopulationCreator(1000, 9 * 3600, new Random(), TransportMode.drt,
-                false, false, true, x -> (double) ((x < 5000) ? 1 / 5000 : 0), 2500);
-        populationCreator.createPopulation(outputPath, networkPath);
+                false, false, true, x -> (double) ((x < 5000) ? 1 / 5000 : 0), 2500, 1234, -1);
+        populationCreator.createPopulation(outputPath, networkPath, false);
     }
 
-    public void createPopulation(String outputPopulationPath, String networkPath) {
+    public void createPopulation(String outputPopulationPath, String networkPath, boolean constDrtDemand) {
         Network net = NetworkUtils.readNetwork(networkPath);
-        createPopulation(outputPopulationPath, net);
+        createPopulation(outputPopulationPath, net, constDrtDemand);
     }
 
-    public void createPopulation(String outputPopulationPath, Network net) {
+    public void createPopulation(String outputPopulationPath, Network net, boolean constDrtDemand) {
 
         InverseTransformSampler sampler = new InverseTransformSampler(
                 travelDistanceDistribution,
@@ -74,9 +79,19 @@ public class PopulationCreator implements UtilComponent {
                 (int) 1e7,
                 random);
 
+
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         Population population = scenario.getPopulation();
-        generatePopulation(population, net, nRequests, sampler, systemSize);
+        int reqsToGenerate = nRequests;
+        if (constDrtDemand) {
+            reqsToGenerate /= avDrtDist;
+        }
+        LOG.info("Generating " + reqsToGenerate + " Requests...");
+        if (fracWithCommonOrigDest <= 0) {
+            generatePopulation(population, net, reqsToGenerate, sampler, systemSize);
+        } else if (fracWithCommonOrigDest > 0 && fracWithCommonOrigDest <= 1) {
+            generatePopulation(population, net, reqsToGenerate, sampler, systemSize, fracWithCommonOrigDest);
+        }
 
         PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation(), scenario.getNetwork());
         populationWriter.write(outputPopulationPath);
@@ -85,23 +100,26 @@ public class PopulationCreator implements UtilComponent {
 
     private void generatePopulation(Population population, Network net, int nRequests,
                                     InverseTransformSampler sampler, double L) {
-        Link orig_link;
-        Link dest_link;
-        List<Link> startLinks = null;
-        startLinks = net.getLinks().values().stream()
+        Link firstLink;
+        Link secondLink;
+        List<Link> startLinks = net.getLinks().values().stream()
                 .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
 
 //        StringBuilder sb = new StringBuilder();
 //        sb.append("x;y\n");
-//        double preDistAverage = 0;
-//        double resultingDistAverage = 0;
+        ClosestLinkFinder closestLinkFinder = new ClosestLinkFinder(net, 10, startLinks, L);
+        double preDistAverage = 0;
+        double resultingDistAverage = 0;
+        Coord pre_target = null;
+        double newX = 0;
+        double newY = 0;
         for (int j = 0; j < nRequests; j++) {
             do {
-                double newX = random.nextDouble() * L;
-                double newY = random.nextDouble() * L;
-                Coord pre_target = new Coord(newX, newY);
-                orig_link = getClosestDestLink(pre_target, startLinks, L);
+                newX = random.nextDouble() * L;
+                newY = random.nextDouble() * L;
+                pre_target = new Coord(newX, newY);
+                firstLink = closestLinkFinder.findClosestLink(pre_target);
                 if (sampler != null) {
                     double dist = 0;
                     try {
@@ -111,31 +129,119 @@ public class PopulationCreator implements UtilComponent {
                     }
                     double angle = random.nextDouble() * 2 * Math.PI;
 
-                    newX = ((orig_link.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
-                    newY = ((orig_link.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
+                    newX = ((firstLink.getCoord().getX() + dist * Math.cos(angle)) % L + L) % L;
+                    newY = ((firstLink.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     pre_target = new Coord(newX, newY);
-                    dest_link = getClosestDestLink(pre_target, startLinks, L);
-
-//                    if (!dest_link.equals(orig_link)) {
-//                        preDistAverage += dist;
-//                        resultingDistAverage += calculateDistancePeriodicBC(dest_link, orig_link, L);
-//                    }
+                    secondLink = closestLinkFinder.findClosestLink(pre_target);
+                    if (!secondLink.equals(firstLink)) {
+                        preDistAverage += dist;
+                        resultingDistAverage += calculateDistancePeriodicBC(secondLink, firstLink, L);
+                    }
                 } else {
                     newX = random.nextDouble() * L;
                     newY = random.nextDouble() * L;
                     pre_target = new Coord(newX, newY);
-                    dest_link = getClosestDestLink(pre_target, startLinks, L);
+                    secondLink = getClosestDestLink(pre_target, startLinks, L);
+//                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
                 }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
-            } while (dest_link.equals(orig_link));
-            generateTrip(orig_link, dest_link, j, population);
+            } while (secondLink.equals(firstLink));
+            generateTrip(firstLink, secondLink, j, population);
 //            sb.append(dest_link.getCoord().getX()).append(";").append(dest_link.getCoord().getY()).append("\n");
         }
 //        for (Link l: net.getLinks().values()) {
 //            sb.append(l.getCoord().getX()).append(";").append(l.getCoord().getY()).append("\n");
 //        }
-//        System.out.println("preDistAverage: " + preDistAverage/nRequests);
-//        System.out.println("resultingDistAverage: " + resultingDistAverage/nRequests);
+        LOG.info("preDistAverage: " + preDistAverage / nRequests);
+        LOG.info("resultingDistAverage: " + resultingDistAverage / nRequests);
+//        try (OutputStream outputStream = new FileOutputStream("test.xml.gz")) {
+//            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+//            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
+//                writer.write(sb.toString());
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    private void generatePopulation(Population population, Network net, int nRequests,
+                                    InverseTransformSampler sampler, double L, double fracWithCommonOrigDest) {
+        Link origLink = null;
+        Link destLink = null;
+        Coord firstCoord;
+        Coord secondCoord;
+        List<Link> startLinks = net.getLinks().values().stream()
+                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
+                .collect(Collectors.toList());
+
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("x;y\n");
+        ClosestLinkFinder closestLinkFinder = new ClosestLinkFinder(net, 10, startLinks, L);
+        Coord centerCoord = new Coord(L / 2, L / 2);
+        Node centerNode = net.getNodes().values().stream()
+                .min(Comparator.comparingDouble(n -> calculateDistancePeriodicBC(n.getCoord(), centerCoord, L))).get();
+        List<Link> centerInLinks = centerNode.getInLinks().values().stream()
+                .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true)).collect(
+                        Collectors.toList());
+//        Link centerLink = closestLinkFinder.findClosestLink();
+        double preDistAverage = 0;
+        double resultingDistAverage = 0;
+        Coord pre_target = null;
+        double newX = 0;
+        double newY = 0;
+        for (int j = 0; j < nRequests; j++) {
+            do {
+                boolean firstCenter = false;
+                if (random.nextDouble() < fracWithCommonOrigDest) {
+                    firstCoord = centerCoord;
+                    firstCenter = true;
+                } else {
+                    newX = random.nextDouble() * L;
+                    newY = random.nextDouble() * L;
+                    firstCoord = new Coord(newX, newY);
+                }
+                if (sampler != null) {
+                    double dist = 0;
+                    try {
+                        dist = sampler.getSample();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    double angle = random.nextDouble() * 2 * Math.PI;
+
+                    newX = ((firstCoord.getX() + dist * Math.cos(angle)) % L + L) % L;
+                    newY = ((firstCoord.getY() + dist * Math.sin(angle)) % L + L) % L;
+                    secondCoord = new Coord(newX, newY);
+                } else {
+                    newX = random.nextDouble() * L;
+                    newY = random.nextDouble() * L;
+                    secondCoord = new Coord(newX, newY);
+//                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
+                }
+                if (firstCenter && random.nextDouble() < 0.5) {
+                    destLink = closestLinkFinder.findClosestLink(secondCoord);
+                    Coord finalSecondCoord = secondCoord;
+                    origLink = centerInLinks.stream()
+                            .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                    finalSecondCoord, L))).get();
+                } else if (firstCenter) {
+                    origLink = closestLinkFinder.findClosestLink(secondCoord);
+                    Coord finalSecondCoord = secondCoord;
+                    destLink = centerInLinks.stream()
+                            .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                    finalSecondCoord, L))).get();
+                } else {
+                    origLink = closestLinkFinder.findClosestLink(firstCoord);
+                    destLink = closestLinkFinder.findClosestLink(secondCoord);
+                }
+//            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
+            } while (origLink.equals(destLink));
+            generateTrip(origLink, destLink, j, population);
+//            sb.append(dest_link.getCoord().getX()).append(";").append(dest_link.getCoord().getY()).append("\n");
+        }
+//        for (Link l: net.getLinks().values()) {
+//            sb.append(l.getCoord().getX()).append(";").append(l.getCoord().getY()).append("\n");
+//        }
 //        try (OutputStream outputStream = new FileOutputStream("test.xml.gz")) {
 //            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
 //            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
@@ -180,8 +286,7 @@ public class PopulationCreator implements UtilComponent {
 
     private Link getClosestDestLink(Coord coord, List<Link> outLinks, double L) {
         return outLinks.stream()
-                .min(Comparator
-                        .comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
+                .min(Comparator.comparingDouble(node -> calculateDistancePeriodicBC(node.getCoord(), coord, L)))
                 .orElseThrow();
     }
 

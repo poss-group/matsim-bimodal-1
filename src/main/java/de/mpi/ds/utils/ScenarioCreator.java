@@ -1,11 +1,20 @@
 package de.mpi.ds.utils;
 
+import org.apache.commons.math3.analysis.integration.RombergIntegrator;
+import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
+import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Random;
 import java.util.function.Function;
 
 import static de.mpi.ds.utils.GeneralUtils.doubleCloseToZero;
+import static de.mpi.ds.utils.GeneralUtils.getNetworkDimensionsMinMax;
+import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistribution;
 import static de.mpi.ds.utils.InverseTransformSampler.taxiDistDistributionNotNormalized;
 
 public class ScenarioCreator {
@@ -16,6 +25,7 @@ public class ScenarioCreator {
     public final static String PERIODIC_LINK = "periodicConnection";
     public final static String NETWORK_MODE_TRAIN = "train";
     public final static String NETWORK_MODE_CAR = "car";
+    private final static double BETA = 0.382597858232;
 
     private NetworkCreator networkCreator;
     private PopulationCreator populationCreator;
@@ -49,22 +59,27 @@ public class ScenarioCreator {
     private Function<Double, Double> travelDistanceDistribution;
     private double travelDistanceMean;
     private double effectiveFreeTrainSpeed;
+    private final double cutoffDistance;
+    private boolean constDrtDemand;
+    private double fracWithcommonOrigDest;
 
     public ScenarioCreator(double systemSize, int railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
                            double numberOfLanes, int requestEndTime, int nRequests,
-                           double transitStartTime, double transitEndTime, double departureIntervalTime, double transitStopLength,
+                           double transitStartTime, double transitEndTime, double departureIntervalTime,
+                           double transitStopLength,
                            int drtFleetSize, int drtCapacity, double drtOperationStartTime, double drtOperationEndTime,
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
-                           String travelDistanceDistribution, double travelDistanceMean, double meanAndSpeedScaleFactor) {
+                           String travelDistanceDistribution, double travelDistanceMean, double meanAndSpeedScaleFactor,
+                           double cutoffDistance, boolean constDrtDemand, double fracWithcommonOrigDest) {
 
         this.systemSize = systemSize;
         this.railInterval = railInterval;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
-        this.freeSpeedCar = freeSpeedCar*meanAndSpeedScaleFactor;
-        this.freeSpeedTrain = freeSpeedTrain*meanAndSpeedScaleFactor;
+        this.freeSpeedCar = freeSpeedCar * meanAndSpeedScaleFactor;
+        this.freeSpeedTrain = freeSpeedTrain * meanAndSpeedScaleFactor;
         this.numberOfLanes = numberOfLanes;
         this.requestEndTime = requestEndTime;
         this.nRequests = nRequests;
@@ -82,40 +97,83 @@ public class ScenarioCreator {
         this.diagonalConnections = diagonalConnections;
         this.smallLinksCloseToStations = smallLinksCloseToStations;
         this.createTrainLines = createTrainLines;
-        this.travelDistanceMean = travelDistanceMean*meanAndSpeedScaleFactor;
+        this.travelDistanceMean = travelDistanceMean * meanAndSpeedScaleFactor;
+        this.cutoffDistance = cutoffDistance;
+        this.constDrtDemand = constDrtDemand;
+        this.fracWithcommonOrigDest = fracWithcommonOrigDest;
 
         if (travelDistanceDistribution.equals("InverseGamma")) {
             this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, this.travelDistanceMean, 3.1);
         } else if (travelDistanceDistribution.equals("Uniform")) {
-            this.travelDistanceDistribution = x -> x < this.travelDistanceMean * 2 ? 1 / this.travelDistanceMean * 2 : 0;
+            this.travelDistanceDistribution = x ->
+                    x < this.travelDistanceMean * 2 ? 1 / this.travelDistanceMean * 2 : 0;
         }
 
-        // Apparently every stops must take 2 seconds -> calc effective velocity to cover distance in planned time
-//        int numberOfStopsPerLine = (int) (systemSize/carGridSpacing)/railInterval;
-//        this.effectiveFreeTrainSpeed = systemSize/(600-numberOfStopsPerLine*2);
-        this.effectiveFreeTrainSpeed = freeSpeedTrain;
+        double avDistFracFromDCut = 0;
+        double avDistFracToDCut = 0;
+        double avDrtDist = 0;
+        if (constDrtDemand) {
+            UnivariateIntegrator integrator = new RombergIntegrator();
+            double boundedNorm = integrator
+                    .integrate(1000000, x -> this.travelDistanceDistribution.apply(x), 0.0001,
+                            this.systemSize / 2);
+            avDistFracToDCut = integrator
+                    .integrate(1000000, x -> x * this.travelDistanceDistribution.apply(x) / boundedNorm,
+                            0.0001, cutoffDistance);
+            avDistFracFromDCut = integrator
+                    .integrate(1000000, x -> this.travelDistanceDistribution.apply(x) / boundedNorm,
+                            cutoffDistance, this.systemSize / 2)
+                    * 2 * BETA * railInterval * carGridSpacing;
+            avDrtDist = avDistFracFromDCut + avDistFracToDCut;
+//            double[] drtDistsHardCodedV2 = new double[]{397.79121022, 407.809472, 457.86695313, 534.34625905, 621.89311347
+//                    , 683.48428029, 757.25604274, 812.20517302, 874.20169806, 942.85764959
+//                    , 984.68117987, 1037.74078996, 1077.13210279, 1098.91155073, 1141.42712331
+//                    , 1181.2785359, 1216.3565463, 1240.39852175, 1248.23867956, 1287.32667592
+//                    , 1316.102699, 1335.14582401, 1352.51491479, 1353.98810628};
+//            double[] drtDistsHardCodedV3 = new double[]{407.60869186, 417.5323817, 481.19544669, 568.25788556, 659.73380141
+//                    , 755.39394724, 859.54887946, 920.97974561, 1015.06725571, 1067.17688668
+//                    , 1121.35707207, 1192.66936841, 1251.68870807, 1265.42062124, 1307.79261321
+//                    , 1350.52365534, 1385.74616525, 1409.16607744, 1422.09820814, 1458.53834046
+//                    , 1456.32215468, 1484.30860808, 1497.79522769, 1519.45947849};
+////
+//            int idx = (int) Math.round(cutoffDistance / 200) - 1;
+//            avDrtDist = drtDistsHardCodedV3[idx];
+
+            LOG.info("Mean drt dist: " + avDrtDist);
+            LOG.info("creating " + (int) (nRequests / avDrtDist) + " requests");
+
+//            try (FileOutputStream fos = new FileOutputStream("request_dists.csv", true)) {
+////                String toWrite = cutoffDistance + "," + avDistFracToDCut + "," + avDistFracFromDCut + "," +
+////                        avDrtDist + "," + (int) (nRequests / avDrtDist) + "\n";
+//                String toWrite = cutoffDistance + "," +(int) (nRequests / avDrtDist) + "\n";
+//                fos.write(toWrite.getBytes());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+        }
+
+        this.effectiveFreeTrainSpeed = this.freeSpeedTrain;
 
         assert railInterval > 0 : "Pt grid spacing must be bigger than drt grid spacing";
         assert carGridSpacing * railInterval < systemSize : "Rail interval bigger than system size";
-//        assert railGridSpacing % carGridSpacing == 0 :
-//                "Pt grid spacing mus be integer multiple of drt grid spacing";
 
         this.random = new Random(seed);
-//        for (int i=0; i<10;i++) {
-//            System.out.println(random.nextInt());
-//        }
+
         if (!doubleCloseToZero(systemSize - 10000)) {
             LOG.error("Periodicity is fixed to 10000m, the simulated system has another size however: " + systemSize);
         }
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, freeSpeedTrain,
-                transitStartTime, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing, linkCapacity, numberOfLanes);
+
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, this.freeSpeedTrain,
+                transitStartTime, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing,
+                linkCapacity, numberOfLanes);
         this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
-                effectiveFreeTrainSpeed, numberOfLanes, freeSpeedCar, diagonalConnections,
+                effectiveFreeTrainSpeed, numberOfLanes, this.freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines, transitScheduleCreator);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
-                smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize);
+                smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize, avDrtDist,
+                this.fracWithcommonOrigDest);
         this.drtFleetVehiclesCreator = new DrtFleetVehiclesCreator(drtCapacity, drtOperationStartTime,
-                drtOperationEndTime, random, this.travelDistanceDistribution, travelDistanceMean, railInterval*carGridSpacing);
+                drtOperationEndTime, random, avDistFracToDCut, avDistFracFromDCut);
     }
 
 
@@ -138,7 +196,7 @@ public class ScenarioCreator {
     }
 
     public void createPopulation(String outputPopulationPath, String networkPath) {
-        populationCreator.createPopulation(outputPopulationPath, networkPath);
+        populationCreator.createPopulation(outputPopulationPath, networkPath, constDrtDemand);
     }
 
 //    public void createTransitSchedule(String networkPath, String outputSchedulePath, String outputVehiclePath) {
@@ -149,8 +207,8 @@ public class ScenarioCreator {
         drtFleetVehiclesCreator.run(networkPath, ouputPath, drtFleetSize);
     }
 
-    public void createDrtFleet(String networkPath, String outputUnimPath, String outputBimPath, double zetacut) {
-        drtFleetVehiclesCreator.run(networkPath, outputUnimPath, outputBimPath, zetacut, drtFleetSize);
+    public void createDrtFleet(String networkPath, String outputUnimPath, String outputBimPath) {
+        drtFleetVehiclesCreator.runSplitted(networkPath, outputUnimPath, outputBimPath, drtFleetSize);
     }
 
     public double getSystemSize() {
