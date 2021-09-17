@@ -5,18 +5,18 @@
 #$ -q titan.q
 #$ -j yes
 #$ -N input_manhatten
-#$ -t 1-15
+#$ -t 1-40
 
-ptSpacingList=($(seq 200 200 3000))
+ptSpacingList=($(seq 100 100 4000))
 Ndrt="1500"
-nReqs="200000"
+nReqs="300000"
 meanDist="3000"
 seed="42"
 endTime="36000"
 departureIntervalTime="900"
-outputDir="900Mu0.77Zeta"
+outputDir="900Mu0.77Zeta3Alpha"
 
-#for SGE_TASK_ID in $(seq 1 15); do
+#for SGE_TASK_ID in $(seq 1 40); do
 
 ((idx=SGE_TASK_ID-1))
 #((mod40=$idx % 40))

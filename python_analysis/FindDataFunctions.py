@@ -174,7 +174,7 @@ def getPtOccupancy(paths):
     path = paths["pt_occupancy"]
     #TODO generalize (no 600)
     av_pt_occ, av_pt_occ_sq, n_pt = getPtOccupancies(
-        path, 600
+        path, 900
     )
     t_av_pt_occ_av = getAverageTimeSeries(av_pt_occ)
     sigma = np.sqrt(n_pt / (n_pt - 1)) * np.sqrt(

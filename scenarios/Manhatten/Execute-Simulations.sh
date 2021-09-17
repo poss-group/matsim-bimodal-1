@@ -5,27 +5,27 @@
 #$ -q titan.q
 #$ -j yes
 #$ -N manhattan
-#$ -t 1-17
+#$ -t 1-42
 
-ptSpacingList=($(seq 200 200 3000))
+ptSpacingList=($(seq 100 100 4000))
 Ndrt="1500"
-nReqs="200000"
+nReqs="300000"
 meanDist="3000"
 seed="42"
 endTime="36000"
 departureIntervalTime="900"
-outputDir="900Mu0.77Zeta"
+outputDir="900Mu0.77Zeta3Alpha"
 
-#for SGE_TASK_ID in $(seq 1 17); do
+#for SGE_TASK_ID in $(seq 1 42); do
 
 ((idx=SGE_TASK_ID-1))
 #((mod40=$idx % 40))
 #((div40=$idx / 40))
 
-if [[ $idx == 15 ]]; then
+if [[ $idx == 40 ]]; then
     ptSpacing="3000"
     mode="unimodal"
-elif [[ $idx == 16 ]]; then 
+elif [[ $idx == 41 ]]; then 
     ptSpacing="3000"
     mode="car"
 else
