@@ -46,9 +46,9 @@ public class NetworkCleaner {
             double minY = originNet.getNodes().values().stream().mapToDouble(n -> n.getCoord().getY()).min().getAsDouble();
 
             net = centerAndRenameNodes(originNet, minX, minY);
-            String[] filenameArray = path.split("/");
-            File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_clean.xml"));
-            NetworkUtils.writeNetwork(net, outFile.getAbsolutePath());
+//            String[] filenameArray = path.split("/");
+//            File outFile = new File(path.replace(filenameArray[filenameArray.length - 1], "network_clean.xml"));
+//            NetworkUtils.writeNetwork(net, outFile.getAbsolutePath());
             return net;
         }
         return NetworkUtils.readNetwork(path);
@@ -78,7 +78,7 @@ public class NetworkCleaner {
                                 newFrom,
                                 newTo);
                 copyLinkProperties(l, newLink);
-                setLinkAttributes(newLink, linkCapacity, NaN, numberOfLanes, false);
+                setLinkAttributes(newLink, linkCapacity, freeSpeedCar, numberOfLanes, false);
                 if (!netContainsLink(newNet, newLink)) {
                     newNet.addLink(newLink);
                 }

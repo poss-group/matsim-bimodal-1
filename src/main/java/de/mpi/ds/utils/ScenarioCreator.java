@@ -107,6 +107,8 @@ public class ScenarioCreator {
         } else if (travelDistanceDistribution.equals("Uniform")) {
             this.travelDistanceDistribution = x ->
                     x < this.travelDistanceMean * 2 ? 1 / this.travelDistanceMean * 2 : 0;
+        } else if (travelDistanceDistribution.equals("UniformDiscrete")) {
+            this.travelDistanceDistribution = null;
         }
 
         double avDistFracFromDCut = 0;

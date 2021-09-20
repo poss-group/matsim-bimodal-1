@@ -49,13 +49,13 @@ public class MatsimMain {
 
 //            runMultipleNDrt(config, args[1], args[2], args[3], false);
 //            runMultipleConvCrit(config, args[1], args[2], args[3], args[4], false);
-            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
-                    args[10], args[11], args[12], args[13], args[14], args[15]);
+//            runMultipleNetworks(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
+//                    args[10], args[11], args[12], args[13], args[14], args[15]);
 //            manuallyStartMultipleNeworks(args[0]);
 //            runMulitpleDeltaMax(config, args[1], args[2]);
 //            manuallyStartMultipleDeltaMax(args[0]);
-//            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
-//                    args[9], args[10]);
+            runRealWorldScenario(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
+                    args[9], args[10], args[11]);
 //            run(config, false, false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,7 +169,7 @@ public class MatsimMain {
     private static void runRealWorldScenario(Config config, String mode, String meanDistString, String dCutString,
                                              String ptSpacingString, String nDrtString, String nReqsString,
                                              String seedString, String endTimeString, String trainDepartureInterval,
-                                             String outFolder) throws Exception {
+                                             String drtSpeedString, String outFolder) throws Exception {
         String basicOutPath = config.controler().getOutputDirectory();
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
@@ -180,6 +180,7 @@ public class MatsimMain {
         double trainFreq = Double.parseDouble(trainDepartureInterval);
         double dCut = Double.parseDouble(dCutString);
         int nDrt = Integer.parseInt(nDrtString);
+        double drtSpeed = Double.parseDouble(drtSpeedString);
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
         String meanDistOutPath = Paths.get(nReqsOutPath, meanDistString.concat("dist")).toString();
         String nDrtOutPath = Paths.get(meanDistOutPath, nDrtString.concat("drt")).toString();
@@ -187,7 +188,7 @@ public class MatsimMain {
         String lOutPaht = Paths.get(dCutOutPath, ptSpacingString.concat("l")).toString();
 
         String inputPath = Paths.get(lOutPaht, "input").toString();
-        String networkPathIn = "network_clean.xml";
+        String networkPathIn = "network.xml";
         String networkPathOut = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
         String transitSchedulePath = Paths.get(inputPath, "transitSchedule_input.xml.gz").toString();
@@ -219,6 +220,7 @@ public class MatsimMain {
                     .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)
                     .setDrtOperationEndTime(endTime).setPtSpacing(ptSpacing)
                     .setCutoffDistance(dCut)
+                    .setFreeSpeedCar(drtSpeed)
                     .setdrtFleetSize(nDrt).setDepartureIntervalTime(trainFreq).build();
             double mu = 1. / scenarioCreatorOsm.getDepartureIntervalTime();
             double nu = 1. / scenarioCreatorOsm.getRequestEndTime();

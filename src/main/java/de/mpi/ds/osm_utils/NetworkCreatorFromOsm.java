@@ -83,8 +83,8 @@ public class NetworkCreatorFromOsm implements UtilComponent {
     }
 
     public static void main(String... args) {
-//        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Berlin/network_clean.xml";
-        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean.xml";
+//        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Berlin/network_clean_.xml";
+        String path = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean_.xml";
 //        String pathOut = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Berlin/network_test.xml";
         String pathOut = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_test.xml";
         Network net = NetworkUtils.readNetwork(path);
@@ -508,11 +508,10 @@ public class NetworkCreatorFromOsm implements UtilComponent {
             link.setFreespeed(freeSpeed);
             link.getAttributes().putAttribute(IS_START_LINK, false);
         } else {
+            link.getAttributes().putAttribute(IS_START_LINK, true);
             modes.add(TransportMode.car);
-            if (link.getFreespeed() < 9) {
-                link.getAttributes().putAttribute(IS_START_LINK, true);
-            } else {
-                link.getAttributes().putAttribute(IS_START_LINK, false);
+            if (!Double.isNaN(freeSpeed)) {
+                link.setFreespeed(freeSpeed);
             }
         }
         link.setAllowedModes(modes);

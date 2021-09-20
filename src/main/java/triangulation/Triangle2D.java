@@ -231,4 +231,7 @@ public class Triangle2D {
         return "Triangle2D[" + a + ", " + b + ", " + c + "]";
     }
 
+    public double getArea() {
+        return 0.5 * Math.abs((a.x-c.x)*(b.y-a.y) - (a.x-b.x)*(c.y-a.y));
+    }
 }

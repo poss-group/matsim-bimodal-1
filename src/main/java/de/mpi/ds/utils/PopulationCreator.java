@@ -52,7 +52,6 @@ public class PopulationCreator implements UtilComponent {
         this.systemSize = systemSize;
         this.avDrtDist = avDrtDist;
         this.fracWithCommonOrigDest = fracWithCommonOrigDest;
-
     }
 
     public static void main(String... args) {
@@ -69,15 +68,18 @@ public class PopulationCreator implements UtilComponent {
     }
 
     public void createPopulation(String outputPopulationPath, Network net, boolean constDrtDemand) {
+        InverseTransformSampler sampler = null;
 
-        InverseTransformSampler sampler = new InverseTransformSampler(
-                travelDistanceDistribution,
-                false,
-                1e-3,
-                // xy_1/2 -> periodic BC
-                systemSize / 2,
-                (int) 1e7,
-                random);
+        if (travelDistanceDistribution != null) {
+            sampler = new InverseTransformSampler(
+                    travelDistanceDistribution,
+                    false,
+                    1e-3,
+                    // xy_1/2 -> periodic BC
+                    systemSize / 2,
+                    (int) 1e7,
+                    random);
+        }
 
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
@@ -100,8 +102,8 @@ public class PopulationCreator implements UtilComponent {
 
     private void generatePopulation(Population population, Network net, int nRequests,
                                     InverseTransformSampler sampler, double L) {
-        Link firstLink;
-        Link secondLink;
+        Link firstLink = null;
+        Link secondLink = null;
         List<Link> startLinks = net.getLinks().values().stream()
                 .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true))
                 .collect(Collectors.toList());
@@ -109,18 +111,19 @@ public class PopulationCreator implements UtilComponent {
 //        StringBuilder sb = new StringBuilder();
 //        sb.append("x;y\n");
         ClosestLinkFinder closestLinkFinder = new ClosestLinkFinder(net, 10, startLinks, L);
-        double preDistAverage = 0;
-        double resultingDistAverage = 0;
+//        double preDistAverage = 0;
+//        double resultingDistAverage = 0;
         Coord pre_target = null;
         double newX = 0;
         double newY = 0;
         for (int j = 0; j < nRequests; j++) {
             do {
-                newX = random.nextDouble() * L;
-                newY = random.nextDouble() * L;
-                pre_target = new Coord(newX, newY);
-                firstLink = closestLinkFinder.findClosestLink(pre_target);
                 if (sampler != null) {
+                    newX = random.nextDouble() * L;
+                    newY = random.nextDouble() * L;
+                    pre_target = new Coord(newX, newY);
+                    firstLink = closestLinkFinder.findClosestLink(pre_target);
+
                     double dist = 0;
                     try {
                         dist = sampler.getSample();
@@ -133,16 +136,13 @@ public class PopulationCreator implements UtilComponent {
                     newY = ((firstLink.getCoord().getY() + dist * Math.sin(angle)) % L + L) % L;
                     pre_target = new Coord(newX, newY);
                     secondLink = closestLinkFinder.findClosestLink(pre_target);
-                    if (!secondLink.equals(firstLink)) {
-                        preDistAverage += dist;
-                        resultingDistAverage += calculateDistancePeriodicBC(secondLink, firstLink, L);
-                    }
+//                    if (!secondLink.equals(firstLink)) {
+//                        preDistAverage += dist;
+//                        resultingDistAverage += calculateDistancePeriodicBC(secondLink, firstLink, L);
+//                    }
                 } else {
-                    newX = random.nextDouble() * L;
-                    newY = random.nextDouble() * L;
-                    pre_target = new Coord(newX, newY);
-                    secondLink = getClosestDestLink(pre_target, startLinks, L);
-//                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
+                    firstLink = startLinks.get(random.nextInt(startLinks.size()));
+                    secondLink = startLinks.get(random.nextInt(startLinks.size()));
                 }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
             } while (secondLink.equals(firstLink));
@@ -152,8 +152,8 @@ public class PopulationCreator implements UtilComponent {
 //        for (Link l: net.getLinks().values()) {
 //            sb.append(l.getCoord().getX()).append(";").append(l.getCoord().getY()).append("\n");
 //        }
-        LOG.info("preDistAverage: " + preDistAverage / nRequests);
-        LOG.info("resultingDistAverage: " + resultingDistAverage / nRequests);
+//        LOG.info("preDistAverage: " + preDistAverage / nRequests);
+//        LOG.info("resultingDistAverage: " + resultingDistAverage / nRequests);
 //        try (OutputStream outputStream = new FileOutputStream("test.xml.gz")) {
 //            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
 //            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
@@ -184,23 +184,20 @@ public class PopulationCreator implements UtilComponent {
                 .filter(l -> l.getAttributes().getAttribute(IS_START_LINK).equals(true)).collect(
                         Collectors.toList());
 //        Link centerLink = closestLinkFinder.findClosestLink();
-        double preDistAverage = 0;
-        double resultingDistAverage = 0;
-        Coord pre_target = null;
         double newX = 0;
         double newY = 0;
-        for (int j = 0; j < nRequests; j++) {
-            do {
-                boolean firstCenter = false;
-                if (random.nextDouble() < fracWithCommonOrigDest) {
-                    firstCoord = centerCoord;
-                    firstCenter = true;
-                } else {
-                    newX = random.nextDouble() * L;
-                    newY = random.nextDouble() * L;
-                    firstCoord = new Coord(newX, newY);
-                }
-                if (sampler != null) {
+        if (sampler != null) {
+            for (int j = 0; j < nRequests; j++) {
+                do {
+                    boolean firstCenter = false;
+                    if (random.nextDouble() < fracWithCommonOrigDest) {
+                        firstCoord = centerCoord;
+                        firstCenter = true;
+                    } else {
+                        newX = random.nextDouble() * L;
+                        newY = random.nextDouble() * L;
+                        firstCoord = new Coord(newX, newY);
+                    }
                     double dist = 0;
                     try {
                         dist = sampler.getSample();
@@ -212,44 +209,52 @@ public class PopulationCreator implements UtilComponent {
                     newX = ((firstCoord.getX() + dist * Math.cos(angle)) % L + L) % L;
                     newY = ((firstCoord.getY() + dist * Math.sin(angle)) % L + L) % L;
                     secondCoord = new Coord(newX, newY);
-                } else {
-                    newX = random.nextDouble() * L;
-                    newY = random.nextDouble() * L;
-                    secondCoord = new Coord(newX, newY);
-//                    dest_link = startLinks.get(random.nextInt(startLinks.size()));
-                }
-                if (firstCenter && random.nextDouble() < 0.5) {
-                    destLink = closestLinkFinder.findClosestLink(secondCoord);
-                    Coord finalSecondCoord = secondCoord;
-                    origLink = centerInLinks.stream()
-                            .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
-                                    finalSecondCoord, L))).get();
-                } else if (firstCenter) {
-                    origLink = closestLinkFinder.findClosestLink(secondCoord);
-                    Coord finalSecondCoord = secondCoord;
-                    destLink = centerInLinks.stream()
-                            .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
-                                    finalSecondCoord, L))).get();
-                } else {
-                    origLink = closestLinkFinder.findClosestLink(firstCoord);
-                    destLink = closestLinkFinder.findClosestLink(secondCoord);
-                }
+                    if (firstCenter && random.nextDouble() < 0.5) {
+                        destLink = closestLinkFinder.findClosestLink(secondCoord);
+                        Coord finalSecondCoord = secondCoord;
+                        origLink = centerInLinks.stream()
+                                .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                        finalSecondCoord, L))).get();
+                    } else if (firstCenter) {
+                        origLink = closestLinkFinder.findClosestLink(secondCoord);
+                        Coord finalSecondCoord = secondCoord;
+                        destLink = centerInLinks.stream()
+                                .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                        finalSecondCoord, L))).get();
+                    } else {
+                        origLink = closestLinkFinder.findClosestLink(firstCoord);
+                        destLink = closestLinkFinder.findClosestLink(secondCoord);
+                    }
 //            } while (calculateDistancePeriodicBC(orig_link, dest_link, L) < carGridSpacing);
-            } while (origLink.equals(destLink));
-            generateTrip(origLink, destLink, j, population);
+                } while (origLink.equals(destLink));
+                generateTrip(origLink, destLink, j, population);
 //            sb.append(dest_link.getCoord().getX()).append(";").append(dest_link.getCoord().getY()).append("\n");
+            }
+        } else {
+            for (int j = 0; j < nRequests; j++) {
+                do {
+                    if (random.nextDouble() < fracWithCommonOrigDest) {
+                        if (random.nextDouble() < 0.5) {
+                            destLink = startLinks.get(random.nextInt(startLinks.size()));
+                            Coord finalSecondCoord = destLink.getCoord();
+                            origLink = centerInLinks.stream()
+                                    .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                            finalSecondCoord, L))).get();
+                        } else {
+                            origLink = startLinks.get(random.nextInt(startLinks.size()));
+                            Coord finalSecondCoord = origLink.getCoord();
+                            destLink = centerInLinks.stream()
+                                    .min(Comparator.comparing(l -> calculateDistancePeriodicBC(l.getCoord(),
+                                            finalSecondCoord, L))).get();
+                        }
+                    } else {
+                        origLink = startLinks.get(random.nextInt(startLinks.size()));
+                        destLink = startLinks.get(random.nextInt(startLinks.size()));
+                    }
+                } while (origLink.equals(destLink));
+                generateTrip(origLink, destLink, j, population);
+            }
         }
-//        for (Link l: net.getLinks().values()) {
-//            sb.append(l.getCoord().getX()).append(";").append(l.getCoord().getY()).append("\n");
-//        }
-//        try (OutputStream outputStream = new FileOutputStream("test.xml.gz")) {
-//            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-//            try (Writer writer = new OutputStreamWriter(gzipOutputStream)) {
-//                writer.write(sb.toString());
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     private Node getRandomNodeOfCollection(Collection<? extends Node> collection) {

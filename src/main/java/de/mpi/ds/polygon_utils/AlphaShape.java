@@ -1,5 +1,6 @@
 package de.mpi.ds.polygon_utils;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -14,6 +15,7 @@ import java.util.stream.Stream;
 import static de.mpi.ds.utils.GeneralUtils.calculateDistanceNonPeriodic;
 
 public class AlphaShape {
+    private static final Logger LOG = Logger.getLogger(AlphaShape.class.getName());
     private double alpha;
     private List<Vector2D> points;
     private List<Triangle2D> triangulation = null;
@@ -57,10 +59,13 @@ public class AlphaShape {
 
             triangulation = delaunyTriangulator.getTriangles();
             triSoup = delaunyTriangulator.getTriangleSoup();
+            double area = 0;
             for (Triangle2D tri : triangulation) {
+                area += tri.getArea();
                 minR = min4(tri.ab.l, tri.bc.l, tri.ca.l, minR);
                 maxR = max4(tri.ab.l, tri.bc.l, tri.ca.l, maxR);
             }
+            LOG.info("Area: " + area);
         } catch (NotEnoughPointsException e) {
             e.printStackTrace();
         }

@@ -133,7 +133,7 @@ public class ScenarioCreatorOsm {
 //        scenarioCreator.createPopulation(popPath, netPath);
 //        scenarioCreator.createDrtFleet(netPath, drtFleetPath);
 //        scenarioCreator.createTransitSchedule(netPath, transitSchedulePath, transitVehiclesPath);
-        String inPathNet = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean.xml";
+        String inPathNet = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_clean_.xml";
         String outPathNet = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/network_trams.xml";
         String outPathTransitSchedule = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/transit_schedule.xml";
         String outPathTransitVehicles = "/home/helge/Applications/matsim/matsim-bimodal.git/master/scenarios/Manhatten/transit_vehicles.xml";
