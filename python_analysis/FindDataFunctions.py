@@ -172,7 +172,7 @@ def getDrtOccupandyAndStandingFrac(paths, exclude_empty_vehicles, count_idle_veh
 
 def getPtOccupancy(paths):
     path = paths["pt_occupancy"]
-    #TODO generalize (no 600)
+    #TODO generalize (no 900)
     av_pt_occ, av_pt_occ_sq, n_pt = getPtOccupancies(
         path, 900
     )
