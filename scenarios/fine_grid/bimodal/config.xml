@@ -163,7 +163,7 @@
             <param name="operationalScheme" value="door2door"/>
             <param name="stopDuration" value="1.0"/>
             <param name="vehiclesFile" value="drtvehicles.xml"/>
-            <param name="maxDetour" value="1.5"/>
+            <param name="maxDetour" value="999"/>
             <!--            <param name="vehiclesFile" value="../drtvehicles/drtvehicles_optDrtCount/drtvehicles_50.xml.gz"/>-->
 
             <!--			<parameterset type="rebalancing">-->

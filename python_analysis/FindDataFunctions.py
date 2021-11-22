@@ -170,14 +170,15 @@ def getDrtOccupandyAndStandingFrac(paths, exclude_empty_vehicles, count_idle_veh
     drt_standing_frac = getStandingFraction(df.drop(columns="time"))
     return drt_occ, drt_standing_frac
 
-def getPtOccupancy(paths):
+def getPtOccupancy(paths, pt_interval=900):
     path = paths["pt_occupancy"]
     #TODO generalize (no 900)
     av_pt_occ, av_pt_occ_sq, n_pt = getPtOccupancies(
-        path, 900
+        path, pt_interval
     )
     t_av_pt_occ_av = getAverageTimeSeries(av_pt_occ)
-    sigma = np.sqrt(n_pt / (n_pt - 1)) * np.sqrt(
+    t_av_n_pt = getAverageTimeSeries(n_pt)
+    sigma = np.sqrt(t_av_n_pt / (t_av_n_pt - 1)) * np.sqrt(
         av_pt_occ_sq - av_pt_occ ** 2
     )
     t_av_pt_occ_sigma = getAverageTimeSeries(sigma)

@@ -38,7 +38,6 @@ def getAverageTimeSeries(series):
     else:
         return None
 
-
 def getPtOccupancies(path, transit_interval):
     # transit_interval: how long does it take the pt vehicle to cross the system
     file_data = open(path)
@@ -63,16 +62,31 @@ def getPtOccupancies(path, transit_interval):
     )
     occupancies = occupancies.sort_values(by=["transporter", "time"])
 
-    occupancies = occupancies.pivot_table(
-        index="time", columns="transporter", values="passengers", aggfunc="last"
-    )
+    try:
+        occupancies = occupancies.pivot_table(
+            index="time", columns="transporter", values="passengers", aggfunc="last"
+        )
+    except ValueError: # dataframe to big for int32 type -> split df and work on small ones; maybe
+        # generalize to more than one split
+        occupancies1 = occupancies.iloc[:(len(occupancies)//2)]
+        occupancies2 = occupancies.iloc[(len(occupancies)//2):]
+        pivot1 = occupancies1.pivot_table(
+            index="time", columns="transporter", values="passengers", aggfunc="last"
+        )
+        pivot2 = occupancies2.pivot_table(
+            index="time", columns="transporter", values="passengers", aggfunc="last"
+        )
+        occupancies = pd.concat([pivot1, pivot2])
+    occupancies = occupancies.apply(lambda x: sortOutIdlePd(x, transit_interval))
     #     new_first_col = pd.DataFrame([[0] * len(occupancies.columns)], columns=occupancies.columns)
     #     occupancies = new_first_col.append(occupancies).fillna(method='ffill')
-    occupancies = occupancies.apply(lambda x: sortOutIdlePd(x, transit_interval))
 
     #     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #         display(occupancies)
     n_transporters = occupancies.count(axis=1)
+#     print("n_transporters: ", n_transporters)
     average_occupancies = occupancies.sum(axis=1) / n_transporters
+#     print("av_occs: ", average_occupancies)
     average_occupancies_squared = (occupancies**2).sum(axis=1) / n_transporters
-    return average_occupancies, average_occupancies_squared, n_transporters 
+#     print("av_occs_sq: ", average_occupancies_squared)
+    return average_occupancies, average_occupancies_squared, n_transporters
