@@ -3,32 +3,35 @@
 [Matsim](https://www.matsim.org/) is an open-source software written in java for agent-based mobility simulations.
 
 ## Usage
-...
-<!--
 1. Clone the repository
 2. Clone the forked matsim-libs repository
-    - Checkout the branch `add_constraints_drt`
-    - Cd in root of matsim-libs and type `mvn install -pl :add_constraints_drt -am -DskipTests` to install drt contribution with additional ellipse constraints into your local maven repository
-3. Go into matsim-bimodal and uncomment the lines declaring the dependency on `add_constraints_drt` version in the `pom.xml`
-4. Type `mvn package` to build matsim and its dependencies with maven
-5. Execute the `matsim-bimodal-1.0-SNAPSHOT-jar-with-dependencies` file in the `target` directory
-6. Load a config file from the `scenarios` directory
-7. Start the simulation
-8. For visualisation a tool called [*via*](https://www.simunto.com/via/) (with a free license) is available online
-9. To clean the build type `mvn clean`
-10. To develope go to `src/main/java/de/mpi/ds/` and run the simulation from the `MatsimMain.java` class.
+    - Checkout branch:
+        -  `my_13.x` for model grid simulations with periodic BC. The periodic BC are fixed for 10km, the simulated model grid has to have dimensions 10km x 10km. Otherwise some distance functions in the following classes from the matsim-libs repository have to be changed:<br>
+        `org/matsim/core/router/util/LandmarkerPieSlices.java`<br>
+        `org/matsim/core/utils/geometry/CoordUtils.java`<br>
+        `org/matsim/core/utils/collections/QuadTree.java`<br>
+        `org/matsim/contrib/util/distance/DistanceUtils.java`
+        -  `my_13_osm.x` for simulations on real street networks without periodic BC
+    - Cd in root of matsim-libs and type `mvn install` to install into your local maven repository
+This has to be done only once as long as nothing is changed in the matsim-libs repo.
+3. Go into matsim-bimodal repository and choose matsim-version in the `pom.xml`:
+    - Either `13.1-MyVersion` for model grid simulations with periodic BC
+    - Or `13.1-MyVersionOsm` for simulations on real street networks without periodic BC
+5. Type `mvn clean package` to build matsim and its dependencies with maven
+6. Execute the `matsim-bimodal-1.0-SNAPSHOT-jar-with-dependencies` file (located in the `target` directory) in a directory with all the necessary input files (see [MATSim User Guide](https://www.matsim.org/docs/userguide/)) with arguments according to the `src/main/java/de/mpi/ds/MatsimMain.java` class.
+    - Such directories with the necessary input files are explained in the next section of the readme.
+9. For visualisation a tool called [*via*](https://www.simunto.com/via/) (with a free license) is available online
 
-<!---
 ## Scenarios
-1. **pt_grid**
-    - This scenario represents a public transport simulation on a 2d grid with 100 agents train lines.
----
-2. **drt_grid**
-    - This scenario represents a simulation of demand responsive transport on a 2d grid with 100 agents and 10 transport vehicles.
----
-3. **bimodal_grid**
-    - This scenario represents a simulation of demand responsive transport combined wit public transport on a 2d grid with 100 agents, 10 transport vehicles and train lines.
----
-4. **bimodal_fine_grid**
-    - This scenario represents a simulation of demand responsive transport combined wit public transport on a 2d grid with 1000 agents, 20 train lines and 25 drt vehicles.
--->
+1. **fine_grid/bimodal**
+    - grid model for bimodal simulations.
+    - Necessary Matsim Version: `13.1-MyVersion`
+2. **fine_grid/unimodal**
+    - grid model for bimodal simulations.
+    - Necessary Matsim Version: `13.1-MyVersion`
+3. **Berlin**
+    - Real street network simulation for Berlin (area inside of "Berliner Ringbahn").
+    - Necessary Matsim Version: `13.1-MyVersionOsm`
+4. **Manhattan**
+    - Real street network simulation for Manhattan.
+    - Necessary Matsim Version: `13.1-MyVersionOsm`
