@@ -9,6 +9,7 @@ public class ScenarioCreatorBuilder {
     private double systemSize = 10000;
     //    private double railGridSpacing = 1000;
     private int railInterval = 5;
+    private int small_railInterval = 1;
     private double carGridSpacing = 100;
     private long linkCapacity = 9999999;
     private double freeSpeedCar = 30 / 3.6;
@@ -195,7 +196,7 @@ public class ScenarioCreatorBuilder {
 
     public ScenarioCreator build() {
         printScenarioInfo();
-        return new ScenarioCreator(systemSize, railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
+        return new ScenarioCreator(systemSize, railInterval, small_railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
                 freeSpeedTrain, numberOfLanes, requestEndTime, nRequests, transitStartTime, transitEndTime,
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
