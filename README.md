@@ -21,7 +21,7 @@ This has to be done only once as long as nothing is changed in the matsim-libs r
 5. Execute the `matsim-bimodal-1.0-SNAPSHOT-jar-with-dependencies` file (located in the `target` directory) in a directory with a valid config file (e.g. mentioned [scenarios below](#scenarios)) with arguments according to the `src/main/java/de/mpi/ds/MatsimMain.java` class.
     - In this main class the line `runGridModel(...)` or the line `runRealWorld(...)` has to be commented out/in according to the desired scenario. If you changed something here repeat step 4.
     - The arguments necessary can also be seen in this main class.
-    - Example arguments for creating scenario: `config.xml create-input 2000 999999 100 50 19000 1000 21398 36000 true false 1 0 InverseGamma 100GridSpacing1200Beta`. For running the same scenario in a unimodal setting switch `create-input` to `unimodal`
+    - Example arguments for creating scenario: `config.xml(*This is configuration file) create-input(*bimodal scenario) 2000(*Mean travel distance in m) 999999(*dCut) 100(*carGridSpacing) 50(*railInterval) 19000(*N_drt) 1000(*nReqs) 21398(*seedString) 36000(*endTime) true(*diagConnections) false(*constDrtDemand) 1(*meanAndSpeedScaleFactor) 0(*fracWithCommonOrigDest) InverseGamma(*travelDistDistribution) 100GridSpacing1200Beta(*outFolder)`. For running the same scenario in a unimodal setting switch `create-input` to `unimodal`
 7. For visualisation a tool called [*via*](https://www.simunto.com/via/) is available online
 
 ## Scenarios
