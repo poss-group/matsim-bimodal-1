@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
+import org.matsim.contrib.dvrp.run.DvrpConfigGroup; //matsim-libs/contribs
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -53,7 +53,7 @@ public class MatsimMain {
         LOG.info("Starting matsim simulation...");
         try {
             runGridModel(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
-                    args[10], args[11], args[12], args[13], args[14], args[15]);
+                    args[10], args[11], args[12], args[13], args[14], args[15], args[16]);
 //            runRealWorld(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
 //                    args[9], args[10], args[11]);
 
@@ -164,7 +164,7 @@ public class MatsimMain {
 
     private static void runGridModel(Config config, String mode, String travelDistMeanString,
                                             String dCutString,
-                                            String carGridSpacingString, String railIntervalString, String N_drt,
+                                            String carGridSpacingString, String railIntervalString, String small_railIntervalString, String N_drt,
                                             String nReqsString, String seedString,
                                             String endTimeString, String diagConnections, String constDrtDemandString,
                                             String meanAndSpeedScaleFactorString, String fracWithCommonOrigDestString,
@@ -172,10 +172,15 @@ public class MatsimMain {
             Exception {
         // 20000000 requests for varying dcut from 200 to 10000; resulting requests: 11922 to 130679
         String basicOutPath = config.controler().getOutputDirectory();
+
+        //if outFolder is not empty then create a subdirectory
         if (!outFolder.equals("")) {
             basicOutPath = basicOutPath.concat("/" + outFolder);
         }
+
+        //read and typecast the control parameters
         int railInterval = Integer.parseInt(railIntervalString);
+        int small_railInterval = Integer.parseInt(small_railIntervalString);
         int nReqs = Integer.parseInt(nReqsString);
         double carGridSpacing = Double.parseDouble(carGridSpacingString);
 //        double deltaMax = Double.parseDouble(deltaMaxString);
@@ -192,14 +197,18 @@ public class MatsimMain {
 //                travelDistMeanString.concat("dist"),
 //                (int) (railInterval * carGridSpacing) + "l")
 //                .toString();
+
+        //create output path objects
         String nReqsOutPath = Paths.get(basicOutPath, nReqsString.concat("reqs")).toString();
         String meanDistOutPath = Paths.get(nReqsOutPath, travelDistMeanString.concat("dist")).toString();
         String fracComOrigDestPath = Paths
                 .get(meanDistOutPath, fracWithCommonOrigDestString.concat("frac_comm_orig_dest")).toString();
         String nDrtOutPath = Paths.get(fracComOrigDestPath, N_drt.concat("drt")).toString();
         String dCutOutPath = Paths.get(nDrtOutPath, dCutString.concat("dcut")).toString();
-        String lOutPath = Paths.get(dCutOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
+        String small_lOutPath = Paths.get(dCutOutPath,small_railIntervalString.concat("small_railInterval")).toString();
+        String lOutPath = Paths.get(small_lOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
 
+        //create input path objects
         String inputPath = Paths.get(lOutPath, "input").toString();
         String networkPath = Paths.get(inputPath, "network_input.xml.gz").toString();
         String populationPath = Paths.get(inputPath, "population_input.xml.gz").toString();
@@ -207,6 +216,7 @@ public class MatsimMain {
         String transitVehiclesPath = Paths.get(inputPath, "transitVehicles_input.xml.gz").toString();
         String drtFleetPath = Paths.get(inputPath, "drtvehicles_input.xml.gz").toString();
 
+        //configure network,plans,vehicles,populations
         config.network().setInputFile(networkPath);
         config.plans().setInputFile(populationPath);
         config.transit().setTransitScheduleFile(transitSchedulePath);

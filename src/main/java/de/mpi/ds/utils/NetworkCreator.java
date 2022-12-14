@@ -55,6 +55,7 @@ public class NetworkCreator implements UtilComponent {
     //    private double railGridSpacing;
     private double systemSize;
     private int railInterval;
+    private int small_raiInterval;
     private double carGridSpacing;
     private double linkCapacity;
     private double effectiveFreeTrainSpeed;
@@ -65,7 +66,7 @@ public class NetworkCreator implements UtilComponent {
     private boolean createTrainLines;
     private TransitScheduleCreator transitScheduleCreator;
 
-    public NetworkCreator(double systemSize, int railInterval, double carGridSpacing,
+    public NetworkCreator(double systemSize, int railInterval, int small_raiInterval, double carGridSpacing,
                           double linkCapacity, double effectiveFreeSpeedTrain, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections,
                           boolean smallLinksCloseToNodes, boolean createTrainLines, TransitScheduleCreator transitScheduleCreator) {
@@ -107,34 +108,53 @@ public class NetworkCreator implements UtilComponent {
         int n_y = (int) (systemSize / carGridSpacing + 1);
         int n_xPt = n_x / railInterval;
         n_xPt += ((n_x-1) % railInterval == 0) ? 0 : 1;
+        int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
         int n_yPt = n_y / railInterval;
         n_yPt += ((n_y-1) % railInterval == 0) ? 0 : 1;
+        int small_n_yPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
         Node[][] ptNodes = new Node[n_xPt][n_yPt];
+        Node[][] small_ptNodes = new Node[small_n_xPt][small_n_yPt];
+
         assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
         //TODO make possible to have just 2 stations
 //        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
         Node[][] nodes = new Node[n_x][n_y];
         int[] stationNodesX = new int[n_xPt];
         int[] stationNodesY = new int[n_yPt];
+        int[] small_stationNodesX = new int[small_n_xPt];
+        int[] small_stationNodesY = new int[small_n_yPt];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
-                boolean newNodeStationAtrribute = false;
+                boolean newNodeStationAttribute = false;
+                boolean newNodeStationAttribute_corssing = false;
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
                         new Coord(i * carGridSpacing, j * carGridSpacing));
                 if (createTrainLines) {
                     // n_xy - 1 because stations are not wanted at last stop
+
+                    //add rail stations without crossings
+                    if ((i % small_raiInterval == 0) && (j % small_raiInterval == 0) && (i % railInterval !=0) && (j % railInterval !=0) && i != n_x - 1 && j!= n_y - 1) {
+                        newNodeStationAttribute = true;
+                        newNodeStationAttribute_corssing = false;
+                        small_ptNodes[i/small_raiInterval][j/small_raiInterval] = n;
+                        small_stationNodesX[i/small_raiInterval] = i;
+                        small_stationNodesY[j/small_raiInterval] = j;
+                    }
+
                     if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
 //                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
-                        newNodeStationAtrribute = true;
+                        newNodeStationAttribute = true;
+                        newNodeStationAttribute_corssing = true;
                         ptNodes[i/railInterval][j/railInterval] = n;
                         stationNodesX[i / railInterval] = i;
                         stationNodesY[j / railInterval] = j;
                     }
                 }
 
-                n.getAttributes().putAttribute(IS_STATION_NODE, newNodeStationAtrribute);
+                n.getAttributes().putAttribute(IS_STATION_NODE, newNodeStationAttribute);
+                n.getAttributes().putAttribute(IS_STATION_CROSSING_NODE, newNodeStationAttribute_corssing);
                 nodes[i][j] = n;
                 net.addNode(n);
             }

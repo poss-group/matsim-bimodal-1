@@ -53,6 +53,7 @@ public class TransitScheduleCreator implements UtilComponent {
     private double transitStartTime;
     private double transitEndTime;
     private int railInterval;
+    private int small_railInterval;
     private double transitStopLength;
     private double departureIntervalTime;
     private double carGridSpacing;
@@ -60,11 +61,12 @@ public class TransitScheduleCreator implements UtilComponent {
     private double numberOfLanes;
     private int route_counter;
 
-    public TransitScheduleCreator(double systemSize, int railInterval, double freeSpeedTrain,
+    public TransitScheduleCreator(double systemSize, int railInterval, int small_railInterval, double freeSpeedTrain,
                                   double transitStartTime, double transitEndTime, double transitStopLength,
                                   double departureIntervalTime, double carGridSpacing, double linkCapacity,
                                   double numberOfLanes) {
         this.railInterval = railInterval;
+        this.small_railInterval = small_railInterval;
         this.systemSize = systemSize;
         this.freeSpeedTrain = freeSpeedTrain;
         this.transitStartTime = transitStartTime;

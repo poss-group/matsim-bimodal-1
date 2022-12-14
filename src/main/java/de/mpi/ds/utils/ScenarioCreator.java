@@ -22,6 +22,7 @@ public class ScenarioCreator {
 
     public final static String IS_START_LINK = "isStartLink";
     public final static String IS_STATION_NODE = "isStation";
+    public final static String IS_STATION_CROSSING_NODE = "isStationCrossing";
     public final static String PERIODIC_LINK = "periodicConnection";
     public final static String NETWORK_MODE_TRAIN = "train";
     public final static String NETWORK_MODE_CAR = "car";
@@ -35,6 +36,7 @@ public class ScenarioCreator {
 
     private double systemSize;
     private int railInterval;
+    private int small_railInterval;
     private double carGridSpacing;
     private long linkCapacity;
     private double freeSpeedCar;
@@ -63,7 +65,7 @@ public class ScenarioCreator {
     private boolean constDrtDemand;
     private double fracWithcommonOrigDest;
 
-    public ScenarioCreator(double systemSize, int railInterval, double carGridSpacing,
+    public ScenarioCreator(double systemSize, int railInterval, int small_railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
                            double numberOfLanes, int requestEndTime, int nRequests,
                            double transitStartTime, double transitEndTime, double departureIntervalTime,
@@ -76,6 +78,7 @@ public class ScenarioCreator {
 
         this.systemSize = systemSize;
         this.railInterval = railInterval;
+        this.small_railInterval = small_railInterval;
         this.carGridSpacing = carGridSpacing;
         this.linkCapacity = linkCapacity;
         this.freeSpeedCar = freeSpeedCar * meanAndSpeedScaleFactor;
@@ -125,7 +128,7 @@ public class ScenarioCreator {
             avDistFracFromDCut = integrator
                     .integrate(1000000, x -> this.travelDistanceDistribution.apply(x) / boundedNorm,
                             cutoffDistance, this.systemSize / 2)
-                    * 2 * BETA * railInterval * carGridSpacing;
+                    * 2 * BETA * small_railInterval * carGridSpacing;
             avDrtDist = avDistFracFromDCut + avDistFracToDCut;
 //            double[] drtDistsHardCodedV2 = new double[]{397.79121022, 407.809472, 457.86695313, 534.34625905, 621.89311347
 //                    , 683.48428029, 757.25604274, 812.20517302, 874.20169806, 942.85764959
@@ -165,10 +168,10 @@ public class ScenarioCreator {
             LOG.error("Periodicity is fixed to 10000m, the simulated system has another size however: " + systemSize);
         }
 
-        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, this.freeSpeedTrain,
+        this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, small_railInterval, this.freeSpeedTrain,
                 transitStartTime, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing,
                 linkCapacity, numberOfLanes);
-        this.networkCreator = new NetworkCreator(systemSize, railInterval, carGridSpacing, linkCapacity,
+        this.networkCreator = new NetworkCreator(systemSize, railInterval, small_railInterval, carGridSpacing, linkCapacity,
                 effectiveFreeTrainSpeed, numberOfLanes, this.freeSpeedCar, diagonalConnections,
                 smallLinksCloseToStations, createTrainLines, transitScheduleCreator);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
@@ -220,6 +223,7 @@ public class ScenarioCreator {
     public int getRailInterval() {
         return railInterval;
     }
+    public int getSmall_railInterval() {return small_railInterval; }
 
     public double getCarGridSpacing() {
         return carGridSpacing;
