@@ -205,8 +205,8 @@ public class MatsimMain {
                 .get(meanDistOutPath, fracWithCommonOrigDestString.concat("frac_comm_orig_dest")).toString();
         String nDrtOutPath = Paths.get(fracComOrigDestPath, N_drt.concat("drt")).toString();
         String dCutOutPath = Paths.get(nDrtOutPath, dCutString.concat("dcut")).toString();
-        String small_lOutPath = Paths.get(dCutOutPath,small_railIntervalString.concat("small_railInterval")).toString();
-        String lOutPath = Paths.get(small_lOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
+        //String small_lOutPath = Paths.get(dCutOutPath,small_railIntervalString.concat("small_railInterval")).toString();
+        String lOutPath = Paths.get(dCutOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
 
         //create input path objects
         String inputPath = Paths.get(lOutPath, "input").toString();

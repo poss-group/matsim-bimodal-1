@@ -22,6 +22,7 @@
 package de.mpi.ds.utils;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -55,7 +56,7 @@ public class NetworkCreator implements UtilComponent {
     //    private double railGridSpacing;
     private double systemSize;
     private int railInterval;
-    private int small_raiInterval;
+    private int small_railInterval;
     private double carGridSpacing;
     private double linkCapacity;
     private double effectiveFreeTrainSpeed;
@@ -66,7 +67,7 @@ public class NetworkCreator implements UtilComponent {
     private boolean createTrainLines;
     private TransitScheduleCreator transitScheduleCreator;
 
-    public NetworkCreator(double systemSize, int railInterval, int small_raiInterval, double carGridSpacing,
+    public NetworkCreator(double systemSize, int railInterval, int small_railInterval, double carGridSpacing,
                           double linkCapacity, double effectiveFreeSpeedTrain, double numberOfLanes,
                           double freeSpeedCar, boolean diagonalConnections,
                           boolean smallLinksCloseToNodes, boolean createTrainLines, TransitScheduleCreator transitScheduleCreator) {
@@ -79,6 +80,7 @@ public class NetworkCreator implements UtilComponent {
         this.freeSpeedCar = freeSpeedCar;
         this.diagonalConnections = diagonalConnections;
         this.railInterval = railInterval;
+        this.small_railInterval = small_railInterval;
         this.smallLinksCloseToNodes = smallLinksCloseToNodes;
         this.createTrainLines = createTrainLines;
         this.transitScheduleCreator = transitScheduleCreator;
@@ -107,14 +109,14 @@ public class NetworkCreator implements UtilComponent {
         // direction
         int n_y = (int) (systemSize / carGridSpacing + 1);
         //n_xPt and n_yPt contains both crossing and non-crossing stations
-
-        int n_xPt = n_x / small_raiInterval;
-        n_xPt += ((n_x-1) % small_raiInterval == 0) ? 0 : 1;
+        LOG.info("small_railInterval" + small_railInterval);
+        int n_xPt = n_x / small_railInterval;
+        n_xPt += ((n_x-1) % small_railInterval == 0) ? 0 : 1;
 
         // small_n_xPt is for alternate approach for creating non-crossing train stations
-        //int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
-        int n_yPt = n_y / small_raiInterval;
-        n_yPt += ((n_y-1) % small_raiInterval == 0) ? 0 : 1;
+        //int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_railInterval - 1);
+        int n_yPt = n_y / small_railInterval;
+        n_yPt += ((n_y-1) % small_railInterval == 0) ? 0 : 1;
        // int small_n_yPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
         Node[][] ptNodes = new Node[n_xPt][n_yPt];
         //Node[][] small_ptNodes = new Node[small_n_xPt][small_n_yPt];
@@ -138,12 +140,22 @@ public class NetworkCreator implements UtilComponent {
                     // n_xy - 1 because stations are not wanted at last stop
 
                     //add rail stations without crossings
-                    if ((i % small_raiInterval == 0) && (j % small_raiInterval == 0) && (i % railInterval !=0) && (j % railInterval !=0) && i != n_x - 1 && j!= n_y - 1) {
-                        newNodeStationAttribute = true;
-                        newNodeStationAttribute_corssing = false;
-                        ptNodes[i/small_raiInterval][j/small_raiInterval] = n;
-                        stationNodesX[i/small_raiInterval] = i;
-                        stationNodesY[j/small_raiInterval] = j;
+                    //if (((i % small_railInterval == 0) && (j % small_railInterval != 0))) {
+                    //    newNodeStationAttribute = true;
+                    //    newNodeStationAttribute_corssing = false;
+                    //    ptNodes[i/small_railInterval][j/small_railInterval] = n;
+                    //    stationNodesX[i/small_railInterval] = i;
+                    //    stationNodesY[j/small_railInterval] = j;
+                    //}
+
+                    if ((i % railInterval == 0) || (j % railInterval == 0) && i !=n_x-1 && j != n_y - 1){
+                        if ((i % small_railInterval == 0 ) && (j % small_railInterval == 0)) {
+                            newNodeStationAttribute = true;
+                            newNodeStationAttribute_corssing = false;
+                            ptNodes[i / small_railInterval][j / small_railInterval] = n;
+                            stationNodesX[i / small_railInterval] = i;
+                            stationNodesX[i / small_railInterval] = j;
+                        }
                     }
 
                     if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
