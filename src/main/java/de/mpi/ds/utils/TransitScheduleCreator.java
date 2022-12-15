@@ -115,9 +115,12 @@ public class TransitScheduleCreator implements UtilComponent {
         TransitScheduleFactory transitScheduleFactory = schedule.getFactory();
         PopulationFactory populationFactory = scenario.getPopulation().getFactory();
 
+
+        // TODO:Alter this routine for crossing and non crossing train stations
+
         int nX = transitNodes.length;
         int nY = transitNodes[0].length;
-        for (int i = 0; i < nX; i++) {
+        for (int i = 0; i < nX; i=i+railInterval/small_railInterval) {
             ArrayList<Id<Link>> transitLinks = new ArrayList<>();
             List<TransitRouteStop> transitRouteStops = new ArrayList<>();
             for (int j = 0; j < nY; j++) {

@@ -232,7 +232,7 @@ public class MatsimMain {
             double endTime = Double.parseDouble(endTimeString);
 
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
-                    .setRailInterval(railInterval).setNRequests(nReqs)
+                    .setRailInterval(railInterval).setSmall_railInterval(small_railInterval).setNRequests(nReqs)
                     .setTravelDistanceDistribution(travelDistanceDistributionString)
                     .setSeed(Long.parseLong(seedString)).setTravelDistanceMean(travelDistMean)
                     .setRequestEndTime((int) (endTime - 3600)).setTransitEndTime(endTime)

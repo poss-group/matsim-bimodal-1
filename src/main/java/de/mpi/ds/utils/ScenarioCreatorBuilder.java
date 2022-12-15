@@ -48,6 +48,10 @@ public class ScenarioCreatorBuilder {
         this.railInterval = railInterval;
         return this;
     }
+    public ScenarioCreatorBuilder setSmall_railInterval(int small_railInterval) {
+        this.small_railInterval = small_railInterval;
+        return this;
+    }
 
     public ScenarioCreatorBuilder setSystemSize(double systemSize) {
         this.systemSize = systemSize;
@@ -208,6 +212,7 @@ public class ScenarioCreatorBuilder {
         LOG.info("Building Scenario with Specifications:" +
                 "\nsystemSize: " + systemSize +
                 "\nrailInterval: " + railInterval +
+                "\nsmall_railInterval:" + small_railInterval +
                 "\ncarGridSpacing: " + carGridSpacing +
                 "\nlinkCapacity: " + linkCapacity +
                 "\nfreeSpeedCar: " + freeSpeedCar +

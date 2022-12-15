@@ -106,14 +106,18 @@ public class NetworkCreator implements UtilComponent {
         int n_x = (int) (systemSize / carGridSpacing + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
         int n_y = (int) (systemSize / carGridSpacing + 1);
-        int n_xPt = n_x / railInterval;
-        n_xPt += ((n_x-1) % railInterval == 0) ? 0 : 1;
-        int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
-        int n_yPt = n_y / railInterval;
-        n_yPt += ((n_y-1) % railInterval == 0) ? 0 : 1;
-        int small_n_yPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
+        //n_xPt and n_yPt contains both crossing and non-crossing stations
+
+        int n_xPt = n_x / small_raiInterval;
+        n_xPt += ((n_x-1) % small_raiInterval == 0) ? 0 : 1;
+
+        // small_n_xPt is for alternate approach for creating non-crossing train stations
+        //int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
+        int n_yPt = n_y / small_raiInterval;
+        n_yPt += ((n_y-1) % small_raiInterval == 0) ? 0 : 1;
+       // int small_n_yPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
         Node[][] ptNodes = new Node[n_xPt][n_yPt];
-        Node[][] small_ptNodes = new Node[small_n_xPt][small_n_yPt];
+        //Node[][] small_ptNodes = new Node[small_n_xPt][small_n_yPt];
 
         assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
         //TODO make possible to have just 2 stations
@@ -121,8 +125,8 @@ public class NetworkCreator implements UtilComponent {
         Node[][] nodes = new Node[n_x][n_y];
         int[] stationNodesX = new int[n_xPt];
         int[] stationNodesY = new int[n_yPt];
-        int[] small_stationNodesX = new int[small_n_xPt];
-        int[] small_stationNodesY = new int[small_n_yPt];
+        //int[] small_stationNodesX = new int[small_n_xPt];
+        //int[] small_stationNodesY = new int[small_n_yPt];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
@@ -137,9 +141,9 @@ public class NetworkCreator implements UtilComponent {
                     if ((i % small_raiInterval == 0) && (j % small_raiInterval == 0) && (i % railInterval !=0) && (j % railInterval !=0) && i != n_x - 1 && j!= n_y - 1) {
                         newNodeStationAttribute = true;
                         newNodeStationAttribute_corssing = false;
-                        small_ptNodes[i/small_raiInterval][j/small_raiInterval] = n;
-                        small_stationNodesX[i/small_raiInterval] = i;
-                        small_stationNodesY[j/small_raiInterval] = j;
+                        ptNodes[i/small_raiInterval][j/small_raiInterval] = n;
+                        stationNodesX[i/small_raiInterval] = i;
+                        stationNodesY[j/small_raiInterval] = j;
                     }
 
                     if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
