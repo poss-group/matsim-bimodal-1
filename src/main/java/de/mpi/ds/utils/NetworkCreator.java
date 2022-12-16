@@ -108,27 +108,9 @@ public class NetworkCreator implements UtilComponent {
         int n_x = (int) (systemSize / carGridSpacing + 1); // So that there are L_l_fraction*gridLengthInCells links per
         // direction
         int n_y = (int) (systemSize / carGridSpacing + 1);
-        //n_xPt and n_yPt contains both crossing and non-crossing stations
         LOG.info("small_railInterval" + small_railInterval);
-        int n_xPt = n_x / small_railInterval;
-        n_xPt += ((n_x-1) % small_railInterval == 0) ? 0 : 1;
 
-        // small_n_xPt is for alternate approach for creating non-crossing train stations
-        //int small_n_xPt = (int) (systemSize / railInterval) * (railInterval / small_railInterval - 1);
-        int n_yPt = n_y / small_railInterval;
-        n_yPt += ((n_y-1) % small_railInterval == 0) ? 0 : 1;
-       // int small_n_yPt = (int) (systemSize / railInterval) * (railInterval / small_raiInterval - 1);
-        Node[][] ptNodes = new Node[n_xPt][n_yPt];
-        //Node[][] small_ptNodes = new Node[small_n_xPt][small_n_yPt];
-
-        assert (n_xPt > 1 && n_yPt > 1) : "There must be at least 2 stations";
-        //TODO make possible to have just 2 stations
-//        assert (systemSize / railGridSpacing >= 2) : "does not make sense with periodic BC";
         Node[][] nodes = new Node[n_x][n_y];
-        int[] stationNodesX = new int[n_xPt];
-        int[] stationNodesY = new int[n_yPt];
-        //int[] small_stationNodesX = new int[small_n_xPt];
-        //int[] small_stationNodesY = new int[small_n_yPt];
         for (int i = 0; i < n_y; i++) {
             for (int j = 0; j < n_x; j++) {
                 String newNodeId = i + "_" + j;
@@ -137,35 +119,25 @@ public class NetworkCreator implements UtilComponent {
                 Node n = fac.createNode(Id.createNodeId(newNodeId),
                         new Coord(i * carGridSpacing, j * carGridSpacing));
                 if (createTrainLines) {
-                    // n_xy - 1 because stations are not wanted at last stop
-
-                    //add rail stations without crossings
-                    //if (((i % small_railInterval == 0) && (j % small_railInterval != 0))) {
-                    //    newNodeStationAttribute = true;
-                    //    newNodeStationAttribute_corssing = false;
-                    //    ptNodes[i/small_railInterval][j/small_railInterval] = n;
-                    //    stationNodesX[i/small_railInterval] = i;
-                    //    stationNodesY[j/small_railInterval] = j;
-                    //}
-
-                    if ((i % railInterval == 0) || (j % railInterval == 0) && i !=n_x-1 && j != n_y - 1){
-                        if ((i % small_railInterval == 0 ) && (j % small_railInterval == 0)) {
+                    // create train lines with no crossing
+                    if ((i % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
+                        if ((j % small_railInterval == 0)){
                             newNodeStationAttribute = true;
                             newNodeStationAttribute_corssing = false;
-                            ptNodes[i / small_railInterval][j / small_railInterval] = n;
-                            stationNodesX[i / small_railInterval] = i;
-                            stationNodesX[i / small_railInterval] = j;
                         }
                     }
 
+                    if ((j % railInterval == 0) && i != n_x - 1 && j != n_y - 1){
+                        if ((i % small_railInterval == 0)){
+                            newNodeStationAttribute = true;
+                            newNodeStationAttribute_corssing = false;
+                        }
+                    }
                     if ((i % railInterval == 0) && (j % railInterval == 0) && i != n_x - 1 && j != n_y - 1) {
 //                            && (i + ptInterval < n_x  && j + ptInterval < n_y)) { // For periodic BC
 //                        newNodeId = "PT_" + i / railInterval + "_" + j / railInterval;
                         newNodeStationAttribute = true;
                         newNodeStationAttribute_corssing = true;
-                        ptNodes[i/railInterval][j/railInterval] = n;
-                        stationNodesX[i / railInterval] = i;
-                        stationNodesY[j / railInterval] = j;
                     }
                 }
 
@@ -175,6 +147,8 @@ public class NetworkCreator implements UtilComponent {
                 net.addNode(n);
             }
         }
+
+
 
         double periodicLength = 0.00001;
 //        double periodicLength = 1;
@@ -198,7 +172,7 @@ public class NetworkCreator implements UtilComponent {
             }
         }
         if (createTrainLines) {
-            transitScheduleCreator.createPtLinksVehiclesSchedule(net, ptNodes, outputPathSchedule, outputPathVehicles);
+            transitScheduleCreator.createPtLinksVehiclesSchedule(net, nodes, outputPathSchedule, outputPathVehicles);
 //            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
 //            int iterToY = n_yPt > 2 ? n_yPt : 1;
 
