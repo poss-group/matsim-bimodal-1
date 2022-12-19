@@ -173,38 +173,6 @@ public class NetworkCreator implements UtilComponent {
         }
         if (createTrainLines) {
             transitScheduleCreator.createPtLinksVehiclesSchedule(net, nodes, outputPathSchedule, outputPathVehicles);
-//            int iterToX = n_xPt > 2 ? n_xPt : 1; // if there are only two stations per direction it does not make sense
-//            int iterToY = n_yPt > 2 ? n_yPt : 1;
-
-//            for (int i = 0; i < n_xPt; i++) {
-//                for (int j = 0; j < n_yPt; j++) {
-//                    int i_minus1_periodic = (((i - 1) % n_xPt) + n_xPt) % n_xPt;
-//                    int j_minus1_periodic = (((j - 1) % n_yPt) + n_yPt) % n_yPt;
-//
-////                    Node to = nodes[stationNodesX[i]][stationNodesY[j]];
-//                    Node to = ptNodes[i][j];
-//                    double length = 0;
-//
-//                    Node from = null;
-//                    if (!(n_xPt == 2 && i != 0)) {
-////                        from = nodes[stationNodesX[i_minus1_periodic]][stationNodesY[j]];
-//                        from = ptNodes[i_minus1_periodic][j];
-//                        length = calculateDistancePeriodicBC(from, to, systemSize);
-//                        boolean periodic = doubleCloseToZero(length);
-//                        length = periodic ? periodicLength : length;
-//                        insertTrainLinks(net, fac, from, to, length, periodic);
-//                    }
-//
-//                    if (!(n_yPt == 2 && j != 0)) {
-////                        from = nodes[stationNodesX[i]][stationNodesY[j_minus1_periodic]];
-//                        from = ptNodes[i][j_minus1_periodic];
-//                        length = calculateDistancePeriodicBC(from, to, systemSize);
-//                        boolean periodic = doubleCloseToZero(length);
-//                        length = periodic ? periodicLength : length;
-//                        insertTrainLinks(net, fac, from, to, length, periodic);
-//                    }
-//                }
-//            }
         }
 
         if (diagonalConnections) {

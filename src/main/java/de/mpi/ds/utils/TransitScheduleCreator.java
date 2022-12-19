@@ -124,7 +124,7 @@ public class TransitScheduleCreator implements UtilComponent {
         for (int i = 0; i < nX; i=i+railInterval) {
             ArrayList<Id<Link>> transitLinks = new ArrayList<>();
             List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-            for (int j = 0; j < nY; j=j+small_railInterval) {
+            for (int j = 0; j < nY-small_railInterval; j=j+small_railInterval) {
 
                 Node from = networkNodes[i][j];
                 Node toY = networkNodes[i][(j + small_railInterval) % nY];
@@ -132,17 +132,15 @@ public class TransitScheduleCreator implements UtilComponent {
                 LOG.info("from: "+from+" to "+toY);
                 Link linkY = getOrCreateLink(from, toY, net);
 
+
+                // why? below links are created in reverse direction?
+                // because last link is not created in the desired direction so we ensure that it is already created while creating links in reverse direction
                 if (transitLinks.size() == 0) {
                     Link linkY_r = getOrCreateLink(toY, from, net);
                     addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
                     transitLinks.add(linkY_r.getId());
                 }
-                if (from.getAttributes().getAttribute("isStationCrossing").equals(true)) {
-                    addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
-                }
-                else {
-                    addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
-                }
+                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
                 transitLinks.add(linkY.getId());
 
             }
@@ -204,7 +202,7 @@ public class TransitScheduleCreator implements UtilComponent {
             schedule.addStopFacility(transitStopFacility);
         }
         TransitRouteStop transitRouteStop = transitScheduleFactory
-                .createTransitRouteStop(transitStopFacility, 2, 2);
+                .createTransitRouteStop(transitStopFacility, 0, 0);
         if (atStart) {
             transitRouteStopList.add(0, transitRouteStop);
         } else {

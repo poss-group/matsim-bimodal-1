@@ -231,6 +231,7 @@ public class MatsimMain {
 
             double endTime = Double.parseDouble(endTimeString);
 
+            // create a scenario
             ScenarioCreator scenarioCreator = new ScenarioCreatorBuilder().setCarGridSpacing(carGridSpacing)
                     .setRailInterval(railInterval).setSmall_railInterval(small_railInterval).setNRequests(nReqs)
                     .setTravelDistanceDistribution(travelDistanceDistributionString)
@@ -250,12 +251,18 @@ public class MatsimMain {
 //            double avDist = scenarioCreator.getSystemSize() * scenarioCreator.getTravelDistanceMeanOverL();
 //            LOG.info("Q: " + mu / (nu * scenarioCreator.getnRequests() * scenarioCreator.getTravelDistanceMean() *
 //                    scenarioCreator.getTravelDistanceMean()));
+
+            //create network
             LOG.info("Creating network / Transit");
             scenarioCreator.createNetwork(networkPath, transitSchedulePath, transitVehiclesPath);
             LOG.info("Finished creating network\nCreating population for network");
+
+            //create population
             scenarioCreator.createPopulation(populationPath, networkPath);
             LOG.info("Finished creating population");
             LOG.info("Finished creating population\nCreating drt fleet");
+
+            // create DRT Fleet
             scenarioCreator.createDrtFleet(networkPath, drtFleetPath);
             LOG.info("Finished creating drt fleet");
             OutputDirectoryLogging.closeOutputDirLogging();
