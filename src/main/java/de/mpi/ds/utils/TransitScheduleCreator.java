@@ -92,12 +92,12 @@ public class TransitScheduleCreator implements UtilComponent {
         Vehicles vehicles = createVehicles();
 
         generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles); //net is network without train lines
-        networkNodes = switchYDirMatrix(networkNodes);
-        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        //networkNodes = switchYDirMatrix(networkNodes);
+        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
         networkNodes = transposeMatrix(networkNodes);
         generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
-        networkNodes = switchYDirMatrix(networkNodes);
-        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        //networkNodes = switchYDirMatrix(networkNodes);
+        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
 
         try {
             new TransitScheduleWriter(schedule).writeFile(transitScheduleOutPath);
@@ -124,22 +124,23 @@ public class TransitScheduleCreator implements UtilComponent {
         for (int i = 0; i < nX; i=i+railInterval) {
             ArrayList<Id<Link>> transitLinks = new ArrayList<>();
             List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-            for (int j = 0; j < nY-small_railInterval; j=j+small_railInterval) {
+            for (int j = 0; j < nY; j=j+small_railInterval) {
 
                 Node from = networkNodes[i][j];
                 Node toY = networkNodes[i][(j + small_railInterval) % nY];
 
                 LOG.info("from: "+from+" to "+toY);
+                LOG.info("and from" + toY + "to"+ from);
                 Link linkY = getOrCreateLink(from, toY, net);
 
 
                 // why? below links are created in reverse direction?
                 // because last link is not created in the desired direction so we ensure that it is already created while creating links in reverse direction
-                if (transitLinks.size() == 0) {
-                    Link linkY_r = getOrCreateLink(toY, from, net);
-                    addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
-                    transitLinks.add(linkY_r.getId());
-                }
+                //if (transitLinks.size() == 0) {
+                Link linkY_r = getOrCreateLink(toY, from, net);
+                addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, true);
+                transitLinks.add(linkY_r.getId());
+                //}
                 addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
                 transitLinks.add(linkY.getId());
 
