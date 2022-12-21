@@ -93,12 +93,12 @@ public class TransitScheduleCreator implements UtilComponent {
         Vehicles vehicles = createVehicles();
 
         generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles); //net is network without train lines
-        //networkNodes = switchYDirMatrix(networkNodes);
-        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
-        //networkNodes = transposeMatrix(networkNodes);
-        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
-        //networkNodes = switchYDirMatrix(networkNodes);
-        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        networkNodes = switchYDirMatrix(networkNodes);
+        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        networkNodes = transposeMatrix(networkNodes);
+        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        networkNodes = switchYDirMatrix(networkNodes);
+        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
 
         try {
             new TransitScheduleWriter(schedule).writeFile(transitScheduleOutPath);
@@ -122,26 +122,26 @@ public class TransitScheduleCreator implements UtilComponent {
         int nX = networkNodes.length; // for 11 nodes, nx = 11
         int nY = networkNodes[0].length;
 
-        for (int i = 0; i < nX; i++) {
-            if ((i % railInterval == 0) && i!=nX-1){
+        for (int i = 0; i < nX-1; i=i+railInterval) {
+            //if ((i % railInterval == 0) && i!=nX-1){
                 ArrayList<Id<Link>> transitLinks = new ArrayList<>();
                 List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-                for (int j =0; j < nY; j++){
-                    if ((j % small_railInterval == 0) && j!=nY-1){
+                for (int j =0; j < nY-1; j=j+small_railInterval){
+                    //if ((j % small_railInterval == 0) && j!=nY-1){
                         Node from = networkNodes[i][j];
                         Node toY = networkNodes[i][(j + small_railInterval) % (nY-1)];
 
                         LOG.info("from:"+from+" to: "+toY);
                         Link linkY = getOrCreateLink(from, toY, net);
 
-                        if (transitLinks.size() == 0){
-                            Link linkY_r = getOrCreateLink(toY, from, net);
-                            addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
-                            transitLinks.add(linkY_r.getId());
-                        }
-                        addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
+                        //if (transitLinks.size() == 0){
+                        //    Link linkY_r = getOrCreateLink(toY, from, net);
+                        //    addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
+                        //    transitLinks.add(linkY_r.getId());
+                        //}
+                        addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
                         transitLinks.add(linkY.getId());
-                    }
+                    //}
                 }
                 if (transitLinks.size() > 0) {
                     TransitLine transitLine = transitScheduleFactory
@@ -149,7 +149,7 @@ public class TransitScheduleCreator implements UtilComponent {
                     addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
                             transitScheduleFactory, schedule);
                 }
-            }
+            //}
         }
     }
 
