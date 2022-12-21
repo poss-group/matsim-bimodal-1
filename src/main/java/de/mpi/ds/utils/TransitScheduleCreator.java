@@ -20,6 +20,7 @@
 package de.mpi.ds.utils;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -94,8 +95,8 @@ public class TransitScheduleCreator implements UtilComponent {
         generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles); //net is network without train lines
         //networkNodes = switchYDirMatrix(networkNodes);
         //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
-        networkNodes = transposeMatrix(networkNodes);
-        generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
+        //networkNodes = transposeMatrix(networkNodes);
+        //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
         //networkNodes = switchYDirMatrix(networkNodes);
         //generateLinesInYDir(networkNodes, scenario, schedule, net, vehicles);
 
@@ -118,39 +119,36 @@ public class TransitScheduleCreator implements UtilComponent {
 
         // TODO:Alter this routine for crossing and non crossing train stations
 
-        int nX = networkNodes.length;
+        int nX = networkNodes.length; // for 11 nodes, nx = 11
         int nY = networkNodes[0].length;
 
-        for (int i = 0; i < nX; i=i+railInterval) {
-            ArrayList<Id<Link>> transitLinks = new ArrayList<>();
-            List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-            for (int j = 0; j < nY; j=j+small_railInterval) {
+        for (int i = 0; i < nX; i++) {
+            if ((i % railInterval == 0) && i!=nX-1){
+                ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+                List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+                for (int j =0; j < nY; j++){
+                    if ((j % small_railInterval == 0) && j!=nY-1){
+                        Node from = networkNodes[i][j];
+                        Node toY = networkNodes[i][(j + small_railInterval) % (nY-1)];
 
-                Node from = networkNodes[i][j];
-                Node toY = networkNodes[i][(j + small_railInterval) % nY];
+                        LOG.info("from:"+from+" to: "+toY);
+                        Link linkY = getOrCreateLink(from, toY, net);
 
-                LOG.info("from: "+from+" to "+toY);
-                LOG.info("and from" + toY + "to"+ from);
-                Link linkY = getOrCreateLink(from, toY, net);
-
-
-                // why? below links are created in reverse direction?
-                // because last link is not created in the desired direction so we ensure that it is already created while creating links in reverse direction
-                //if (transitLinks.size() == 0) {
-                Link linkY_r = getOrCreateLink(toY, from, net);
-                addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, true);
-                transitLinks.add(linkY_r.getId());
-                //}
-                addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
-                transitLinks.add(linkY.getId());
-
-            }
-            if (transitLinks.size() > 0) {
-
-                TransitLine transitLine = transitScheduleFactory
-                        .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
-                addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
-                        transitScheduleFactory, schedule);
+                        if (transitLinks.size() == 0){
+                            Link linkY_r = getOrCreateLink(toY, from, net);
+                            addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
+                            transitLinks.add(linkY_r.getId());
+                        }
+                        addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, true);
+                        transitLinks.add(linkY.getId());
+                    }
+                }
+                if (transitLinks.size() > 0) {
+                    TransitLine transitLine = transitScheduleFactory
+                            .createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                    addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory,
+                            transitScheduleFactory, schedule);
+                }
             }
         }
     }
