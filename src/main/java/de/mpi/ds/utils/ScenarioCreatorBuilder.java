@@ -6,14 +6,14 @@ import org.matsim.api.core.v01.TransportMode;
 public class ScenarioCreatorBuilder {
     private final static Logger LOG = Logger.getLogger(ScenarioCreatorBuilder.class.getName());
 
-    private double systemSize = 100;
+    private double systemSize = 10000;
     //    private double railGridSpacing = 1000;
-    private int railInterval = 5;
-    private int small_railInterval = 1;
+    private int railInterval = 2000;
+    private int small_railInterval = 500;
     private double carGridSpacing = 1;
     private long linkCapacity = 9999999;
-    private double freeSpeedCar = 0.3 / 3.6;
-    private double freeSpeedTrain = 0.6 / 3.6;
+    private double freeSpeedCar = 30 / 3.6;
+    private double freeSpeedTrain = 60 / 3.6;
     private double numberOfLanes = 100;
 
     private int requestEndTime = 9 * 3600;
