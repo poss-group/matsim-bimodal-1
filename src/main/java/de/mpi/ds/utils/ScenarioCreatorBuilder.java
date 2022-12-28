@@ -44,6 +44,8 @@ public class ScenarioCreatorBuilder {
     private double meanAndSpeedScaleFactor = 1;
     private double cutoffDistance = 1;
 
+    private boolean periodic_network;
+
     public ScenarioCreatorBuilder setRailInterval(int railInterval) {
         this.railInterval = railInterval;
         return this;
@@ -198,6 +200,11 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setPeriodicNetwork(boolean periodic_network){
+        this.periodic_network = periodic_network;
+        return this;
+    }
+
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, small_railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
@@ -205,7 +212,7 @@ public class ScenarioCreatorBuilder {
                 departureIntervalTime, transitStopLength, drtFleetSize, drtCapacity, drtOperationStartTime,
                 drtOperationEndTime, seed, transportMode, isGridNetwork, diagonalConnetions, smallLinksCloseToNodes,
                 createTrainLines, travelDistanceDistribution, travelDistanceMean, meanAndSpeedScaleFactor,
-                cutoffDistance, constDrtDemand, fracWithCommonOrigDest);
+                cutoffDistance, constDrtDemand, fracWithCommonOrigDest, periodic_network);
     }
 
     private void printScenarioInfo() {

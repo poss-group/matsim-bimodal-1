@@ -64,6 +64,7 @@ public class ScenarioCreator {
     private final double cutoffDistance;
     private boolean constDrtDemand;
     private double fracWithcommonOrigDest;
+    private boolean periodic_network;
 
     public ScenarioCreator(double systemSize, int railInterval, int small_railInterval, double carGridSpacing,
                            long linkCapacity, double freeSpeedCar, double freeSpeedTrain,
@@ -74,7 +75,7 @@ public class ScenarioCreator {
                            long seed, String transportMode, boolean isGridNetwork, boolean diagonalConnections,
                            boolean smallLinksCloseToStations, boolean createTrainLines,
                            String travelDistanceDistribution, double travelDistanceMean, double meanAndSpeedScaleFactor,
-                           double cutoffDistance, boolean constDrtDemand, double fracWithcommonOrigDest) {
+                           double cutoffDistance, boolean constDrtDemand, double fracWithcommonOrigDest, boolean periodic_network) {
 
         this.systemSize = systemSize;
         this.railInterval = railInterval;
@@ -104,6 +105,7 @@ public class ScenarioCreator {
         this.cutoffDistance = cutoffDistance;
         this.constDrtDemand = constDrtDemand;
         this.fracWithcommonOrigDest = fracWithcommonOrigDest;
+        this.periodic_network = periodic_network;
 
         if (travelDistanceDistribution.equals("InverseGamma")) {
             this.travelDistanceDistribution = x -> taxiDistDistributionNotNormalized(x, this.travelDistanceMean, 3.1);
@@ -170,10 +172,10 @@ public class ScenarioCreator {
 
         this.transitScheduleCreator = new TransitScheduleCreator(systemSize, railInterval, small_railInterval, this.freeSpeedTrain,
                 transitStartTime, transitEndTime, transitStopLength, departureIntervalTime, carGridSpacing,
-                linkCapacity, numberOfLanes);
+                linkCapacity, numberOfLanes, periodic_network);
         this.networkCreator = new NetworkCreator(systemSize, railInterval, small_railInterval, carGridSpacing, linkCapacity,
                 effectiveFreeTrainSpeed, numberOfLanes, this.freeSpeedCar, diagonalConnections,
-                smallLinksCloseToStations, createTrainLines, transitScheduleCreator);
+                smallLinksCloseToStations, createTrainLines, transitScheduleCreator, periodic_network);
         this.populationCreator = new PopulationCreator(nRequests, requestEndTime, random, transportMode, isGridNetwork,
                 smallLinksCloseToStations, createTrainLines, this.travelDistanceDistribution, systemSize, avDrtDist,
                 this.fracWithcommonOrigDest);

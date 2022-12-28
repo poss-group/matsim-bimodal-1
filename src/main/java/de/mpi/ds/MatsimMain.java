@@ -53,7 +53,7 @@ public class MatsimMain {
         LOG.info("Starting matsim simulation...");
         try {
             runGridModel(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
-                    args[10], args[11], args[12], args[13], args[14], args[15], args[16]);
+                    args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]);
 //            runRealWorld(config, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
 //                    args[9], args[10], args[11]);
 
@@ -168,7 +168,7 @@ public class MatsimMain {
                                             String nReqsString, String seedString,
                                             String endTimeString, String diagConnections, String constDrtDemandString,
                                             String meanAndSpeedScaleFactorString, String fracWithCommonOrigDestString,
-                                            String travelDistanceDistributionString, String outFolder) throws
+                                            String travelDistanceDistributionString, String outFolder, String periodic_network) throws
             Exception {
         // 20000000 requests for varying dcut from 200 to 10000; resulting requests: 11922 to 130679
         String basicOutPath = config.controler().getOutputDirectory();
@@ -205,8 +205,8 @@ public class MatsimMain {
                 .get(meanDistOutPath, fracWithCommonOrigDestString.concat("frac_comm_orig_dest")).toString();
         String nDrtOutPath = Paths.get(fracComOrigDestPath, N_drt.concat("drt")).toString();
         String dCutOutPath = Paths.get(nDrtOutPath, dCutString.concat("dcut")).toString();
-        //String small_lOutPath = Paths.get(dCutOutPath,small_railIntervalString.concat("small_railInterval")).toString();
-        String lOutPath = Paths.get(dCutOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
+        String small_lOutPath = Paths.get(dCutOutPath,small_railIntervalString.concat("small_railInterval")).toString();
+        String lOutPath = Paths.get(small_lOutPath, (int) (railInterval * carGridSpacing) + "l").toString();
 
         //create input path objects
         String inputPath = Paths.get(lOutPath, "input").toString();
@@ -243,7 +243,7 @@ public class MatsimMain {
                     .setMeanAndSpeedScaleFactor(meanAndSpeedScaleFactor)
                     .setConstDrtDemand(constDrtDemand)
                     .setCutoffDistance(dCut)
-                    .setSmallLinksCloseToNodes(false).setdrtFleetSize(Integer.parseInt(N_drt)).build();
+                    .setSmallLinksCloseToNodes(false).setdrtFleetSize(Integer.parseInt(N_drt)).setPeriodicNetwork(Boolean.parseBoolean(periodic_network)).build();
 //            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
 //            double nu = 1. / scenarioCreator.getRequestEndTime();
 //            double E = scenarioCreator.getnRequests() /
