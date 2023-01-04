@@ -142,24 +142,31 @@ public class NetworkCreator implements UtilComponent {
                         newNodeStationAttribute_corssing = true;
                     }
                 } else if (createTrainLines && !periodic_network){
-                    // create train lines with no crossing
-                    if ((i- (int) railInterval/2)%railInterval==0){
-                        if (j%small_railInterval == 0 ){
-                            newNodeStationAttribute = true;
-                            newNodeStationAttribute_corssing = false;
+                    if (small_railInterval<railInterval) {
+                        // create train lines with no crossing
+                        if ((i - (int) railInterval / 2) % railInterval == 0) {
+                            if (j % small_railInterval == 0) {
+                                newNodeStationAttribute = true;
+                                newNodeStationAttribute_corssing = false;
+                            }
                         }
-                    }
 
-                    if ((j - (int) railInterval/2)%railInterval==0 ){
-                        if (i%small_railInterval == 0){
-                            newNodeStationAttribute = true;
-                            newNodeStationAttribute_corssing = false;
+                        if ((j - (int) railInterval / 2) % railInterval == 0) {
+                            if (i % small_railInterval == 0) {
+                                newNodeStationAttribute = true;
+                                newNodeStationAttribute_corssing = false;
+                            }
                         }
-                    }
 
-                    if ((i - (int) railInterval/2)%railInterval==0 && (j -(int) railInterval/2)%railInterval==0 && i!=n_x-1 && j!=n_y-1){
-                        newNodeStationAttribute = true;
-                        newNodeStationAttribute_corssing = true;
+                        if ((i - (int) railInterval / 2) % railInterval == 0 && (j - (int) railInterval / 2) % railInterval == 0 && i != n_x - 1 && j != n_y - 1) {
+                            newNodeStationAttribute = true;
+                            newNodeStationAttribute_corssing = true;
+                        }
+                    } else if (small_railInterval==railInterval){
+                        if (((i - railInterval / 2) % railInterval == 0) && ((j - railInterval / 2) % railInterval == 0) && i != n_x -1 && j != n_y - 1 && i !=0 && j!= 0){
+                            newNodeStationAttribute = true;
+                            newNodeStationAttribute_corssing = true;
+                        }
                     }
                 }
 

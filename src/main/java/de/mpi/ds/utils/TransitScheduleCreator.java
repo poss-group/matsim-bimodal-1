@@ -146,25 +146,49 @@ public class TransitScheduleCreator implements UtilComponent {
                 }
             }
         } else if (!periodic_network) {
-            for (int i = railInterval/2; i<nX-1; i=i+railInterval) {
-                ArrayList<Id<Link>> transitLinks = new ArrayList<>();
-                List<TransitRouteStop> transitRouteStops = new ArrayList<>();
-                for (int j = 0; j<nY-small_railInterval; j = j + small_railInterval){
-                    Node from = networkNodes[i][j];
-                    Node toY = networkNodes[i][(j + small_railInterval)];
-                    LOG.info("from:" + from + " to: " + toY);
-                    Link linkY = getOrCreateLink(from, toY , net);
-                    if (transitLinks.size() == 0) {
-                        Link linkY_r = getOrCreateLink(toY, from, net);
-                        addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
-                        transitLinks.add(linkY_r.getId());
+            if (small_railInterval<railInterval) {
+                for (int i = railInterval / 2; i < nX - 1; i = i + railInterval) {
+                    ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+                    List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+                    for (int j = 0; j < nY - small_railInterval; j = j + small_railInterval) {
+                        Node from = networkNodes[i][j];
+                        Node toY = networkNodes[i][(j + small_railInterval)];
+                        LOG.info("from:" + from + " to: " + toY);
+                        Link linkY = getOrCreateLink(from, toY, net);
+                        if (transitLinks.size() == 0) {
+                            Link linkY_r = getOrCreateLink(toY, from, net);
+                            addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
+                            transitLinks.add(linkY_r.getId());
+                        }
+                        addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
+                        transitLinks.add(linkY.getId());
                     }
-                    addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
-                    transitLinks.add(linkY.getId());
+                    if (transitLinks.size() > 0) {
+                        TransitLine transitLine = transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                        addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory, transitScheduleFactory, schedule);
+                    }
                 }
-                if (transitLinks.size() > 0){
-                    TransitLine transitLine = transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
-                    addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory, transitScheduleFactory, schedule);
+            } else if(small_railInterval == railInterval){
+                for (int i = railInterval / 2; i < nX - 1; i = i + railInterval) {
+                    ArrayList<Id<Link>> transitLinks = new ArrayList<>();
+                    List<TransitRouteStop> transitRouteStops = new ArrayList<>();
+                    for (int j = railInterval / 2; j < nY - railInterval; j = j + railInterval) {
+                        Node from = networkNodes[i][j];
+                        Node toY = networkNodes[i][j + railInterval];
+                        LOG.info("from:" + from + " to: " + toY);
+                        Link linkY = getOrCreateLink(from, toY, net);
+                        if (transitLinks.size() == 0) {
+                            Link linkY_r = getOrCreateLink(toY, from, net);
+                            addTransitStop(linkY_r, schedule, transitScheduleFactory, transitRouteStops, false);
+                            transitLinks.add(linkY_r.getId());
+                        }
+                        addTransitStop(linkY, schedule, transitScheduleFactory, transitRouteStops, false);
+                        transitLinks.add(linkY.getId());
+                    }
+                    if (transitLinks.size() > 0) {
+                        TransitLine transitLine = transitScheduleFactory.createTransitLine(Id.create("Line".concat(String.valueOf(route_counter)), TransitLine.class));
+                        addTransitLineToSchedule(transitLinks, transitRouteStops, vehicles, transitLine, populationFactory, transitScheduleFactory, schedule);
+                    }
                 }
             }
         }
