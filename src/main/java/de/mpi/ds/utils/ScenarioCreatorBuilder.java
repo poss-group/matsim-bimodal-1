@@ -205,6 +205,20 @@ public class ScenarioCreatorBuilder {
         return this;
     }
 
+    public ScenarioCreatorBuilder setFreespeedTrain(int small_railInterval, double travelDistanceMean, double carGridSpacing){
+        double Vm = 3;
+        double max_speed = Vm*freeSpeedCar;
+        double ta = 0.05*travelDistanceMean/freeSpeedCar;
+        double V_tm;
+        if (small_railInterval*carGridSpacing>max_speed*ta){
+            V_tm = small_railInterval*carGridSpacing/(small_railInterval*carGridSpacing/max_speed + ta + ta);
+        } else{
+            V_tm = small_railInterval*carGridSpacing/(2*Math.sqrt(small_railInterval*carGridSpacing*ta/max_speed) + ta);
+        }
+        this.freeSpeedTrain = V_tm;
+        return this;
+    }
+
     public ScenarioCreator build() {
         printScenarioInfo();
         return new ScenarioCreator(systemSize, railInterval, small_railInterval, carGridSpacing, linkCapacity, freeSpeedCar,
@@ -246,7 +260,8 @@ public class ScenarioCreatorBuilder {
                 "\nmeanAndSpeedScaleFactor : " + meanAndSpeedScaleFactor +
                 "\ncutoffDistance : " + cutoffDistance +
                 "\nconstDrtDemand : " + constDrtDemand +
-                "\nfracWithCommonOrigDest" + fracWithCommonOrigDest
+                "\nfracWithCommonOrigDest :" + fracWithCommonOrigDest +
+                "\nfreeSpeedTrain :" + freeSpeedTrain
         );
     }
 }

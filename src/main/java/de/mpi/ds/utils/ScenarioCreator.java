@@ -4,6 +4,7 @@ import org.apache.commons.math3.analysis.integration.RombergIntegrator;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.apache.log4j.Logger;
+import java.lang.Math;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -123,7 +124,7 @@ public class ScenarioCreator {
             UnivariateIntegrator integrator = new RombergIntegrator();
             double boundedNorm = integrator
                     .integrate(1000000, x -> this.travelDistanceDistribution.apply(x), 0.0001,
-                            this.systemSize / 2);
+                            this.systemSize / 2 );
             avDistFracToDCut = integrator
                     .integrate(1000000, x -> x * this.travelDistanceDistribution.apply(x) / boundedNorm,
                             0.0001, cutoffDistance);

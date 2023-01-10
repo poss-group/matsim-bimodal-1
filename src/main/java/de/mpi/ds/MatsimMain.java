@@ -243,7 +243,7 @@ public class MatsimMain {
                     .setMeanAndSpeedScaleFactor(meanAndSpeedScaleFactor)
                     .setConstDrtDemand(constDrtDemand)
                     .setCutoffDistance(dCut)
-                    .setSmallLinksCloseToNodes(false).setdrtFleetSize(Integer.parseInt(N_drt)).setPeriodicNetwork(Boolean.parseBoolean(periodic_network)).build();
+                    .setSmallLinksCloseToNodes(false).setdrtFleetSize(Integer.parseInt(N_drt)).setPeriodicNetwork(Boolean.parseBoolean(periodic_network)).setFreespeedTrain(small_railInterval,travelDistMean,carGridSpacing).build();
 //            double mu = 1. / scenarioCreator.getDepartureIntervalTime();
 //            double nu = 1. / scenarioCreator.getRequestEndTime();
 //            double E = scenarioCreator.getnRequests() /
