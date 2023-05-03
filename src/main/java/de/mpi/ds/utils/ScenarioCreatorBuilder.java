@@ -6,7 +6,7 @@ import org.matsim.api.core.v01.TransportMode;
 public class ScenarioCreatorBuilder {
     private final static Logger LOG = Logger.getLogger(ScenarioCreatorBuilder.class.getName());
 
-    private double systemSize = 10000;
+    private double systemSize = 20000;
     //    private double railGridSpacing = 1000;
     private int railInterval = 2000;
     private int small_railInterval = 500;
@@ -16,21 +16,21 @@ public class ScenarioCreatorBuilder {
     private double freeSpeedTrain = 60 / 3.6;
     private double numberOfLanes = 100;
 
-    private int requestEndTime = 9 * 3600;
+    private int requestEndTime = 1 * 3600;
     private int nRequests = (int) 1e5;
     private String transportMode = TransportMode.pt;
     private Boolean constDrtDemand = false;
     private double fracWithCommonOrigDest = 0;
 
     private double transitStartTime = 0;
-    private double transitEndTime = 10 * 3600;
-    private double departureIntervalTime = 15 * 60;
+    private double transitEndTime = 12*600;
+    private double departureIntervalTime = 10 * 60;
     private double transitStopLength = 0;
 
     private int drtFleetSize = 200;
     private int drtCapacity = 8;
     private double drtOperationStartTime = 0;
-    private double drtOperationEndTime = 10 * 3600;
+    private double drtOperationEndTime = 12*600;
     private long seed = 42;
 
     private boolean diagonalConnetions = true;

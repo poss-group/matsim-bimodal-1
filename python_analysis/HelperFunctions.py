@@ -59,3 +59,18 @@ def isParetoEfficient(costs):
     for i, c in enumerate(costs):
         is_efficient[i] = np.all(np.any(costs[:i]>c, axis=1)) and np.all(np.any(costs[i+1:]>c, axis=1))
     return is_efficient
+
+def getParetoFront(pareto_convenience,pareto_CI):
+    size = pareto_CI.shape[0]
+    data_ids = np.arange(size)
+    pareto_front = np.ones(size,dtype=bool)
+    
+    for i in range(size):
+        for j in range(size):
+            if ((pareto_convenience[j]>pareto_convenience[i]) and (pareto_CI[j]<pareto_CI[i])):
+                pareto_front[i] = 0
+                break
+            
+    return data_ids[pareto_front]
+
+

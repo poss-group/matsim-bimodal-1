@@ -50,6 +50,8 @@ def getDirs(directory, keys, constrVals):
                         subresult["pkm_modestats"] = os.path.join(root2, file2)
                     if file2=="output_persons.csv.gz":
                         subresult["persons"] = os.path.join(root2, file2)
+                    if file2=="modestats.txt":
+                        subresult["modestats"] = os.path.join(root2, file2)
                 
             sim = [float(val) for val in vals.groups() if val]
             sim.append(subresult)
@@ -57,6 +59,8 @@ def getDirs(directory, keys, constrVals):
             continue
 
     return sims
+
+getDirsVectorized = np.vectorize(getDirs)
 
 def getCarDir(directory):
     result = {}
@@ -97,7 +101,7 @@ def getTrips(paths, mode):
     if mode == "bimodal":
         columns=["person","trav_time","wait_time","traveled_distance","modes"]
     elif mode == "unimodal":
-        columns=["person","trav_time","wait_time"]
+        columns=["person","trav_time","wait_time", "traveled_distance"]
     elif mode == "car":
         columns=["person", "traveled_distance", "trav_time"]
     path = paths["trips"]
@@ -118,6 +122,7 @@ def getTrips(paths, mode):
             {
                 "trav_time": np.sum,
                 "wait_time": np.sum,
+                "traveled_distance": np.sum,
             }
         )
         return df
@@ -145,8 +150,14 @@ def getModeStats(paths, columns_ph, columns_pkm):
     df_pkm = pd.read_csv(path_pkm, sep='\t').loc[:,columns_pkm]
     return df_ph.to_numpy()[0], df_pkm.to_numpy()[0]
 
+def getBimodalFraction(paths,frac_columns):
+    path_modes = paths["modestats"]
+    df_modes = pd.read_csv(path_modes, sep='\t').loc[:,frac_columns]
+    return df_modes.to_numpy()[0]
+
 def getDrtVehicleDistances(paths):
     path = paths["drt_dists"]
+    #change the argument to drivenDistance_m or occupiedDistance_m
     df = pd.read_csv(path, sep=";")["drivenDistance_m"]
     return df
 
@@ -160,17 +171,19 @@ def getCummulativePtDistance(paths):
     df = pd.read_csv(path).values[0, 0]
     return df
 
-def getDrtOccupandyAndStandingFrac(paths, exclude_empty_vehicles, count_idle_vehicles=False):
+def getDrtOccupandyAndStandingFrac(paths, exclude_empty_vehicles, count_idle_vehicles=False, req_time_only=True):
     path = paths["drt_occupancy"]
     df = pd.read_csv(path, sep="\t")
     df["time"] = df["time"].apply(timestmphm2sec)
+    if req_time_only:
+        df = df[df["time"]<=4200]
     drt_occ, drt_deviation = getAverageOcc(
         df.drop(columns="time"), exclude_empty_vehicles=exclude_empty_vehicles, count_idle_vehicles=count_idle_vehicles
     )
     drt_standing_frac = getStandingFraction(df.drop(columns="time"))
     return drt_occ, drt_standing_frac
 
-def getPtOccupancy(paths, pt_interval=900):
+def getPtOccupancy(paths, pt_interval=600):
     path = paths["pt_occupancy"]
     #TODO generalize (no 900)
     av_pt_occ, av_pt_occ_sq, n_pt = getPtOccupancies(
@@ -178,11 +191,11 @@ def getPtOccupancy(paths, pt_interval=900):
     )
     t_av_pt_occ_av = getAverageTimeSeries(av_pt_occ)
     t_av_n_pt = getAverageTimeSeries(n_pt)
-    sigma = np.sqrt(t_av_n_pt / (t_av_n_pt - 1)) * np.sqrt(
-        av_pt_occ_sq - av_pt_occ ** 2
-    )
-    t_av_pt_occ_sigma = getAverageTimeSeries(sigma)
-    return t_av_pt_occ_av, t_av_pt_occ_sigma
+    #sigma = np.sqrt(t_av_n_pt / (t_av_n_pt - 1)) * np.sqrt(
+    #    av_pt_occ_sq - av_pt_occ ** 2
+    #)
+    #t_av_pt_occ_sigma = getAverageTimeSeries(sigma)
+    return t_av_pt_occ_av#, t_av_pt_occ_sigma
 
 def getDrtTrips(paths):
     path = paths["drt_trips"]
@@ -203,15 +216,17 @@ def getDrtDetours(paths):
     # df = df[df < 10]
     return df
 
-def getPersons(paths):
+def getPersons(paths,periodic=True):
     path = paths["persons"]
-    system_size = 10000
+    system_size = 20000
     makePeriodic = lambda x: x if x < system_size/2 else system_size - x
     columns = ["first_act_x", "first_act_y", "last_act_x", "last_act_y"]
     df = pd.read_csv(path, sep=";").loc[:,columns]
     diffX = np.abs(df["last_act_x"] - df["first_act_x"])
-    diffX = diffX.apply(makePeriodic)
+    if (periodic):
+        diffX = diffX.apply(makePeriodic)
     diffY = np.abs(df["last_act_y"] - df["first_act_y"])
-    diffY = diffY.apply(makePeriodic)
+    if (periodic):
+        diffY = diffY.apply(makePeriodic)
     df["mean_dist"] = np.sqrt(diffX**2 + diffY**2)
     return df
