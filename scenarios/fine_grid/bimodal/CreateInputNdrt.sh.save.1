@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -q grotrian.q
+# -pe mvapich2-grotrian 10
+#$ -j yes
+#$ -N input_creation_out
+#$ -l h_stack=8g
+#$ -t 0-1350
+
+railInterval="40"
+small_railIntervals = (5 10 20)
+mode="create-input"
+Ndrt="10000"
+carGridSpacing="100"
+nReqs=(100 500 1000 5000 10000 50000 100000 500000 1000000)
+outputDir="out1"
+d_cuts=(seq 100 100 5000)
+
+#for SGE_TASK_ID in $(seq 0 1 40); do
+((idx_dcut=$SGE_
+
+echo "Creating Input for railInterval =" ${railIntervals[$idx_railInterval]} ",mode =" $mode ", N_drt =" $Ndrt ", carGridSpacing =" $carGridSpacing ", and N_reqs = " ${nReqs[idx_reqs]}
+args="config.xml mode $mean_travel_distance $d_cut $carGridSpacing ${railIntervals[$idx_railInterval]} ${small_railIntervals[idx_small_railInterval]} ${Ndrt[$idx_Ndrt]} ${nReqs[idx_reqs]} $seed $end_time $isDiagonal $const_DrtDemand 1 0 InverseGamma $mode $outputDir"
+#echo $args
+
+#done
+
+../../../../jdk-11.0.2/bin/java -Xmx8g -jar ../../../../matsim-bimodal-varyl2000MeanInvGammaDiag-1.0-SNAPSHOT-jar-with-dependencies.jar $args
